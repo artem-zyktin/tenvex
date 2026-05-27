@@ -1,3 +1,6 @@
+bin/**
+build/**
+
 ### C++
 # Object files
 *.o
@@ -38,7 +41,8 @@
 ._*
 
 # Custom folder icons
-Icon
+Icon
+
 
 # Volume root files
 .DocumentRevisions-V100
