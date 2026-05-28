@@ -6,46 +6,6 @@ workspace "tenvex"
 
 outputdir = "%{cfg.system}/x64/%{cfg.buildcfg}"
 
-project "tenvex"
-	location "build"
-	kind "None"
-	language "C++"
-	cppdialect "C++20"
-	staticruntime "on"
-
-	targetdir ("bin/" .. outputdir .. "/output")
-	objdir    ("bin/" .. outputdir .. "/intermediate")
-
-	files {
-		"src/tenvex/**.h",
-		"src/tenvex/**.hpp",
-	}
-
-	includedirs {
-		"src/tenvex",
-	}
-
-	filter "configurations:debug"
-		runtime "Debug"
-		symbols "on"
-		optimize "off"
-		defines { "TENVEX_DEBUG" }
-
-	filter "configurations:release"
-		runtime "Release"
-		symbols "on"
-		optimize "Speed"
-		defines { "TENVEX_RELEASE" }
-
-	filter "system:windows"
-		systemversion "latest"
-
-	filter "system:linux"
-		pic "on"
-
-	filter "system:macosx"
-		pic "on"
-
 project "gtest"
 	location "build"
 	kind "StaticLib"
@@ -115,6 +75,46 @@ project "gtest_main"
 
 	filter "system:windows"
 		systemversion "latest"
+
+project "tenvex"
+	location "build"
+	kind "None"
+	language "C++"
+	cppdialect "C++20"
+	staticruntime "on"
+
+	targetdir ("bin/" .. outputdir .. "/output")
+	objdir    ("bin/" .. outputdir .. "/intermediate")
+
+	files {
+		"src/tenvex/**.h",
+		"src/tenvex/**.hpp",
+	}
+
+	includedirs {
+		"src/tenvex",
+	}
+
+	filter "configurations:debug"
+		runtime "Debug"
+		symbols "on"
+		optimize "off"
+		defines { "TENVEX_DEBUG" }
+
+	filter "configurations:release"
+		runtime "Release"
+		symbols "on"
+		optimize "Speed"
+		defines { "TENVEX_RELEASE" }
+
+	filter "system:windows"
+		systemversion "latest"
+
+	filter "system:linux"
+		pic "on"
+
+	filter "system:macosx"
+		pic "on"
 
 project "tenvex_tests"
 	location "build"
