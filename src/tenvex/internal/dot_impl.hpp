@@ -29,9 +29,32 @@ __m128 Dot<L, R>::eval() const noexcept
 }
 
 template<vector_expression L, vector_expression R>
-Dot<L, R> dot(const Expr<L>& l, const Expr<L>& r) noexcept
+TNVX_INLINE
+Dot<L, R>::operator float() const noexcept
+{
+	return _mm_cvtss_f32(eval());
+}
+
+template<vector_expression L, vector_expression R>
+TNVX_INLINE
+Dot<L, R> dot(const Expr<L>& l, const Expr<R>& r) noexcept
 {
 	return { l.self(), r.self() };
 }
+
+template<vector_expression L, vector_expression R>
+TNVX_INLINE
+float operator*(const Dot<L, R>& l, float r) noexcept
+{
+	return static_cast<float>(l) * r;
+}
+
+template<vector_expression L, vector_expression R>
+float operator*(float l, const Dot<L, R>& r) noexcept
+{
+	return l * static_cast<float>(r);
+}
+
+
 
 }

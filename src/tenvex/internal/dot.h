@@ -1,21 +1,21 @@
 #pragma once
 
 #include "expression.h"
-#include "scalar.h"
-#include "../vec4.h"
 
 namespace tnvx
 {
 
 template<vector_expression L, vector_expression R>
-requires (!std::same_as<L, Scalar> && !std::same_as<R, Scalar>)
-struct Dot : Expr<Dot>
+struct Dot : Expr<Dot<L, R>>
 {
 	inline
 	Dot(const L& TNVX_RESTRICT l, const R& TNVX_RESTRICT r) noexcept;
 
 	[[nodiscard]] inline
 	__m128 eval() const noexcept;
+
+	[[nodiscard]] inline
+	operator float() const noexcept;
 
 private:
 	tnvx_type_storage<L> _l;
@@ -24,7 +24,15 @@ private:
 
 template<vector_expression L, vector_expression R>
 [[nodiscard]] inline
-Dot<L, R> dot(const Expr<L>& l, const Expr<L>& r) noexcept;
+Dot<L, R> dot(const Expr<L>& l, const Expr<R>& r) noexcept;
+
+template<vector_expression L, vector_expression R>
+[[nodiscard]] inline
+float operator*(const Dot<L, R>& l, float r) noexcept;
+
+template<vector_expression L, vector_expression R>
+[[nodiscard]] inline
+float operator*(float l, const Dot<L, R>& r) noexcept;
 
 }
 

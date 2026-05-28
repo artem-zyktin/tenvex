@@ -29,7 +29,7 @@ concept expression = requires(T a)
 }
 && std::derived_from<T, Expr<T>>;
 
-class Scalar;
+struct Scalar;
 
 template<typename T>
 concept vector_expression = expression<T> && !std::same_as<T, Scalar>;

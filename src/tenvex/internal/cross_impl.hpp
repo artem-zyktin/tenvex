@@ -38,7 +38,7 @@ __m128 Cross<L, R>::eval() const noexcept
 }
 
 template<vector_expression L, vector_expression R>
-Cross<L, R> cross(const Expr<L>& l, const Expr<L>& r) noexcept
+Cross<L, R> cross(const Expr<L>& l, const Expr<R>& r) noexcept
 {
 	return { l.self(), r.self() };
 }

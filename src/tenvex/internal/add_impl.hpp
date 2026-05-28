@@ -18,7 +18,6 @@ TNVX_INLINE
 __m128 Add<L, R>::eval() const noexcept
 {
 	return _mm_add_ps(_l.eval(), _r.eval());
-
 }
 
 template<expression L, expression R>

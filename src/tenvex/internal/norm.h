@@ -20,7 +20,7 @@ private:
 
 template<vector_expression E>
 [[nodiscard]] inline
-Norm<E> norm(const Expr<E> e) noexcept;
+Norm<E> norm(const Expr<E>& e) noexcept;
 
 }
 

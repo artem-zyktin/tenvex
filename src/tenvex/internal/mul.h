@@ -20,6 +20,10 @@ private:
 	tnvx_type_storage<R> _r;
 };
 
+//template<vector_expression L, vector_expression R>
+//[[nodiscard]] inline
+//Mul<L, R> operator*(const Expr<L>& l, const Expr<R>& r) noexcept;
+
 template<expression E>
 [[nodiscard]] inline
 Mul<E, Scalar> operator*(const Expr<E>& l, float r) noexcept;

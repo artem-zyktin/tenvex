@@ -4,33 +4,60 @@
 
 #include <immintrin.h>
 
+#include <array>
+
 namespace tnvx
 {
 
-struct alignas(16) vec4 : public Expr<vec4>
+struct alignas(16) vec4 : Expr<vec4>
 {
 	vec4() = default;
 
-	vec4(float x, float y, float z, float w);
+	inline
+	vec4(float x, float y, float z, float w) noexcept;
 
 	template<typename E>
-	vec4(const Expr<E>& expr);
+	inline
+	vec4(const Expr<E>& expr) noexcept;
 
 	template<typename E>
-	vec4& operator=(const Expr<E>& expr);
+	inline
+	vec4& operator=(const Expr<E>& expr) noexcept;
 
+	[[nodiscard]] inline
 	__m128 eval() const noexcept;
 
+	[[nodiscard]] inline
 	float magnitude() const noexcept;
+
+	[[nodiscard]] inline
 	vec4 norm() const noexcept;
 
+	[[nodiscard]] inline
 	float x() const noexcept;
+
+	[[nodiscard]] inline
 	float y() const noexcept;
+
+	[[nodiscard]] inline
 	float z() const noexcept;
+
+	[[nodiscard]] inline
 	float w() const noexcept;
+
+	[[nodiscard]] inline
+	std::array<float, 4> data() const noexcept;
 
 private:
 	__m128 _data;
 };
 
-} // namespace tenvex
+inline
+bool operator==(const vec4& a, const vec4& b) noexcept;
+
+inline
+bool approx_eq(const vec4& a, const vec4& b, float eps = 1e-3f) noexcept;
+
+}
+
+#include "vec4_impl.hpp"

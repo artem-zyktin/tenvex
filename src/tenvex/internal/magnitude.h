@@ -14,13 +14,16 @@ struct Magnitude : Expr<Magnitude<E>>
 	[[nodiscard]] inline
 	__m128 eval() const noexcept;
 
+	[[nodiscard]] inline
+	operator float() const noexcept;
+
 private:
 	tnvx_type_storage<E> _e;
 };
 
 template<vector_expression E>
 [[nodiscard]] inline
-Magnitude<E> magnitude(const Expr<E> e) noexcept;
+Magnitude<E> magnitude(const Expr<E>& e) noexcept;
 
 }
 
