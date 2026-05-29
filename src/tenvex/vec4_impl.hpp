@@ -35,16 +35,28 @@ __m128 vec4::eval() const noexcept
 }
 
 TNVX_INLINE
-float vec4::magnitude() const noexcept
+auto vec4::magnitude() const noexcept
 {
-	return _mm_cvtss_f32(Magnitude<vec4>(*this).eval());
+	return Magnitude<vec4>(*this);
 }
 
 TNVX_INLINE
-vec4 vec4::norm() const noexcept
+auto vec4::norm() const noexcept
 {
-	return { Norm<vec4>(*this) };
+	return Norm<vec4>(*this);
 }
+
+//TNVX_INLINE
+//Magnitude<vec4> vec4::magnitude() const noexcept
+//{
+//	return { *this };
+//}
+//
+//TNVX_INLINE
+//Norm<vec4> vec4::norm() const noexcept
+//{
+//	return { *this };
+//}
 
 TNVX_INLINE
 float vec4::x() const noexcept

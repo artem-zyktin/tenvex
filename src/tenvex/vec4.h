@@ -28,10 +28,10 @@ struct alignas(16) vec4 : Expr<vec4>
 	__m128 eval() const noexcept;
 
 	[[nodiscard]] inline
-	float magnitude() const noexcept;
+	auto magnitude() const noexcept;
 
 	[[nodiscard]] inline
-	vec4 norm() const noexcept;
+	auto norm() const noexcept;
 
 	[[nodiscard]] inline
 	float x() const noexcept;

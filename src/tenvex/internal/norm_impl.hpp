@@ -29,6 +29,7 @@ __m128 Norm<E>::eval() const noexcept
 }
 
 template<vector_expression E>
+TNVX_INLINE
 Norm<E> norm(const Expr<E>& e) noexcept
 {
 	return { e.self() };
