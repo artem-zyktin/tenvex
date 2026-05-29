@@ -9,7 +9,7 @@ TEST(vec4, add)
 {
 	vec4 a = { 1.0f, 2.0f, 3.0f, 4.0f };
 	vec4 b = { 4.0f, 3.0f, 2.0f, 1.0f };
-	vec4 check{ 5.0f, 5.0f, 5.0f, 5.0f };
+	vec4 check = { 5.0f, 5.0f, 5.0f, 5.0f };
 	vec4 result = a + b;
 
 	EXPECT_TRUE(approx_eq(check, result));
@@ -136,6 +136,19 @@ TEST(vec4, expression_c)
 	vec4 check = { 7.243f, 5.657f, 10.071f, 0.0f };
 
 	vec4 result = norm(a + b * 2.0f) * dot(b, c) + c * 3.0f;
+
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, expression_d)
+{
+	vec4 a = { 1.0f, 2.0f, 3.0f, 0.0f };
+	vec4 b = { 4.0f, 5.0f, 6.0f, 0.0f };
+	vec4 c = { 1.0f, 0.0f, 1.0f, 0.0f };
+
+	vec4 check = { 7.243f, 5.657f, 10.071f, 0.0f };
+
+	vec4 result = magnitude(a) * dot(b, c) + c * 3.0f;
 
 	EXPECT_TRUE(approx_eq(check, result));
 }
