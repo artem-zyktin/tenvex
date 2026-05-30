@@ -44,6 +44,50 @@ project "gtest"
 	filter "system:macosx"
 		pic "on"
 
+project "benchmark"
+	location "build"
+	kind "StaticLib"
+	language "C++"
+	cppdialect "C++20"
+	staticruntime "on"
+
+	targetdir ("bin/" .. outputdir .. "/output")
+	objdir    ("bin/" .. outputdir .. "/intermediate")
+
+	files {
+		"thirdparty/benchmark/src/**.cc",
+	}
+
+	removefiles {
+		"thirdparty/benchmark/src/benchmark_main.cc",
+	}
+
+	includedirs {
+		"thirdparty/benchmark/include",
+		"thirdparty/benchmark/src",
+	}
+
+	defines { "BENCHMARK_STATIC_DEFINE", "HAVE_STD_REGEX" }
+
+	filter "configurations:debug"
+		runtime "Debug"
+		symbols "on"
+		optimize "off"
+
+	filter "configurations:release"
+		runtime "Release"
+		symbols "on"
+		optimize "Speed"
+
+	filter "system:windows"
+		systemversion "latest"
+
+	filter "system:linux"
+		pic "on"
+
+	filter "system:macosx"
+		pic "on"
+
 project "gtest_main"
 	location "build"
 	kind "StaticLib"
@@ -162,3 +206,54 @@ project "tenvex_tests"
 	filter "toolset:gcc or toolset:clang"
         buildoptions { "-msse4.1" }
     filter {}
+
+project "tenvex_bench"
+	location "build"
+	kind "ConsoleApp"
+	language "C++"
+	cppdialect "C++20"
+	staticruntime "on"
+
+	targetdir ("bin/" .. outputdir .. "/output")
+	objdir    ("bin/" .. outputdir .. "/intermediate")
+
+	files {
+		"src/benchmarks/**.cpp",
+	}
+
+	includedirs {
+		"src/tenvex",
+		"thirdparty/benchmark/include",
+	}
+
+	links { "benchmark" }
+
+	defines { "BENCHMARK_STATIC_DEFINE" }
+
+	filter "configurations:debug"
+		runtime "Debug"
+		symbols "on"
+		optimize "off"
+		defines { "TENVEX_DEBUG" }
+
+	filter "configurations:release"
+		runtime "Release"
+		symbols "on"
+		optimize "Speed"
+		defines { "TENVEX_RELEASE" }
+
+	filter "system:windows"
+		systemversion "latest"
+		links { "Shlwapi" }
+
+	filter "system:linux"
+		pic "on"
+		links { "pthread" }
+
+	filter "system:macosx"
+		pic "on"
+
+	filter "toolset:gcc or toolset:clang"
+		buildoptions { "-msse4.1" }
+
+	filter {}
