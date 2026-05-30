@@ -31,9 +31,33 @@ bool approx_eq(const vec4& lhs, const vec4& rhs, float eps) noexcept
 }
 
 TNVX_INLINE
-bool tnvx::operator==(const vec4& lhs, const vec4& rhs) noexcept
+bool operator==(const vec4& lhs, const vec4& rhs) noexcept
 {
 	return detail::eq(lhs.eval(), rhs.eval());
+}
+
+TNVX_INLINE
+float vec4::x() const noexcept
+{
+	return detail::get_lane<0>(_data);
+}
+
+TNVX_INLINE
+float vec4::y() const noexcept
+{
+	return detail::get_lane<1>(_data);
+}
+
+TNVX_INLINE
+float vec4::z() const noexcept
+{
+	return detail::get_lane<2>(_data);
+}
+
+TNVX_INLINE
+float vec4::w() const noexcept
+{
+	return detail::get_lane<3>(_data);
 }
 
 }

@@ -4,9 +4,10 @@
 #include "defines.h"
 
 #if defined(HAS_SSE42)
-#include <smmintrin.h>
-using vf4 = __m128;
+	#include <smmintrin.h>
+	using vf4 = __m128;
 #else
+	#error "tenvex requires an SSE4.1 backend (define HAS_SSE42 and build with -msse4.1 on GCC/Clang)"
 #endif
 
 namespace tnvx::detail
@@ -29,6 +30,13 @@ bool approx_eq(vf4 a, vf4 b, float eps) noexcept
 vf4 scalar(float value) noexcept
 {
 	return _mm_set_ps1(value);
+}
+
+template<int lane>
+[[nodiscard]] TNVX_INLINE
+float get_lane(vf4 v) noexcept
+{
+	return _mm_cvtss_f32(_mm_shuffle_ps(v, v, _MM_SHUFFLE(0, 0, 0, lane)));
 }
 
 [[nodiscard]] TNVX_INLINE

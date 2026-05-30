@@ -21,9 +21,22 @@ struct alignas(16) vec4 : Expr<vec4>
 	vec4(const E& e) noexcept;
 
 	[[nodiscard]] TNVX_INLINE
+	float x() const noexcept;
+
+	[[nodiscard]] TNVX_INLINE
+	float y() const noexcept;
+
+	[[nodiscard]] TNVX_INLINE
+	float z() const noexcept;
+
+	[[nodiscard]] TNVX_INLINE
+	float w() const noexcept;
+
+	[[nodiscard]] TNVX_INLINE
 	vf4 eval() const noexcept;
 
 private:
+
 	vf4 _data;
 };
 
