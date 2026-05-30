@@ -20,6 +20,8 @@ private:
 	vf4 _value;
 };
 
+static_assert(is_stored_by_value_v<Scalar>, "Scalar must be stored by value");
+
 template<>
 inline constexpr bool is_scalar_expr<Scalar> = true;
 
