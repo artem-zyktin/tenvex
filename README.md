@@ -195,3 +195,16 @@ The test suite uses Google Test (vendored in `thirdparty/gtest/`) and currently 
 | Type system          | `dot3_times_literal_collapses`, `magnitude3_times_literal_collapses`                                       |
 
 Build and run `tenvex_tests` from the generated project or makefile.
+
+## Benchmarks
+
+A [Google Benchmark](https://github.com/google/benchmark) suite (vendored in `thirdparty/benchmark/`) lives in `src/benchmarks/` and is built as the `tenvex_bench` project. Build in **release** and run the resulting executable; on GCC/Clang it is built with `-msse4.1`. A subset can be selected at runtime, e.g. `tenvex_bench --benchmark_filter=Compound`.
+
+A naive scalar reference implementation - `naive::vec4` in `src/naive/naive_vec4.h` - mirrors the tenvex API and semantics with plain `float` math (everything `inline`, by-value, reciprocal-multiply for division/normalization). It is benchmarked side by side (the `BM_Naive_*` cases) and has its own mirrored test suite (`src/tests/naive_tests.cpp`), so the SIMD path can be compared against a straightforward baseline.
+
+### Findings (per-vec4, release, single machine)
+
+- tenvex matches hand-written intrinsics on the same expression - the expression-template abstraction is zero-cost.
+- Arithmetic-heavy compound expressions: tenvex ~1.8x faster than the scalar baseline.
+- Isolated `dot3` / `norm3`: the scalar baseline is competitive or faster - `_mm_dp_ps` is high-latency and a 3-component reduction gains little from SIMD.
+- These are latency-bound, per-vec4 figures. Bulk / SoA throughput is out of scope.
