@@ -26,15 +26,15 @@ private:
 
 template<vec_expr E>
 [[nodiscard]] TNVX_INLINE
-Mul<E, Scalar> operator*(const E& TNVX_RESTRICT l, float r) noexcept;
+Mul<E, Scalar> operator*(const E& l, float r) noexcept;
 
 template<vec_expr E>
 [[nodiscard]] TNVX_INLINE
-Mul<Scalar, E> operator*(float l, const E& TNVX_RESTRICT r) noexcept;
+Mul<Scalar, E> operator*(float l, const E& r) noexcept;
 
 template<scalar_expr L, scalar_expr R>
 [[nodiscard]] TNVX_INLINE
-Mul<L, R> operator*(const L& TNVX_RESTRICT l, const R& TNVX_RESTRICT r) noexcept;
+Mul<L, R> operator*(const L& l, const R& r) noexcept;
 
 template<vec_expr L, scalar_expr R> inline constexpr bool is_vec_expr<Mul<L, R>> = true;
 template<scalar_expr L, vec_expr R> inline constexpr bool is_vec_expr<Mul<L, R>> = true;

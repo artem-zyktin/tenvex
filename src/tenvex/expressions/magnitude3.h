@@ -26,7 +26,7 @@ private:
 
 template<vec_expr E>
 TNVX_INLINE
-Magn3<E> magnitude3(const E& TNVX_RESTRICT e) noexcept;
+Magn3<E> magnitude3(const E& e) noexcept;
 
 template<vec_expr E> inline constexpr bool is_scalar_expr<Magn3<E>> = true;
 

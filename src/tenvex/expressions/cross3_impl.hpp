@@ -22,7 +22,7 @@ vf4 Cross3<L, R>::eval() const noexcept
 
 template<vec_expr L, vec_expr R>
 TNVX_INLINE
-Cross3<L, R> cross3(const L& TNVX_RESTRICT l, const R& TNVX_RESTRICT r) noexcept
+Cross3<L, R> cross3(const L& l, const R& r) noexcept
 {
 	return { l, r };
 }

@@ -29,7 +29,7 @@ Magn3<E>::operator float() const noexcept
 
 template<vec_expr E>
 TNVX_INLINE
-Magn3<E> magnitude3(const E& TNVX_RESTRICT e) noexcept
+Magn3<E> magnitude3(const E& e) noexcept
 {
 	return Magn3<E>(e);
 }

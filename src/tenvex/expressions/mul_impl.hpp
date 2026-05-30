@@ -22,21 +22,21 @@ vf4 Mul<L, R>::eval() const noexcept
 
 template<vec_expr E>
 TNVX_INLINE
-Mul<E, Scalar> operator*(const E& TNVX_RESTRICT l, float r) noexcept
+Mul<E, Scalar> operator*(const E& l, float r) noexcept
 {
 	return { l, Scalar(r) };
 }
 
 template<vec_expr E>
 TNVX_INLINE
-Mul<Scalar, E> operator*(float l, const E& TNVX_RESTRICT r) noexcept
+Mul<Scalar, E> operator*(float l, const E& r) noexcept
 {
 	return { Scalar(l), r };
 }
 
 template<scalar_expr L, scalar_expr R>
 TNVX_INLINE
-Mul<L, R> operator*(const L& TNVX_RESTRICT l, const R& TNVX_RESTRICT r) noexcept
+Mul<L, R> operator*(const L& l, const R& r) noexcept
 {
 	return { l, r };
 }

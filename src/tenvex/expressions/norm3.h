@@ -23,7 +23,7 @@ private:
 
 template<vec_expr E>
 [[nodiscard]] TNVX_INLINE
-Norm3<E> norm3(const E& TNVX_RESTRICT e) noexcept;
+Norm3<E> norm3(const E& e) noexcept;
 
 template<vec_expr E> inline constexpr bool is_vec_expr<Norm3<E>> = true;
 

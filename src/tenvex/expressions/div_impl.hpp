@@ -22,7 +22,7 @@ vf4 Div<L, R>::eval() const noexcept
 
 template<vec_expr E>
 TNVX_INLINE
-Div<E, Scalar> operator/(const E& TNVX_RESTRICT l, float r) noexcept
+Div<E, Scalar> operator/(const E& l, float r) noexcept
 {
 	return { l, Scalar(r) };
 }

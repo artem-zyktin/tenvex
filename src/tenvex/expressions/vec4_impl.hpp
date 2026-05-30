@@ -19,7 +19,7 @@ __m128 vec4::eval() const noexcept
 
 template<vec_expr E>
 TNVX_INLINE
-vec4::vec4(const E& TNVX_RESTRICT e) noexcept
+vec4::vec4(const E& e) noexcept
 	: _data(e.eval())
 {
 }
