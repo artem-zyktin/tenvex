@@ -8,11 +8,11 @@ namespace tnvx
 TNVX_INLINE
 Scalar::Scalar(float value) noexcept
 {
-	_value = _mm_set1_ps(value);
+	_value = detail::scalar(value);
 }
 
 TNVX_INLINE
-__m128 Scalar::eval() const noexcept
+vf4 Scalar::eval() const noexcept
 {
 	return _value;
 }

@@ -1,8 +1,6 @@
 ﻿#pragma once
 
-#include "defines.h"
-
-#include <immintrin.h>
+#include "core.h"
 
 namespace tnvx
 {

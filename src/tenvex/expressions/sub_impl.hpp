@@ -15,14 +15,14 @@ Sub<L, R>::Sub(const L& TNVX_RESTRICT l, const R& TNVX_RESTRICT r) noexcept
 
 template<vec_expr L, vec_expr R>
 TNVX_INLINE
-__m128 Sub<L, R>::eval() const noexcept
+vf4 Sub<L, R>::eval() const noexcept
 {
-	return _mm_sub_ps(_l.eval(), _r.eval());
+	return detail::sub(_l.eval(), _r.eval());
 }
 
 template<vec_expr L, vec_expr R>
 TNVX_INLINE
-Sub<L, R> operator-(const L& l, const R& r) noexcept
+Sub<L, R> operator-(const L& TNVX_RESTRICT l, const R& TNVX_RESTRICT r) noexcept
 {
 	return { l, r };
 }

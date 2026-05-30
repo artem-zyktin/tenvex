@@ -7,7 +7,7 @@ namespace tnvx
 
 template<expression L, expression R>
 TNVX_INLINE
-Mul<L, R>::Mul(const L& l, const R& r) noexcept
+Mul<L, R>::Mul(const L& TNVX_RESTRICT l, const R& TNVX_RESTRICT r) noexcept
 	: _l(l)
 	, _r(r)
 {
@@ -15,28 +15,28 @@ Mul<L, R>::Mul(const L& l, const R& r) noexcept
 
 template<expression L, expression R>
 TNVX_INLINE
-__m128 Mul<L, R>::eval() const noexcept
+vf4 Mul<L, R>::eval() const noexcept
 {
 	return _mm_mul_ps(_l.eval(), _r.eval());
 }
 
 template<vec_expr E>
 TNVX_INLINE
-Mul<E, Scalar> operator*(const E& l, float r) noexcept
+Mul<E, Scalar> operator*(const E& TNVX_RESTRICT l, float r) noexcept
 {
 	return { l, Scalar(r) };
 }
 
 template<vec_expr E>
 TNVX_INLINE
-Mul<Scalar, E> operator*(float l, const E& r) noexcept
+Mul<Scalar, E> operator*(float l, const E& TNVX_RESTRICT r) noexcept
 {
 	return { Scalar(l), r };
 }
 
 template<scalar_expr L, scalar_expr R>
 TNVX_INLINE
-Mul<L, R> operator*(const L& l, const R& r) noexcept
+Mul<L, R> operator*(const L& TNVX_RESTRICT l, const R& TNVX_RESTRICT r) noexcept
 {
 	return { l, r };
 }

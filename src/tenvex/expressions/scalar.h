@@ -1,11 +1,9 @@
 ﻿#pragma once
 
-#include "defines.h"
+#include "core.h"
 #include "expression.h"
 #include "traits.h"
 #include "concepts.h"
-
-#include <immintrin.h>
 
 namespace tnvx
 {
@@ -16,10 +14,10 @@ struct Scalar : Expr<Scalar>
 	explicit Scalar(float value) noexcept;
 
 	[[nodiscard]] TNVX_INLINE
-	__m128 eval() const noexcept;
+	vf4 eval() const noexcept;
 
 private:
-	__m128 _value;
+	vf4 _value;
 };
 
 template<>

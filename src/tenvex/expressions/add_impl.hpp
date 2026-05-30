@@ -1,6 +1,5 @@
 ﻿#pragma once
 
-#include "defines.h"
 #include "add.h"
 
 namespace tnvx
@@ -16,14 +15,14 @@ Add<L, R>::Add(const L& TNVX_RESTRICT l, const R& TNVX_RESTRICT r) noexcept
 
 template<vec_expr L, vec_expr R>
 [[nodiscard]] TNVX_INLINE
-__m128 Add<L, R>::eval() const noexcept
+vf4 Add<L, R>::eval() const noexcept
 {
-	return _mm_add_ps(_l.eval(), _r.eval());
+	return detail::add(_l.eval(), _r.eval());
 }
 
 template<vec_expr L, vec_expr R>
 [[nodiscard]] TNVX_INLINE
-Add<L, R> operator+(const L& l, const R& r) noexcept
+Add<L, R> operator+(const L& TNVX_RESTRICT l, const R& TNVX_RESTRICT r) noexcept
 {
 	return { l, r };
 }

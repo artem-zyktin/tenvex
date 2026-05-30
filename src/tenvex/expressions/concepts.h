@@ -11,7 +11,7 @@ namespace tnvx
 template<typename T>
 concept expression = requires (T t)
 {
-	{ t.eval() } -> std::same_as<__m128>;
+	{ t.eval() } -> std::same_as<vf4>;
 	{ t.self() } -> std::same_as<const T&>;
 }
 && std::is_base_of_v<Expr<T>, T>;
