@@ -158,3 +158,7 @@ project "tenvex_tests"
 
 	filter "system:macosx"
 		pic "on"
+
+	filter "toolset:gcc or toolset:clang"
+        buildoptions { "-msse4.1" }
+    filter {}
