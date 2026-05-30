@@ -15,6 +15,17 @@ TEST(vec4, add)
 	EXPECT_TRUE(approx_eq(check, result));
 }
 
+TEST(vec4, mixed_type_add)
+{
+	vec4 a = { 1.0f, 2.0f, 3.0f, 0.0f };
+	vec4 b = { 1.0f, 1.0f, 1.0f, 0.0f };
+	vec4 c = { 2.0f, 0.0f, 0.0f, 0.0f };
+	vec4 check = { 4.0f, 3.0f, 4.0f, 0.0f };
+
+	vec4 result = a + b + c;
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
 TEST(vec4, sub)
 {
 	vec4 a = { 5.0f, 5.0f, 5.0f, 5.0f };
@@ -152,30 +163,81 @@ TEST(vec4, expression_c)
 	EXPECT_TRUE(approx_eq(check, result));
 }
 
+TEST(vec4, expression_d)
+{
+	vec4 a = { 1.0f, 0.0f, 0.0f, 0.0f };
+	vec4 b = { 0.0f, 2.0f, 0.0f, 0.0f };
+	vec4 c = { 0.0f, 0.0f, 3.0f, 0.0f };
+	vec4 result = (a + b) * 2.0f + c - a;
+	vec4 check = { 1.0f, 4.0f, 3.0f, 0.0f };
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, expression_from_temporaries)
+{
+	vec4 a = { 1.0f, 2.0f, 3.0f, 0.0f };
+	vec4 b = { 4.0f, 5.0f, 6.0f, 0.0f };
+	vec4 check = { 2.0f, 4.0f, 6.0f, 0.0f };
+	vec4 result = (a + b) + (a - b);     // intermediate ties are temporary
+
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
 TEST(vec4, cross_anticommutative)
 {
 	vec4 a = { 1.0f, 0.0f, 0.0f, 0.0f };
 	vec4 b = { 0.0f, 1.0f, 0.0f, 0.0f };
+
 	EXPECT_TRUE(approx_eq(cross3(a, b), cross3(b, a) * -1.0f));
 }
 
+TEST(vec4, w_is_zero_with_nonzero_input_w)
+{
+	vec4 a = { 1.0f, 0.0f, 0.0f, 5.0f };
+	vec4 b = { 0.0f, 1.0f, 0.0f, 7.0f };
+
+	vec4 r = cross3(a, b);
+
+	EXPECT_FLOAT_EQ(r.w(), 0.0f);
+	EXPECT_FLOAT_EQ(r.z(), 1.0f);
+}
+
+TEST(vec4, preserves_nontrivial_w)
+{
+	vec4 a = { 0.0f, 3.0f, 0.0f, 9.0f };
+	vec4 r = norm3(a);
+
+	EXPECT_FLOAT_EQ(r.y(), 1.0f);
+	EXPECT_FLOAT_EQ(r.w(), 9.0f);
+}
 TEST(vec4, dot_commutative)
 {
 	vec4 a = { 1.0f, 2.0f, 3.0f, 0.0f };
 	vec4 b = { 4.0f, 5.0f, 6.0f, 0.0f };
+
 	EXPECT_FLOAT_EQ(dot3(a, b), dot3(b, a));
 }
 
 TEST(vec4, norm_magnitude)
 {
 	vec4 a = { 3.0f, 1.0f, 4.0f, 0.0f };
+
 	EXPECT_NEAR(magnitude3(norm3(a)), 1.0f, 1e-6f);
+}
+
+TEST(vec4, zero_vector_is_nan)
+{
+	vec4 z = { 0.0f, 0.0f, 0.0f, 0.0f };
+	vec4 r = norm3(z);
+
+	EXPECT_TRUE(std::isnan(r.x()));
 }
 
 TEST(vec4, dot_perpendicular)
 {
 	vec4 a = { 1.0f, 0.0f, 0.0f, 0.0f };
 	vec4 b = { 0.0f, 1.0f, 0.0f, 0.0f };
+
 	EXPECT_FLOAT_EQ(dot3(a, b), 0.0f);
 }
 
@@ -184,7 +246,29 @@ TEST(vec4, cross_parallel)
 	vec4 a = { 1.0f, 0.0f, 0.0f, 0.0f };
 	vec4 b = { 2.0f, 0.0f, 0.0f, 0.0f };
 	vec4 check = { 0.0f, 0.0f, 0.0f, 0.0f };
+
 	EXPECT_TRUE(approx_eq(cross3(a, b), check));
+}
+
+TEST(vec4, dot3_times_literal_collapses)
+{
+	vec4 a = { 1.0f, 2.0f, 3.0f, 0.0f };
+	vec4 b = { 4.0f, 5.0f, 6.0f, 0.0f };
+
+	auto r = dot3(a, b) * 2.0f;
+
+	static_assert(!std::is_same_v<decltype(r), float>);
+	static_assert(scalar_expr<decltype(r)>);
+}
+
+TEST(vec4, magnitude3_times_literal_collapses)
+{
+	vec4 a = { 3.0f, 0.0f, 4.0f, 0.0f };
+
+	auto r = magnitude3(a) * 2.0f;
+
+	static_assert(!std::is_same_v<decltype(r), float>);
+	static_assert(scalar_expr<decltype(r)>);
 }
 
 }
