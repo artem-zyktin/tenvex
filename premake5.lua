@@ -44,50 +44,6 @@ project "gtest"
 	filter "system:macosx"
 		pic "on"
 
-project "benchmark"
-	location "build"
-	kind "StaticLib"
-	language "C++"
-	cppdialect "C++20"
-	staticruntime "on"
-
-	targetdir ("bin/" .. outputdir .. "/output")
-	objdir    ("bin/" .. outputdir .. "/intermediate")
-
-	files {
-		"thirdparty/benchmark/src/**.cc",
-	}
-
-	removefiles {
-		"thirdparty/benchmark/src/benchmark_main.cc",
-	}
-
-	includedirs {
-		"thirdparty/benchmark/include",
-		"thirdparty/benchmark/src",
-	}
-
-	defines { "BENCHMARK_STATIC_DEFINE", "HAVE_STD_REGEX" }
-
-	filter "configurations:debug"
-		runtime "Debug"
-		symbols "on"
-		optimize "off"
-
-	filter "configurations:release"
-		runtime "Release"
-		symbols "on"
-		optimize "Speed"
-
-	filter "system:windows"
-		systemversion "latest"
-
-	filter "system:linux"
-		pic "on"
-
-	filter "system:macosx"
-		pic "on"
-
 project "gtest_main"
 	location "build"
 	kind "StaticLib"
@@ -119,6 +75,51 @@ project "gtest_main"
 
 	filter "system:windows"
 		systemversion "latest"
+
+project "benchmark"
+	location "build"
+	kind "StaticLib"
+	language "C++"
+	cppdialect "C++20"
+	staticruntime "on"
+
+	targetdir ("bin/" .. outputdir .. "/output")
+	objdir    ("bin/" .. outputdir .. "/intermediate")
+
+	files {
+		"thirdparty/benchmark/src/**.cc",
+	}
+
+	removefiles {
+		"thirdparty/benchmark/src/benchmark_main.cc",
+	}
+
+	includedirs {
+		"thirdparty/benchmark/include",
+		"thirdparty/benchmark/src",
+	}
+
+	defines { "BENCHMARK_STATIC_DEFINE", "HAVE_STD_REGEX" }
+
+	filter "configurations:debug"
+		runtime "Debug"
+		symbols "on"
+		optimize "off"
+
+	filter "configurations:release"
+		defines { "NDEBUG" }
+		runtime "Release"
+		symbols "on"
+		optimize "Speed"
+
+	filter "system:windows"
+		systemversion "latest"
+
+	filter "system:linux"
+		pic "on"
+
+	filter "system:macosx"
+		pic "on"
 
 project "tenvex"
 	location "build"
@@ -176,6 +177,7 @@ project "tenvex_tests"
 
 	includedirs {
 		"src/tenvex",
+		"src/naive",
 		"thirdparty/gtest/googletest/include",
 	}
 
@@ -222,6 +224,7 @@ project "tenvex_bench"
 	}
 
 	includedirs {
+		"src/naive",
 		"src/tenvex",
 		"thirdparty/benchmark/include",
 	}
@@ -240,7 +243,7 @@ project "tenvex_bench"
 		runtime "Release"
 		symbols "on"
 		optimize "Speed"
-		defines { "TENVEX_RELEASE" }
+		defines { "TENVEX_RELEASE", "NDEBUG" }
 
 	filter "system:windows"
 		systemversion "latest"
