@@ -3,11 +3,11 @@
 #include "config.h"
 #include "defines.h"
 
-#if defined(HAS_SSE42)
+#if defined(HAS_SSE41)
 	#include <smmintrin.h>
 	using vf4 = __m128;
 #else
-	#error "tenvex requires an SSE4.1 backend (define HAS_SSE42 and build with -msse4.1 on GCC/Clang)"
+	#error "tenvex requires an SSE4.1 backend (define HAS_SSE41 and build with -msse4.1 on GCC/Clang)"
 #endif
 
 namespace tnvx::detail
