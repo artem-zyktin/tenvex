@@ -1,12 +1,12 @@
 # tenvex
 
-A header-only C++20 SIMD math library for high-performance 4D vector arithmetic.
+A header-only C++20 SIMD math library for 4D vector arithmetic.
 
-tenvex uses **expression templates** - a C++ template metaprogramming technique that enables lazy, zero-overhead evaluation of chained vector operations. A compound expression such as `norm3(a + b * 2.0f) * dot3(b, c) + c * 3.0f` collapses, at the point of assignment, into a single fused sequence of SSE4.1 intrinsics with no intermediate temporaries.
+tenvex uses **expression templates** — a C++ template metaprogramming technique that allows chained vector operations to be evaluated lazily. A compound expression such as `norm3(a + b * 2.0f) * dot3(b, c) + c * 3.0f` is evaluated, at the point of assignment, as a single sequence of SSE4.1 intrinsics without intermediate temporaries.
 
 ## License
 
-BSD 3-Clause License. Copyright (c) 2026 Artem Zyktin. See [LICENSE.txt](https://claude.ai/chat/LICENSE.txt).
+BSD 3-Clause License. Copyright (c) 2026 Artem Zyktin. See [LICENSE.txt](LICENSE.txt).
 
 ## Status
 
@@ -16,15 +16,15 @@ BSD 3-Clause License. Copyright (c) 2026 Artem Zyktin. See [LICENSE.txt](https:/
 ## Features
 
 - Header-only - just include `tenvex.h`.
-- Expression-template engine with zero-cost abstractions: nodes are lazy and fuse on assignment.
+- Expression-template engine: nodes are lazy and evaluated on assignment.
 - C++20 concepts (`expression`, `vec_expr`, `scalar_expr`) enforce type safety at compile time.
 - Storage policy: small trivially-copyable nodes are stored by value, larger ones by `const&`, which also avoids dangling references to temporary sub-expressions.
-- Operations: `+`, `-`, `*` (scalar), `/` (by scalar), `dot3`, `cross3`, `norm3`, `magnitude3`, plus `==` and `approx_eq`.
+- Operations: `+`, `-`, `*` (scalar), `/` (by scalar), `dot3`, `cross3`, `norm3`, `magnitude3`, `==`, `approx_eq`, and component accessors `x()`, `y()`, `z()`, `w()`.
 
 ## Requirements
 
 - A C++20 compiler (MSVC, GCC, or Clang).
-- An x64 CPU with **SSE4.1** support
+- An x64 CPU with **SSE4.1** support.
 - Premake for generating the test build (binaries are bundled for Windows, Linux, and macOS).
 
 ## Getting Started
@@ -63,7 +63,7 @@ float mag = magnitude3(a);   // 3D length (ignores w)
 vec4 result = norm3(a + b * 2.0f) * dot3(b, c) + c * 3.0f;
 ```
 
-`dot3` and `magnitude3` return scalar-expression nodes (`Dot3`, `Magn3`) that are implicitly convertible to `float` (the scalar is extracted from lane 0), so both `float d = dot3(a, b);` and using them inside a larger expression work.
+`dot3` and `magnitude3` return scalar-expression nodes (`Dot3`, `Magn3`) that are implicitly convertible to `float` (the scalar is taken from lane 0), so `float d = dot3(a, b);` works, and they can also be used as operands inside a larger lazy expression.
 
 ### `vec4`
 
@@ -76,6 +76,15 @@ vec4 p = { 1.0f, 2.0f, 3.0f, 1.0f };         // explicit w
 vec4 r = a + b * 2.0f;                        // built from an expression (evaluates here)
 
 vf4 raw = v.eval();                           // underlying __m128
+```
+
+Individual components are read on demand from the stored register; `vec4` keeps no separate float copy:
+
+```cpp
+float cx = v.x();   // lane 0
+float cy = v.y();   // lane 1
+float cz = v.z();   // lane 2
+float cw = v.w();   // lane 3
 ```
 
 ### Comparison
@@ -93,8 +102,8 @@ bool approx2 = approx_eq(a, b, 1e-3f); // custom epsilon
 
 ### Two layers
 
-- **Eager kernel layer** (`expressions/core.h`, namespace `tnvx::detail`): plain `TNVX_INLINE` functions over `vf4` (`add`, `sub`, `mul`, `div`, `dot3`, `magnitude3`, `norm3`, `cross3`, `scalar`, `eq`, `approx_eq`). This is the only place intrinsics live, and the only place the SIMD backend is selected.
-- **Expression layer** (everything else in namespace `tnvx`): lazy nodes that compose and delegate down to the kernels. This layer is architecture-neutral - it only ever sees `vf4`.
+- **Eager kernel layer** (`expressions/core.h`, namespace `tnvx::detail`): `TNVX_INLINE` functions over `vf4` (`add`, `sub`, `mul`, `div`, `dot3`, `magnitude3`, `norm3`, `cross3`, `scalar`, `get_lane`, `eq`, `approx_eq`). This is the only place intrinsics live, and the only place the SIMD backend is selected.
+- **Expression layer** (everything else in namespace `tnvx`): lazy nodes that compose and delegate down to the kernels. This layer operates only on `vf4` and contains no intrinsics.
 
 ### Expression templates
 
@@ -103,7 +112,7 @@ Every operation returns a lazy node rather than evaluating immediately. Nodes in
 ```
 vec4 result = norm3(a + b * 2.0f) * dot3(b, c) + c * 3.0f;
 //            Add< Mul< Norm3< Add<vec4, Mul<vec4, Scalar>> >, Scalar >, Mul<vec4, Scalar> >
-//            ^ the whole tree collapses to a short fused SSE4.1 sequence at assignment
+//            evaluated as one SSE4.1 sequence at assignment
 ```
 
 ### C++20 concepts
@@ -116,7 +125,7 @@ vec4 result = norm3(a + b * 2.0f) * dot3(b, c) + c * 3.0f;
 
 ### Storage policy
 
-To keep small nodes register-friendly and to avoid dangling references to temporary sub-expressions, each node's operands are stored by value or by `const&` automatically:
+Each node's operands are stored by value or by `const&` depending on size and triviality. This avoids dangling references to temporary sub-expressions:
 
 ```cpp
 // trivially copyable && trivially destructible && sizeof(T) <= 16  ->  stored by value
@@ -133,7 +142,7 @@ using tnvx_ref_or_value_t =
 | `Scalar`      | `scalar_expr` | `_mm_set_ps1`                                               | Broadcasts a `float` to all 4 lanes                                         |
 | `Add<L,R>`    | `vec_expr`    | `_mm_add_ps`                                                |                                                                             |
 | `Sub<L,R>`    | `vec_expr`    | `_mm_sub_ps`                                                |                                                                             |
-| `Mul<L,R>`    | vec / scalar  | `_mm_mul_ps`                                                | Scalar multiply: `vec * float`, `float * vec`, `scalar * scalar`            |
+| `Mul<L,R>`    | vec / scalar  | `_mm_mul_ps`                                                | Scalar multiply only (no component-wise `vec * vec`). Operands may be vector×scalar, scalar×vector, or scalar×scalar; a scalar operand is a `float` or a scalar expression |
 | `Div<L,R>`    | `vec_expr`    | `_mm_div_ps`                                                | Vector divided by a scalar (`float`)                                        |
 | `Dot3<L,R>`   | `scalar_expr` | `_mm_dp_ps` (mask `0x7F`)                                   | 3-component dot (ignores w), broadcast to all lanes; convertible to `float` |
 | `Cross3<L,R>` | `vec_expr`    | `_mm_shuffle_ps` + `_mm_mul_ps` + `_mm_sub_ps`              | 3-component cross product; result `w = 0`                                   |
@@ -149,7 +158,7 @@ Comparison helpers (free functions in `tnvx`, backed by `tnvx::detail`):
 
 ## Building
 
-The build uses [Premake5](https://premake.github.io/); binaries are bundled in `premake/bin/` for all platforms. The workspace is x64-only and uses C++20, with `debug` and `release` configurations and `tenvex_tests` as the start project.
+The build uses [Premake5](https://premake.github.io/); binaries are bundled in `premake/bin/` for all platforms. The workspace is x64-only and uses C++20, with `debug` and `release` configurations and `tenvex_tests` as the start project. On GCC/Clang the `tenvex_tests` project is built with `-msse4.1`; projects that consume the headers must enable SSE4.1 in their own build.
 
 ### Windows (Visual Studio 2022)
 
@@ -176,12 +185,13 @@ Build output is written to `bin/<system>/x64/<debug|release>/output/`.
 
 ## Running Tests
 
-The test suite uses Google Test (vendored in `thirdparty/gtest/`) and currently covers 19 cases:
+The test suite uses Google Test (vendored in `thirdparty/gtest/`) and currently covers 27 cases:
 
 | Category             | Tests                                                                                                      |
 | -------------------- | ---------------------------------------------------------------------------------------------------------- |
 | Basic operations     | `add`, `sub`, `mult_a`, `mult_b`, `div`, `dot3`, `cross`, `norm_a`, `norm_b`, `magnitude_a`, `magnitude_b` |
-| Compound expressions | `expression_a`, `expression_b`, `expression_c`                                                             |
-| Math properties      | `cross_anticommutative`, `dot_commutative`, `norm_magnitude`, `dot_perpendicular`, `cross_parallel`        |
+| Compound expressions | `mixed_type_add`, `expression_a`, `expression_b`, `expression_c`, `expression_d`, `expression_from_temporaries` |
+| Math properties      | `cross_anticommutative`, `dot_commutative`, `norm_magnitude`, `dot_perpendicular`, `cross_parallel`, `w_is_zero_with_nonzero_input_w`, `preserves_nontrivial_w`, `zero_vector_is_nan` |
+| Type system          | `dot3_times_literal_collapses`, `magnitude3_times_literal_collapses`                                       |
 
 Build and run `tenvex_tests` from the generated project or makefile.
