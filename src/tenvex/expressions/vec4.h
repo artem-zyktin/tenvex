@@ -18,7 +18,7 @@ struct alignas(16) vec4 : Expr<vec4>
 
 	template<vec_expr E>
 	TNVX_INLINE
-	vec4(const E& TNVX_RESTRICT e) noexcept;
+	vec4(const E& e) noexcept;
 
 	[[nodiscard]] TNVX_INLINE
 	vf4 eval() const noexcept;

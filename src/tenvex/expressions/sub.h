@@ -24,7 +24,7 @@ private:
 
 template<vec_expr L, vec_expr R>
 [[nodiscard]] TNVX_INLINE
-Sub<L, R> operator-(const L& TNVX_RESTRICT l, const R& TNVX_RESTRICT r) noexcept;
+Sub<L, R> operator-(const L& l, const R& r) noexcept;
 
 template<vec_expr L, vec_expr R> inline constexpr bool is_vec_expr<Sub<L, R>> = true;
 

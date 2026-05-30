@@ -22,7 +22,7 @@ vf4 Add<L, R>::eval() const noexcept
 
 template<vec_expr L, vec_expr R>
 [[nodiscard]] TNVX_INLINE
-Add<L, R> operator+(const L& TNVX_RESTRICT l, const R& TNVX_RESTRICT r) noexcept
+Add<L, R> operator+(const L& l, const R& r) noexcept
 {
 	return { l, r };
 }

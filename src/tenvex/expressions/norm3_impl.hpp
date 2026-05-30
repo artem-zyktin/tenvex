@@ -21,7 +21,7 @@ vf4 Norm3<E>::eval() const noexcept
 
 template<vec_expr E>
 TNVX_INLINE
-Norm3<E> norm3(const E& TNVX_RESTRICT e) noexcept
+Norm3<E> norm3(const E& e) noexcept
 {
 	return Norm3<E>(e);
 }

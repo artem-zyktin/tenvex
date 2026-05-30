@@ -24,7 +24,7 @@ private:
 
 template<vec_expr L, vec_expr R>
 [[nodiscard]] TNVX_INLINE
-Cross3<L, R> cross3(const L& TNVX_RESTRICT l, const R& TNVX_RESTRICT r) noexcept;
+Cross3<L, R> cross3(const L& l, const R& r) noexcept;
 
 template<vec_expr L, vec_expr R> inline constexpr bool is_vec_expr<Cross3<L, R>> = true;
 

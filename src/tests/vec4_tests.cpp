@@ -169,7 +169,7 @@ TEST(vec4, dot_commutative)
 TEST(vec4, norm_magnitude)
 {
 	vec4 a = { 3.0f, 1.0f, 4.0f, 0.0f };
-	EXPECT_NEAR(magnitude3(norm3(a)), 1.0f, 1e-5f);
+	EXPECT_NEAR(magnitude3(norm3(a)), 1.0f, 1e-6f);
 }
 
 TEST(vec4, dot_perpendicular)

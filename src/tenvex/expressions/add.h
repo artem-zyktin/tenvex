@@ -19,12 +19,12 @@ struct Add : Expr<Add<L, R>>
 
 private:
 	tnvx_ref_or_value_t<L> _l;
-	tnvx_ref_or_value_t<L> _r;
+	tnvx_ref_or_value_t<R> _r;
 };
 
 template<vec_expr L, vec_expr R>
 [[nodiscard]] TNVX_INLINE
-Add<L, R> operator+(const L& TNVX_RESTRICT l, const R& TNVX_RESTRICT r) noexcept;
+Add<L, R> operator+(const L& l, const R& r) noexcept;
 
 template<vec_expr L, vec_expr R>
 inline constexpr bool is_vec_expr<Add<L, R>> = true;

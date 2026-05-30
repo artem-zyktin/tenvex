@@ -29,7 +29,7 @@ Dot3<L, R>::operator float() const noexcept
 
 template<vec_expr L, vec_expr R>
 TNVX_INLINE
-Dot3<L, R> dot3(const L& TNVX_RESTRICT l, const R& TNVX_RESTRICT r) noexcept
+Dot3<L, R> dot3(const L& l, const R& r) noexcept
 {
 	return { l, r };
 }

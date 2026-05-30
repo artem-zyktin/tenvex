@@ -27,7 +27,7 @@ private:
 
 template<vec_expr L, vec_expr R>
 [[nodiscard]] TNVX_INLINE
-Dot3<L, R> dot3(const L& TNVX_RESTRICT l, const R& TNVX_RESTRICT r) noexcept;
+Dot3<L, R> dot3(const L& l, const R& r) noexcept;
 
 template<vec_expr L, vec_expr R> inline constexpr bool is_scalar_expr<Dot3<L, R>> = true;
 

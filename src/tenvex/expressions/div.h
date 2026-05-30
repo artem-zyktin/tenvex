@@ -26,7 +26,7 @@ private:
 
 template<vec_expr E>
 [[nodiscard]] TNVX_INLINE
-Div<E, Scalar> operator/(const E& TNVX_RESTRICT l, float r) noexcept;
+Div<E, Scalar> operator/(const E& l, float r) noexcept;
 
 template<vec_expr L, scalar_expr R> inline constexpr bool is_vec_expr<Div<L, R>> = true;
 
