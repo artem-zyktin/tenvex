@@ -25,7 +25,7 @@ private:
 };
 
 
-// this banch of reloads (instead of expression*expression)  is required for two thigs:
+// this bunch of reloads (instead of expression*expression)  is required for two things:
 // 1. to avoid ambiguity with operator* for vector-vector multiplication
 // 2. to avoid scalar operator collapses to float instead of lazy-expressions
 
