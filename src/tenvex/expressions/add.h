@@ -19,7 +19,7 @@ struct Add : Expr<Add<L, R>>
 
 private:
 	tnvx_ref_or_value_t<L> _l;
-	tnvx_ref_or_value_t<L> _r;
+	tnvx_ref_or_value_t<R> _r;
 };
 
 template<vec_expr L, vec_expr R>
