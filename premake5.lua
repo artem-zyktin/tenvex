@@ -242,7 +242,8 @@ project "tenvex_bench"
 	filter "configurations:release"
 		runtime "Release"
 		symbols "on"
-		optimize "Speed"
+		optimize "Full"
+		linktimeoptimization "On"
 		defines { "TENVEX_RELEASE", "NDEBUG" }
 
 	filter "system:windows"
