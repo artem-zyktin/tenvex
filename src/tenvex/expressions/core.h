@@ -14,6 +14,12 @@ namespace tnvx::detail
 {
 
 [[nodiscard]] TNVX_INLINE
+float to_float(vf4 v)
+{
+	return _mm_cvtss_f32(v);
+}
+
+[[nodiscard]] TNVX_INLINE
 bool eq(vf4 a, vf4 b)
 {
 	return _mm_movemask_ps(_mm_cmpeq_ps(a, b)) == 0b1111;
@@ -37,6 +43,12 @@ template<int lane>
 float get_lane(vf4 v) noexcept
 {
 	return _mm_cvtss_f32(_mm_shuffle_ps(v, v, _MM_SHUFFLE(0, 0, 0, lane)));
+}
+
+[[nodiscard]] TNVX_INLINE
+vf4 neg(vf4 v) noexcept
+{
+	return _mm_xor_ps(v, _mm_set1_ps(-0.0f));
 }
 
 [[nodiscard]] TNVX_INLINE
