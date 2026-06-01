@@ -253,4 +253,34 @@ TEST(naive_vec4, cross_parallel)
 	EXPECT_TRUE(approx_eq(cross3(a, b), check));
 }
 
+TEST(naive_vec4, neg_basic)
+{
+	vec4 a = { 1.0f, -2.0f, 3.0f, -4.0f };
+	vec4 check = { -1.0f, 2.0f, -3.0f, 4.0f };
+
+	EXPECT_TRUE(approx_eq(-a, check));
+}
+
+TEST(naive_vec4, neg_zero)
+{
+	vec4 a = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+	EXPECT_TRUE(approx_eq(-a, a));
+}
+
+TEST(naive_vec4, neg_double)
+{
+	vec4 a = { 1.0f, 2.0f, 3.0f, 4.0f };
+
+	EXPECT_TRUE(approx_eq(-(-a), a));
+}
+
+TEST(naive_vec4, neg_compound)
+{
+	vec4 a = { 5.0f, 3.0f, 1.0f, 0.0f };
+	vec4 b = { 2.0f, 1.0f, 4.0f, 0.0f };
+
+	EXPECT_TRUE(approx_eq(a + (-b), a - b));
+}
+
 }

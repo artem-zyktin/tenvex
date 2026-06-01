@@ -257,8 +257,8 @@ TEST(vec4, dot3_times_literal_collapses)
 
 	auto r = dot3(a, b) * 2.0f;
 
-	static_assert(!std::is_same_v<decltype(r), float>);
-	static_assert(scalar_expr<decltype(r)>);
+	EXPECT_TRUE((!std::same_as<decltype(r), float>));
+	EXPECT_TRUE((scalar_expr<decltype(r)>));
 }
 
 TEST(vec4, magnitude3_times_literal_collapses)
@@ -267,8 +267,74 @@ TEST(vec4, magnitude3_times_literal_collapses)
 
 	auto r = magnitude3(a) * 2.0f;
 
-	static_assert(!std::is_same_v<decltype(r), float>);
-	static_assert(scalar_expr<decltype(r)>);
+	EXPECT_TRUE((!std::same_as<decltype(r), float>));
+	EXPECT_TRUE((scalar_expr<decltype(r)>));
+}
+
+TEST(vec4, neg_basic)
+{
+	vec4 a = { 1.0f, -2.0f, 3.0f, -4.0f };
+	vec4 check = { -1.0f, 2.0f, -3.0f, 4.0f };
+
+	EXPECT_TRUE(approx_eq(-a, check));
+}
+
+TEST(vec4, neg_zero)
+{
+	vec4 a = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+	EXPECT_TRUE(approx_eq(-a, a));
+}
+
+TEST(vec4, neg_double)
+{
+	vec4 a = { 1.0f, 2.0f, 3.0f, 4.0f };
+
+	EXPECT_TRUE(approx_eq(-(-a), a));
+}
+
+TEST(vec4, neg_compound)
+{
+	vec4 a = { 5.0f, 3.0f, 1.0f, 0.0f };
+	vec4 b = { 2.0f, 1.0f, 4.0f, 0.0f };
+	vec4 check = { 3.0f, 2.0f, -3.0f, 0.0f };
+	vec4 result = a + (-b);
+
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, neg_expression)
+{
+	vec4 a = { 1.0f, 2.0f, 3.0f, 0.0f };
+	vec4 b = { 4.0f, 5.0f, 6.0f, 0.0f };
+	vec4 check = { -5.0f, -7.0f, -9.0f, 0.0f };
+	vec4 result = -(a + b);
+
+
+	EXPECT_TRUE((vec_expr<decltype(-(a + b))>));
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, neg_scalar_stays_lazy)
+{
+	vec4 a = { 1.0f, 0.0f, 0.0f, 0.0f };
+	vec4 b = { 1.0f, 0.0f, 0.0f, 0.0f };
+	float check = -1.0f;
+	float result = -dot3(a, b);
+
+	EXPECT_TRUE((scalar_expr<decltype(-dot3(a, b))>));
+	EXPECT_FLOAT_EQ(check, result);
+}
+
+TEST(vec4, neg_scalar_in_expression)
+{
+	vec4 a = { 2.0f, 0.0f, 0.0f, 0.0f };
+	vec4 b = { 1.0f, 0.0f, 0.0f, 0.0f };
+	vec4 c = { 1.0f, 1.0f, 1.0f, 0.0f };
+	vec4 check = { -2.0f, -2.0f, -2.0f, 0.0f };
+
+	vec4 result = c * (-dot3(a, b));
+	EXPECT_TRUE(approx_eq(check, result));
 }
 
 }
