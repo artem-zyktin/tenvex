@@ -66,13 +66,19 @@ vf4 div(vf4 l, vf4 r) noexcept
 [[nodiscard]] TNVX_INLINE
 vf4 dot3(vf4 l, vf4 r) noexcept
 {
-	return _mm_dp_ps(l, r, 0b01111111);
+	//return _mm_dp_ps(l, r, 0b01111111);
+	vf4 t   = _mm_mul_ps(l, r);
+	vf4 ty  = _mm_shuffle_ps(t, t, _MM_SHUFFLE(1, 1, 1, 1));
+	vf4 xy  = _mm_add_ss(t, ty);
+	vf4 tz  = _mm_movehl_ps(t, t);
+	vf4 xyz = _mm_add_ss(xy, tz);
+	return    _mm_shuffle_ps(xyz, xyz, _MM_SHUFFLE(0, 0, 0, 0));
 }
 
 [[nodiscard]] TNVX_INLINE
 vf4 magnitude3(vf4 v) noexcept
 {
-	return _mm_sqrt_ps(_mm_dp_ps(v, v, 0b01111111));
+	return _mm_sqrt_ps(dot3(v, v));
 }
 
 [[nodiscard]] TNVX_INLINE
