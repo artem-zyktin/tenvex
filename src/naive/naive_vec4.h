@@ -89,4 +89,9 @@ inline bool approx_eq(vec4 a, vec4 b, float eps = 1e-6f) noexcept
 		&& std::fabs(a.w() - b.w()) <= eps;
 }
 
+[[nodiscard]] inline vec4 operator-(vec4 v) noexcept
+{
+	return { -v.x(), -v.y(), -v.z(), -v.w() };
+}
+
 }

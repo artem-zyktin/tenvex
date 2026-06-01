@@ -24,7 +24,7 @@ template<vec_expr L, vec_expr R>
 TNVX_INLINE
 Dot3<L, R>::operator float() const noexcept
 {
-	return _mm_cvtss_f32(eval());
+	return detail::to_float(eval());
 }
 
 template<vec_expr L, vec_expr R>

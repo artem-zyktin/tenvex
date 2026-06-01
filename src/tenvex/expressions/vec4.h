@@ -35,9 +35,6 @@ struct alignas(16) vec4 : Expr<vec4>
 	[[nodiscard]] TNVX_INLINE
 	vf4 eval() const noexcept;
 
-	[[nodiscard]] TNVX_INLINE
-	vec4 operator-() const noexcept;
-
 private:
 
 	vf4 _data;
