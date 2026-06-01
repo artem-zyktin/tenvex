@@ -19,7 +19,7 @@ BSD 3-Clause License. Copyright (c) 2026 Artem Zyktin. See [LICENSE.txt](LICENSE
 - Expression-template engine: nodes are lazy and evaluated on assignment.
 - C++20 concepts (`expression`, `vec_expr`, `scalar_expr`) enforce type safety at compile time.
 - Storage policy: small trivially-copyable nodes are stored by value, larger ones by `const&`, which also avoids dangling references to temporary sub-expressions.
-- Operations: `+`, `-`, `*` (scalar), `/` (by scalar), `dot3`, `cross3`, `norm3`, `magnitude3`, `==`, `approx_eq`, and component accessors `x()`, `y()`, `z()`, `w()`.
+- Operations: `+`, `-` (binary), `-` (unary negation), `*` (scalar), `/` (by scalar), `dot3`, `cross3`, `norm3`, `magnitude3`, `==`, `approx_eq`, and component accessors `x()`, `y()`, `z()`, `w()`.
 
 ## Requirements
 
@@ -58,6 +58,11 @@ float d   = dot3(a, b);      // 3D dot product (ignores w)
 vec4  cr  = cross3(a, b);    // 3D cross product, result w = 0
 vec4  n   = norm3(a);        // normalize xyz, w preserved
 float mag = magnitude3(a);   // 3D length (ignores w)
+
+// Negation (unary minus) - works on any expression node, stays lazy
+vec4 neg_a   = -a;
+vec4 neg_expr = -(a + b);          // Neg<Add<vec4,vec4>>  - still lazy
+float neg_d  = -dot3(a, b);        // Neg<Dot3<...>>       - still scalar_expr
 
 // Compound expression - evaluated lazily, no temporaries, fused on assignment
 vec4 result = norm3(a + b * 2.0f) * dot3(b, c) + c * 3.0f;
@@ -139,15 +144,16 @@ using tnvx_ref_or_value_t =
 
 | Node          | Concept       | Intrinsics                                                  | Notes                                                                       |
 | ------------- | ------------- | ----------------------------------------------------------- | --------------------------------------------------------------------------- |
+| `Neg<E>`      | vec / scalar  | `_mm_xor_ps` (sign mask)                                   | Unary negation; result is `vec_expr` when E is `vec_expr`, `scalar_expr` when E is `scalar_expr`; both stay lazy |
 | `Scalar`      | `scalar_expr` | `_mm_set_ps1`                                               | Broadcasts a `float` to all 4 lanes                                         |
 | `Add<L,R>`    | `vec_expr`    | `_mm_add_ps`                                                |                                                                             |
 | `Sub<L,R>`    | `vec_expr`    | `_mm_sub_ps`                                                |                                                                             |
 | `Mul<L,R>`    | vec / scalar  | `_mm_mul_ps`                                                | Scalar multiply only (no component-wise `vec * vec`). Operands may be vector×scalar, scalar×vector, or scalar×scalar; a scalar operand is a `float` or a scalar expression |
 | `Div<L,R>`    | `vec_expr`    | `_mm_div_ps`                                                | Vector divided by a scalar (`float`)                                        |
-| `Dot3<L,R>`   | `scalar_expr` | `_mm_dp_ps` (mask `0x7F`)                                   | 3-component dot (ignores w), broadcast to all lanes; convertible to `float` |
+| `Dot3<L,R>`   | `scalar_expr` | `_mm_mul_ps` + shuffles + `_mm_add_ss`                      | 3-component dot (ignores w), broadcast to all lanes; convertible to `float` |
 | `Cross3<L,R>` | `vec_expr`    | `_mm_shuffle_ps` + `_mm_mul_ps` + `_mm_sub_ps`              | 3-component cross product; result `w = 0`                                   |
-| `Norm3<E>`    | `vec_expr`    | `_mm_dp_ps` + `_mm_sqrt_ps` + `_mm_div_ps` + `_mm_blend_ps` | Normalizes xyz by the 3D magnitude; preserves w                             |
-| `Magn3<E>`    | `scalar_expr` | `_mm_sqrt_ps(_mm_dp_ps(..., 0x7F))`                         | 3-component length (ignores w), broadcast; convertible to `float`           |
+| `Norm3<E>`    | `vec_expr`    | `dot3` + `_mm_sqrt_ps` + `_mm_div_ps` + `_mm_blend_ps`      | Normalizes xyz by the 3D magnitude; preserves w                             |
+| `Magn3<E>`    | `scalar_expr` | `_mm_sqrt_ps` + `dot3(v,v)`                                  | 3-component length (ignores w), broadcast; convertible to `float`           |
 
 Comparison helpers (free functions in `tnvx`, backed by `tnvx::detail`):
 
@@ -185,7 +191,7 @@ Build output is written to `bin/<system>/x64/<debug|release>/output/`.
 
 ## Running Tests
 
-The test suite uses Google Test (vendored in `thirdparty/gtest/`) and currently covers 27 cases:
+The test suite uses Google Test (vendored in `thirdparty/gtest/`) and currently covers 34 cases:
 
 | Category             | Tests                                                                                                      |
 | -------------------- | ---------------------------------------------------------------------------------------------------------- |
@@ -193,6 +199,7 @@ The test suite uses Google Test (vendored in `thirdparty/gtest/`) and currently 
 | Compound expressions | `mixed_type_add`, `expression_a`, `expression_b`, `expression_c`, `expression_d`, `expression_from_temporaries` |
 | Math properties      | `cross_anticommutative`, `dot_commutative`, `norm_magnitude`, `dot_perpendicular`, `cross_parallel`, `w_is_zero_with_nonzero_input_w`, `preserves_nontrivial_w`, `zero_vector_is_nan` |
 | Type system          | `dot3_times_literal_collapses`, `magnitude3_times_literal_collapses`                                       |
+| Unary negation       | `neg_basic`, `neg_zero`, `neg_double`, `neg_compound`, `neg_expression`, `neg_scalar_stays_lazy`, `neg_scalar_in_expression` |
 
 Build and run `tenvex_tests` from the generated project or makefile.
 
