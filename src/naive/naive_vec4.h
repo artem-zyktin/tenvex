@@ -54,6 +54,11 @@ private:
 	return a.x() * b.x() + a.y() * b.y() + a.z() * b.z();
 }
 
+[[nodiscard]] inline float dot4(vec4 a, vec4 b) noexcept
+{
+	return a.x() * b.x() + a.y() * b.y() + a.z() * b.z() + a.w() * b.w();
+}
+
 [[nodiscard]] inline vec4 cross3(vec4 a, vec4 b) noexcept
 {
 	return {
