@@ -123,6 +123,24 @@ TEST(naive_vec4, magnitude_b)
 	EXPECT_FLOAT_EQ(check, result);
 }
 
+TEST(naive_vec4, magnitude3_sq_a)
+{
+	vec4 a = { 1.0f, 0.0f, 0.0f, 0.0f };
+	float check = 1.0f;
+	float result = magnitude3_sq(a);
+
+	EXPECT_FLOAT_EQ(check, result);
+}
+
+TEST(naive_vec4, magnitude3_sq_b)
+{
+	vec4 a = { 1.0f, 0.0f, 1.0f, 1.0f };
+	float check = 2.0f;
+	float result = magnitude3_sq(a);
+
+	EXPECT_FLOAT_EQ(check, result);
+}
+
 TEST(naive_vec4, expression_a)
 {
 	vec4 a = { 1.0f, 1.0f, 1.0f, 1.0f };
