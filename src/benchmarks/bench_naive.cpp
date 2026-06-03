@@ -20,6 +20,17 @@ static std::vector<vec4> make_vecs(int n, unsigned seed)
 	return v;
 }
 
+static std::vector<vec4> make_points(int n, unsigned seed)
+{
+	std::mt19937 rng(seed);
+	std::uniform_real_distribution<float> d(-1.0f, 1.0f);
+	std::vector<vec4> v;
+	v.reserve(n);
+	for (int i = 0; i < n; ++i)
+		v.push_back(vec4{ d(rng), d(rng), d(rng), 1.0f });
+	return v;
+}
+
 static void BM_Naive_Dot3_Latency(benchmark::State& state)
 {
 	vec4 a { 1.0f, 2.0f, 3.0f, 0.0f };
@@ -90,3 +101,32 @@ static void BM_Naive_FacingSameWay(benchmark::State& state)
 	}
 }
 BENCHMARK(BM_Naive_FacingSameWay);
+
+static void BM_Naive_Dot4_Latency(benchmark::State& state)
+{
+	vec4 a{ 1.0f, 2.0f, 3.0f, 1.0f };
+	vec4 b{ 0.5f, 0.5f, 0.5f, 0.5f };
+	float acc = 0.0f;
+	for (auto _ : state)
+	{
+		vec4 bb = b + vec4{ acc, 0.0f, 0.0f, 0.0f };
+		float d = dot4(a, bb);
+		acc = d * 1e-7f;
+		benchmark::DoNotOptimize(acc);
+	}
+}
+BENCHMARK(BM_Naive_Dot4_Latency);
+
+static void BM_Naive_Dot4_Throughput(benchmark::State& state)
+{
+	const auto a = make_points(1024, 1);
+	const auto b = make_points(1024, 2);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		float d = dot4(a[i], b[i]);
+		benchmark::DoNotOptimize(d);
+		i = (i + 1) & 1023;
+	}
+}
+BENCHMARK(BM_Naive_Dot4_Throughput);

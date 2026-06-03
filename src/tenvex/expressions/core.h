@@ -88,6 +88,14 @@ vf4 dot3(vf4 l, vf4 r) noexcept
 }
 
 [[nodiscard]] TNVX_INLINE
+vf4 dot4(vf4 l, vf4 r) noexcept
+{
+	vf4 t = _mm_mul_ps(l, r);
+	vf4 h = _mm_hadd_ps(t, t);
+	return  _mm_hadd_ps(h, h);
+}
+
+[[nodiscard]] TNVX_INLINE
 vf4 magnitude3(vf4 v) noexcept
 {
 	return _mm_sqrt_ps(dot3(v, v));

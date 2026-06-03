@@ -337,4 +337,71 @@ TEST(vec4, neg_scalar_in_expression)
 	EXPECT_TRUE(approx_eq(check, result));
 }
 
+TEST(vec4, dot4_basic)
+{
+	vec4 a = { 1.0f, 2.0f, 3.0f, 4.0f };
+	vec4 b = { 1.0f, 2.0f, 3.0f, 4.0f };
+	float check = 30.0f;
+	float result = dot4(a, b);
+
+	EXPECT_FLOAT_EQ(check, result);
+}
+
+TEST(vec4, dot4_w_zero_matches_dot3)
+{
+	vec4 a = { 1.0f, 2.0f, 3.0f, 0.0f };
+	vec4 b = { 4.0f, 5.0f, 6.0f, 0.0f };
+
+	EXPECT_FLOAT_EQ(float(dot4(a, b)), float(dot3(a, b)));
+}
+
+TEST(vec4, dot4_w_matters)
+{
+	vec4 a = { 1.0f, 2.0f, 3.0f, 4.0f };
+	vec4 b = { 1.0f, 2.0f, 3.0f, 4.0f };
+	float check1 = 14.0f;
+	float result1 = dot3(a, b);
+	float check2 = 30.0f;
+	float result2 = dot4(a, b);
+
+	EXPECT_FLOAT_EQ(check1, result1);
+	EXPECT_FLOAT_EQ(check2, result2);
+}
+
+TEST(vec4, dot4_w_only)
+{
+	vec4 a = { 0.0f, 0.0f, 0.0f, 5.0f };
+	vec4 b = { 0.0f, 0.0f, 0.0f, 3.0f };
+	float check = 15.0f;
+	float result = dot4(a, b);
+
+	EXPECT_FLOAT_EQ(check, result);
+}
+
+TEST(vec4, dot4_perpendicular)
+{
+	vec4 a = { 1.0f, 0.0f, 0.0f, 0.0f };
+	vec4 b = { 0.0f, 1.0f, 0.0f, 0.0f };
+	float check = 0.0f;
+	float result = dot4(a, b);
+
+	EXPECT_FLOAT_EQ(check, result);
+}
+
+TEST(vec4, dot4_commutative)
+{
+	vec4 a = { 1.0f, 2.0f, 3.0f, 4.0f };
+	vec4 b = { 4.0f, 3.0f, 2.0f, 1.0f };
+
+	EXPECT_FLOAT_EQ(float(dot4(a, b)), float(dot4(b, a)));
+}
+
+TEST(vec4, dot4_collapses)
+{
+	vec4 a = { 1.0f, 0.0f, 0.0f, 0.0f };
+	vec4 b = { 0.0f, 1.0f, 0.0f, 0.0f };
+
+	EXPECT_TRUE((scalar_expr<decltype(dot4(a, b) * 2.0f)>));
+}
+
 }

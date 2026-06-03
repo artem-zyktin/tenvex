@@ -283,4 +283,40 @@ TEST(naive_vec4, neg_compound)
 	EXPECT_TRUE(approx_eq(a + (-b), a - b));
 }
 
+TEST(naive_vec4, dot4_basic)
+{
+	vec4 a = { 1.0f, 2.0f, 3.0f, 4.0f };
+	vec4 b = { 1.0f, 2.0f, 3.0f, 4.0f };
+	EXPECT_FLOAT_EQ(dot4(a, b), 30.0f);
+}
+
+TEST(naive_vec4, dot4_w_matters)
+{
+	vec4 a = { 1.0f, 2.0f, 3.0f, 4.0f };
+	vec4 b = { 1.0f, 2.0f, 3.0f, 4.0f };
+	EXPECT_FLOAT_EQ(dot3(a, b), 14.0f);
+	EXPECT_FLOAT_EQ(dot4(a, b), 30.0f);
+}
+
+TEST(naive_vec4, dot4_w_only)
+{
+	vec4 a = { 0.0f, 0.0f, 0.0f, 5.0f };
+	vec4 b = { 0.0f, 0.0f, 0.0f, 3.0f };
+	EXPECT_FLOAT_EQ(dot4(a, b), 15.0f);
+}
+
+TEST(naive_vec4, dot4_commutative)
+{
+	vec4 a = { 1.0f, 2.0f, 3.0f, 4.0f };
+	vec4 b = { 4.0f, 3.0f, 2.0f, 1.0f };
+	EXPECT_FLOAT_EQ(dot4(a, b), dot4(b, a));
+}
+
+TEST(naive_vec4, dot4_w_zero_matches_dot3)
+{
+	vec4 a = { 1.0f, 2.0f, 3.0f, 0.0f };
+	vec4 b = { 4.0f, 5.0f, 6.0f, 0.0f };
+	EXPECT_FLOAT_EQ(dot4(a, b), dot3(a, b));
+}
+
 }

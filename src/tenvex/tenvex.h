@@ -7,6 +7,7 @@
 #include "expressions/mul.h"
 #include "expressions/div.h"
 #include "expressions/dot3.h"
+#include "expressions/dot4.h"
 #include "expressions/magnitude3.h"
 #include "expressions/norm3.h"
 #include "expressions/cross3.h"
