@@ -9,6 +9,7 @@
 #include "expressions/dot3.h"
 #include "expressions/dot4.h"
 #include "expressions/magnitude3.h"
+#include "expressions/magnitude3_sq.h"
 #include "expressions/norm3.h"
 #include "expressions/cross3.h"
 #include "expressions/vec4.h"
