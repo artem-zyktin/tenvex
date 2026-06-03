@@ -29,14 +29,7 @@ template<vec_expr L, vec_expr R> inline constexpr bool is_scalar_expr<Dot4<L, R>
 
 template<vec_expr L, vec_expr R>
 [[nodiscard]] TNVX_INLINE
-Dot3<L, R> dot4(const L& l, const R& r) noexcept;
-
-template<vec_expr L, vec_expr R>
-TNVX_INLINE
-Dot3<L, R> dot4(const L& l, const R& r) noexcept
-{
-	return { l, r };
-}
+Dot4<L, R> dot4(const L& l, const R& r) noexcept;
 
 }
 

@@ -27,4 +27,11 @@ Dot4<L, R>::operator float() const noexcept
 	return detail::to_float(eval());
 }
 
+template<vec_expr L, vec_expr R>
+TNVX_INLINE
+Dot4<L, R> dot4(const L& l, const R& r) noexcept
+{
+	return { l, r };
+}
+
 }
