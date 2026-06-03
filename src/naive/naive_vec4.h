@@ -74,6 +74,11 @@ private:
 	return std::sqrt(dot3(v, v));
 }
 
+[[nodiscard]] inline float magnitude3_sq(vec4 v) noexcept
+{
+	return dot3(v, v);
+}
+
 [[nodiscard]] inline vec4 norm3(vec4 v) noexcept
 {
 	const float inv = 1.0f / magnitude3(v);   // normalize xyz, keep w
