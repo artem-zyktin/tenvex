@@ -466,9 +466,13 @@ TEST(vec4, min_includes_w)
 {
 	vec4 a = { 0.0f, 0.0f, 0.0f, 5.0f };
 	vec4 b = { 0.0f, 0.0f, 0.0f, 3.0f };
+	float check1 = 3.0f;
+	float result1 = vec4(min(a, b)).w();
+	float check2 = 5.0f;
+	float result2 = vec4(max(a, b)).w();
 
-	EXPECT_FLOAT_EQ(vec4(min(a, b)).w(), 3.0f);
-	EXPECT_FLOAT_EQ(vec4(min(a, b)).w(), 5.0f);
+	EXPECT_FLOAT_EQ(check1, result1);
+	EXPECT_FLOAT_EQ(check2, result2);
 }
 
 TEST(vec4, min_idempotent)

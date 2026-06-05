@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cmath>
+#include <algorithm>
 
 namespace naive
 {
@@ -107,20 +108,20 @@ inline bool approx_eq(vec4 a, vec4 b, float eps = 1e-6f) noexcept
 [[nodiscard]] inline vec4 min(vec4 a, vec4 b) noexcept
 {
 	return {
-		std::fmin(a.x(), b.x()),
-		std::fmin(a.y(), b.y()),
-		std::fmin(a.z(), b.z()),
-		std::fmin(a.w(), b.w())
+		std::min(a.x(), b.x()),
+		std::min(a.y(), b.y()),
+		std::min(a.z(), b.z()),
+		std::min(a.w(), b.w())
 	};
 }
 
 [[nodiscard]] inline vec4 max(vec4 a, vec4 b) noexcept
 {
 	return {
-		std::fmax(a.x(), b.x()),
-		std::fmax(a.y(), b.y()),
-		std::fmax(a.z(), b.z()),
-		std::fmax(a.w(), b.w())
+		std::max(a.x(), b.x()),
+		std::max(a.y(), b.y()),
+		std::max(a.z(), b.z()),
+		std::max(a.w(), b.w())
 	};
 }
 
