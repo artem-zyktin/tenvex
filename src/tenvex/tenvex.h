@@ -12,4 +12,6 @@
 #include "expressions/magnitude3_sq.h"
 #include "expressions/norm3.h"
 #include "expressions/cross3.h"
+#include "expressions/min.h"
+#include "expressions/max.h"
 #include "expressions/vec4.h"
