@@ -104,4 +104,24 @@ inline bool approx_eq(vec4 a, vec4 b, float eps = 1e-6f) noexcept
 	return { -v.x(), -v.y(), -v.z(), -v.w() };
 }
 
+[[nodiscard]] inline vec4 min(vec4 a, vec4 b) noexcept
+{
+	return {
+		std::fmin(a.x(), b.x()),
+		std::fmin(a.y(), b.y()),
+		std::fmin(a.z(), b.z()),
+		std::fmin(a.w(), b.w())
+	};
+}
+
+[[nodiscard]] inline vec4 max(vec4 a, vec4 b) noexcept
+{
+	return {
+		std::fmax(a.x(), b.x()),
+		std::fmax(a.y(), b.y()),
+		std::fmax(a.z(), b.z()),
+		std::fmax(a.w(), b.w())
+	};
+}
+
 }

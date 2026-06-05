@@ -422,4 +422,70 @@ TEST(vec4, dot4_collapses)
 	EXPECT_TRUE((scalar_expr<decltype(dot4(a, b) * 2.0f)>));
 }
 
+TEST(vec4, min_basic)
+{
+	vec4 a = { 1.0f, 2.0f, 3.0f, 4.0f };
+	vec4 b = { 4.0f, 3.0f, 2.0f, 1.0f };
+	vec4 check = { 1.0f, 2.0f, 2.0f, 1.0f };
+	vec4 result = min(a, b);
+
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, max_basic)
+{
+	vec4 a = { 1.0f, 2.0f, 3.0f, 4.0f };
+	vec4 b = { 4.0f, 3.0f, 2.0f, 1.0f };
+	vec4 check = { 4.0f, 3.0f, 3.0f, 4.0f };
+	vec4 result = max(a, b);
+
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, min_negatives)
+{
+	vec4 a = { -1.0f, 5.0f, -3.0f, 2.0f };
+	vec4 b = { 1.0f, -5.0f, 3.0f, -2.0f };
+	vec4 check = { -1.0f, -5.0f, -3.0f, -2.0f };
+	vec4 result = min(a, b);
+
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, max_negatives)
+{
+	vec4 a = { -1.0f, 5.0f, -3.0f, 2.0f };
+	vec4 b = { 1.0f, -5.0f, 3.0f, -2.0f };
+	vec4 check = { 1.0f, 5.0f, 3.0f, 2.0f };
+	vec4 result = max(a, b);
+
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, min_includes_w)
+{
+	vec4 a = { 0.0f, 0.0f, 0.0f, 5.0f };
+	vec4 b = { 0.0f, 0.0f, 0.0f, 3.0f };
+
+	EXPECT_FLOAT_EQ(vec4(min(a, b)).w(), 3.0f);
+	EXPECT_FLOAT_EQ(vec4(min(a, b)).w(), 5.0f);
+}
+
+TEST(vec4, min_idempotent)
+{
+	vec4 a = { 1.0f, -2.0f, 3.0f, -4.0f };
+
+	EXPECT_TRUE(approx_eq(min(a, a), a));
+	EXPECT_TRUE(approx_eq(max(a, a), a));
+}
+
+TEST(vec4, min_commutative)
+{
+	vec4 a = { 1.0f, 5.0f, -3.0f, 2.0f };
+	vec4 b = { 4.0f, -5.0f, 3.0f, -2.0f };
+
+	EXPECT_TRUE(approx_eq(min(a, b), min(b, a)));
+	EXPECT_TRUE(approx_eq(max(a, b), max(b, a)));
+}
+
 }

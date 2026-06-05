@@ -173,3 +173,56 @@ static void BM_Dot4_Throughput(benchmark::State& state)
 	}
 }
 BENCHMARK(BM_Dot4_Throughput);
+
+// =====================================================================
+// min/max throughput: independent inputs, fully pipelineable.
+// =====================================================================
+static void BM_Min_Throughput(benchmark::State& state)
+{
+	const auto a = make_vecs(1024, 1);
+	const auto b = make_vecs(1024, 2);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		vec4 r = min(a[i], b[i]);
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 1023;
+	}
+}
+BENCHMARK(BM_Min_Throughput);
+
+static void BM_Max_Throughput(benchmark::State& state)
+{
+	const auto a = make_vecs(1024, 1);
+	const auto b = make_vecs(1024, 2);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		vec4 r = max(a[i], b[i]);
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 1023;
+	}
+}
+BENCHMARK(BM_Max_Throughput);
+
+// =====================================================================
+// AABB build: grow a bounding box over a point stream. lo/hi feed back
+// into the next iteration, so this is min/max on a serial chain -
+// the latency metric.
+// =====================================================================
+static void BM_AABB_Latency(benchmark::State& state)
+{
+	const auto pts = make_vecs(1024, 1);
+	vec4 lo {  1e30f,  1e30f,  1e30f, 0.0f };
+	vec4 hi { -1e30f, -1e30f, -1e30f, 0.0f };
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		lo = min(lo, pts[i]); // each step depends on the running box
+		hi = max(hi, pts[i]);
+		i = (i + 1) & 1023;
+	}
+	benchmark::DoNotOptimize(lo);
+	benchmark::DoNotOptimize(hi);
+}
+BENCHMARK(BM_AABB_Latency);

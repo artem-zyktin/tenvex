@@ -24,7 +24,7 @@ template<vec_expr L, vec_expr R>
 TNVX_INLINE
 Min<L, R> min(const L& l, const R& r) noexcept
 {
-	return TNVX_INLINE Min<L, R>();
+	return { l, r };
 }
 
 }
