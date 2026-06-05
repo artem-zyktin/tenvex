@@ -125,4 +125,16 @@ vf4 cross3(vf4 l, vf4 r) noexcept
 	return _mm_shuffle_ps(t, t, _MM_SHUFFLE(3, 0, 2, 1));
 }
 
+[[nodiscard]] TNVX_INLINE
+vf4 max(vf4 l, vf4 r) noexcept
+{
+	return _mm_max_ps(l, r);
+}
+
+[[nodiscard]] TNVX_INLINE
+vf4 min(vf4 l, vf4 r) noexcept
+{
+	return _mm_min_ps(l, r);
+}
+
 }
