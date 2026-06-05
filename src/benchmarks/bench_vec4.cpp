@@ -11,24 +11,24 @@ using namespace tnvx;
 // Runtime data so nothing folds to a compile-time constant.
 static std::vector<vec4> make_vecs(int n, unsigned seed)
 {
-    std::mt19937 rng(seed);
-    std::uniform_real_distribution<float> d(-1.0f, 1.0f);
-    std::vector<vec4> v;
-    v.reserve(n);
-    for (int i = 0; i < n; ++i)
-        v.push_back(vec4 { d(rng), d(rng), d(rng), 0.0f });
-    return v;
+	std::mt19937 rng(seed);
+	std::uniform_real_distribution<float> d(-1.0f, 1.0f);
+	std::vector<vec4> v;
+	v.reserve(n);
+	for (int i = 0; i < n; ++i)
+		v.push_back(vec4 { d(rng), d(rng), d(rng), 0.0f });
+	return v;
 }
 
 inline std::vector<tnvx::vec4> make_points(int n, unsigned seed)
 {
-    std::mt19937 rng(seed);
-    std::uniform_real_distribution<float> d(-1.0f, 1.0f);
-    std::vector<tnvx::vec4> v;
-    v.reserve(n);
-    for (int i = 0; i < n; ++i)
-        v.push_back(tnvx::vec4{ d(rng), d(rng), d(rng), 1.0f }); // w=1: point
-    return v;
+	std::mt19937 rng(seed);
+	std::uniform_real_distribution<float> d(-1.0f, 1.0f);
+	std::vector<tnvx::vec4> v;
+	v.reserve(n);
+	for (int i = 0; i < n; ++i)
+		v.push_back(tnvx::vec4{ d(rng), d(rng), d(rng), 1.0f }); // w=1: point
+	return v;
 }
 
 // =====================================================================
@@ -38,27 +38,27 @@ inline std::vector<tnvx::vec4> make_points(int n, unsigned seed)
 // =====================================================================
 static void BM_Dot3_Latency(benchmark::State& state)
 {
-    vec4 a { 1.0f, 2.0f, 3.0f, 0.0f };
-    vec4 b { 0.5f, 0.5f, 0.5f, 0.0f };
-    float acc = 0.0f;
-    for (auto _ : state)
-    {
-        vec4 bb = b + vec4 { acc, 0.0f, 0.0f, 0.0f }; // depends on previous result
-        float d = dot3(a, bb);
-        acc = d * 1e-7f;                              // feedback = dependency chain
-        benchmark::DoNotOptimize(acc);
-    }
+	vec4 a { 1.0f, 2.0f, 3.0f, 0.0f };
+	vec4 b { 0.5f, 0.5f, 0.5f, 0.0f };
+	float acc = 0.0f;
+	for (auto _ : state)
+	{
+		vec4 bb = b + vec4 { acc, 0.0f, 0.0f, 0.0f }; // depends on previous result
+		float d = dot3(a, bb);
+		acc = d * 1e-7f;                              // feedback = dependency chain
+		benchmark::DoNotOptimize(acc);
+	}
 }
 BENCHMARK(BM_Dot3_Latency);
 
 static void BM_Norm3_Latency(benchmark::State& state)
 {
-    vec4 v { 1.0f, 2.0f, 3.0f, 1.0f };
-    for (auto _ : state)
-    {
-        v = norm3(v) + vec4 { 1e-3f, 2e-3f, 3e-3f, 0.0f }; // chain through v
-        benchmark::DoNotOptimize(v);
-    }
+	vec4 v { 1.0f, 2.0f, 3.0f, 1.0f };
+	for (auto _ : state)
+	{
+		v = norm3(v) + vec4 { 1e-3f, 2e-3f, 3e-3f, 0.0f }; // chain through v
+		benchmark::DoNotOptimize(v);
+	}
 }
 BENCHMARK(BM_Norm3_Latency);
 
@@ -68,15 +68,15 @@ BENCHMARK(BM_Norm3_Latency);
 // =====================================================================
 static void BM_Dot3_Throughput(benchmark::State& state)
 {
-    const auto a = make_vecs(1024, 1);
-    const auto b = make_vecs(1024, 2);
-    std::size_t i = 0;
-    for (auto _ : state)
-    {
-        float d = dot3(a[i], b[i]);
-        benchmark::DoNotOptimize(d);
-        i = (i + 1) & 1023;
-    }
+	const auto a = make_vecs(1024, 1);
+	const auto b = make_vecs(1024, 2);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		float d = dot3(a[i], b[i]);
+		benchmark::DoNotOptimize(d);
+		i = (i + 1) & 1023;
+	}
 }
 BENCHMARK(BM_Dot3_Throughput);
 
@@ -86,16 +86,16 @@ BENCHMARK(BM_Dot3_Throughput);
 // =====================================================================
 static void BM_Compound_tenvex(benchmark::State& state)
 {
-    const auto va = make_vecs(1024, 1);
-    const auto vb = make_vecs(1024, 2);
-    const auto vc = make_vecs(1024, 3);
-    std::size_t i = 0;
-    for (auto _ : state)
-    {
-        vec4 r = norm3(va[i] + vb[i] * 2.0f) * dot3(vb[i], vc[i]) + vc[i] * 3.0f;
-        benchmark::DoNotOptimize(r);
-        i = (i + 1) & 1023;
-    }
+	const auto va = make_vecs(1024, 1);
+	const auto vb = make_vecs(1024, 2);
+	const auto vc = make_vecs(1024, 3);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		vec4 r = norm3(va[i] + vb[i] * 2.0f) * dot3(vb[i], vc[i]) + vc[i] * 3.0f;
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 1023;
+	}
 }
 BENCHMARK(BM_Compound_tenvex);
 
@@ -103,25 +103,25 @@ static __m128 dp3_raw(__m128 a, __m128 b) { return _mm_dp_ps(a, b, 0x7F); }
 
 static __m128 norm3_raw(__m128 v)
 {
-    __m128 len = _mm_sqrt_ps(dp3_raw(v, v));
-    return _mm_blend_ps(_mm_div_ps(v, len), v, 0b1000);
+	__m128 len = _mm_sqrt_ps(dp3_raw(v, v));
+	return _mm_blend_ps(_mm_div_ps(v, len), v, 0b1000);
 }
 
 static void BM_Compound_intrinsics(benchmark::State& state)
 {
-    const auto va = make_vecs(1024, 1);
-    const auto vb = make_vecs(1024, 2);
-    const auto vc = make_vecs(1024, 3);
-    std::size_t i = 0;
-    for (auto _ : state)
-    {
-        __m128 a = va[i].eval(), b = vb[i].eval(), c = vc[i].eval();
-        __m128 t = norm3_raw(_mm_add_ps(a, _mm_mul_ps(b, _mm_set1_ps(2.0f))));
-        __m128 d = dp3_raw(b, c);
-        __m128 r = _mm_add_ps(_mm_mul_ps(t, d), _mm_mul_ps(c, _mm_set1_ps(3.0f)));
-        benchmark::DoNotOptimize(r);
-        i = (i + 1) & 1023;
-    }
+	const auto va = make_vecs(1024, 1);
+	const auto vb = make_vecs(1024, 2);
+	const auto vc = make_vecs(1024, 3);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		__m128 a = va[i].eval(), b = vb[i].eval(), c = vc[i].eval();
+		__m128 t = norm3_raw(_mm_add_ps(a, _mm_mul_ps(b, _mm_set1_ps(2.0f))));
+		__m128 d = dp3_raw(b, c);
+		__m128 r = _mm_add_ps(_mm_mul_ps(t, d), _mm_mul_ps(c, _mm_set1_ps(3.0f)));
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 1023;
+	}
 }
 BENCHMARK(BM_Compound_intrinsics);
 
@@ -131,45 +131,45 @@ BENCHMARK(BM_Compound_intrinsics);
 // =====================================================================
 static void BM_FacingSameWay(benchmark::State& state)
 {
-    vec4 fa = norm3(vec4 { 1.0f, 0.0f, 0.2f, 0.0f });
-    vec4 fb = vec4 { 0.9f, 0.1f, 0.1f, 0.0f };
-    float jitter = 0.0f;
-    for (auto _ : state)
-    {
-        vec4 f = norm3(fb + vec4 { jitter, 0.0f, 0.0f, 0.0f });
-        float c = dot3(fa, f);
-        bool same = c > 0.95f;
-        jitter = c * 1e-6f;
-        benchmark::DoNotOptimize(same);
-    }
+	vec4 fa = norm3(vec4 { 1.0f, 0.0f, 0.2f, 0.0f });
+	vec4 fb = vec4 { 0.9f, 0.1f, 0.1f, 0.0f };
+	float jitter = 0.0f;
+	for (auto _ : state)
+	{
+		vec4 f = norm3(fb + vec4 { jitter, 0.0f, 0.0f, 0.0f });
+		float c = dot3(fa, f);
+		bool same = c > 0.95f;
+		jitter = c * 1e-6f;
+		benchmark::DoNotOptimize(same);
+	}
 }
 BENCHMARK(BM_FacingSameWay);
 
 static void BM_Dot4_Latency(benchmark::State& state)
 {
-    vec4 a{ 1.0f, 2.0f, 3.0f, 1.0f };
-    vec4 b{ 0.5f, 0.5f, 0.5f, 0.5f };
-    float acc = 0.0f;
-    for (auto _ : state)
-    {
-        vec4 bb = b + vec4{ acc, 0.0f, 0.0f, 0.0f };
-        float d = dot4(a, bb);
-        acc = d * 1e-7f;
-        benchmark::DoNotOptimize(acc);
-    }
+	vec4 a{ 1.0f, 2.0f, 3.0f, 1.0f };
+	vec4 b{ 0.5f, 0.5f, 0.5f, 0.5f };
+	float acc = 0.0f;
+	for (auto _ : state)
+	{
+		vec4 bb = b + vec4{ acc, 0.0f, 0.0f, 0.0f };
+		float d = dot4(a, bb);
+		acc = d * 1e-7f;
+		benchmark::DoNotOptimize(acc);
+	}
 }
 BENCHMARK(BM_Dot4_Latency);
 
 static void BM_Dot4_Throughput(benchmark::State& state)
 {
-    const auto a = make_points(1024, 1);
-    const auto b = make_points(1024, 2);
-    std::size_t i = 0;
-    for (auto _ : state)
-    {
-        float d = dot4(a[i], b[i]);
-        benchmark::DoNotOptimize(d);
-        i = (i + 1) & 1023;
-    }
+	const auto a = make_points(1024, 1);
+	const auto b = make_points(1024, 2);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		float d = dot4(a[i], b[i]);
+		benchmark::DoNotOptimize(d);
+		i = (i + 1) & 1023;
+	}
 }
 BENCHMARK(BM_Dot4_Throughput);
