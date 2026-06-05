@@ -19,7 +19,7 @@ BSD 3-Clause License. Copyright (c) 2026 Artem Zyktin. See [LICENSE.txt](LICENSE
 - Expression-template engine: nodes are lazy and evaluated on assignment.
 - C++20 concepts (`expression`, `vec_expr`, `scalar_expr`) enforce type safety at compile time.
 - Storage policy: small trivially-copyable nodes are stored by value, larger ones by `const&`, which also avoids dangling references to temporary sub-expressions.
-- Operations: `+`, `-` (binary), `-` (unary negation), `*` (scalar), `/` (by scalar), `dot3`, `dot4`, `cross3`, `norm3`, `magnitude3`, `magnitude3_sq`, `==`, `approx_eq`, and component accessors `x()`, `y()`, `z()`, `w()`.
+- Operations: `+`, `-` (binary), `-` (unary negation), `*` (scalar), `/` (by scalar), `dot3`, `dot4`, `cross3`, `norm3`, `magnitude3`, `magnitude3_sq`, `min`, `max` (component-wise), `==`, `approx_eq`, and component accessors `x()`, `y()`, `z()`, `w()`.
 
 ## Requirements
 
@@ -60,6 +60,10 @@ vec4  cr   = cross3(a, b);     // 3D cross product, result w = 0
 vec4  n    = norm3(a);         // normalize xyz, w preserved
 float mag  = magnitude3(a);    // 3D length (ignores w)
 float mag2 = magnitude3_sq(a); // 3D length squared, no sqrt - use for distance compares
+
+// Component-wise min / max (all 4 lanes, including w) - e.g. growing an AABB
+vec4 lo = min(a, b);           // per-lane minimum
+vec4 hi = max(a, b);           // per-lane maximum
 
 // Negation (unary minus) - works on any expression node, stays lazy
 vec4 neg_a   = -a;
@@ -109,7 +113,7 @@ bool approx2 = approx_eq(a, b, 1e-3f); // custom epsilon
 
 ### Two layers
 
-- **Eager kernel layer** (`expressions/core.h`, namespace `tnvx::detail`): `TNVX_INLINE` functions over `vf4` (`add`, `sub`, `mul`, `div`, `dot3`, `magnitude3`, `norm3`, `cross3`, `scalar`, `get_lane`, `eq`, `approx_eq`). This is the only place intrinsics live, and the only place the SIMD backend is selected.
+- **Eager kernel layer** (`expressions/core.h`, namespace `tnvx::detail`): `TNVX_INLINE` functions over `vf4` (`add`, `sub`, `mul`, `div`, `dot3`, `magnitude3`, `norm3`, `cross3`, `min`, `max`, `scalar`, `get_lane`, `eq`, `approx_eq`). This is the only place intrinsics live, and the only place the SIMD backend is selected.
 - **Expression layer** (everything else in namespace `tnvx`): lazy nodes that compose and delegate down to the kernels. This layer operates only on `vf4` and contains no intrinsics.
 
 ### Expression templates
@@ -158,6 +162,8 @@ using tnvx_ref_or_value_t =
 | `Norm3<E>`    | `vec_expr`    | `dot3` + `_mm_sqrt_ps` + `_mm_div_ps` + `_mm_blend_ps`      | Normalizes xyz by the 3D magnitude; preserves w                             |
 | `Magn3<E>`    | `scalar_expr` | `_mm_sqrt_ps` + `dot3(v,v)`                                  | 3-component length (ignores w), broadcast; convertible to `float`           |
 | `Magn3Sq<E>`  | `scalar_expr` | `dot3(v,v)`                                                 | 3-component length squared (no `sqrt`); broadcast; convertible to `float`   |
+| `Min<L,R>`    | `vec_expr`    | `_mm_min_ps`                                                | Component-wise minimum across all 4 lanes                                   |
+| `Max<L,R>`    | `vec_expr`    | `_mm_max_ps`                                                | Component-wise maximum across all 4 lanes                                   |
 
 Comparison helpers (free functions in `tnvx`, backed by `tnvx::detail`):
 
@@ -195,7 +201,7 @@ Build output is written to `bin/<system>/x64/<debug|release>/output/`.
 
 ## Running Tests
 
-The test suite uses Google Test (vendored in `thirdparty/gtest/`) and currently covers 43 cases:
+The test suite uses Google Test (vendored in `thirdparty/gtest/`) and currently covers 50 cases:
 
 | Category             | Tests                                                                                                      |
 | -------------------- | ---------------------------------------------------------------------------------------------------------- |
@@ -205,12 +211,15 @@ The test suite uses Google Test (vendored in `thirdparty/gtest/`) and currently 
 | Type system          | `dot3_times_literal_collapses`, `magnitude3_times_literal_collapses`                                       |
 | Unary negation       | `neg_basic`, `neg_zero`, `neg_double`, `neg_compound`, `neg_expression`, `neg_scalar_stays_lazy`, `neg_scalar_in_expression` |
 | 4D dot product       | `dot4_basic`, `dot4_w_zero_matches_dot3`, `dot4_w_matters`, `dot4_w_only`, `dot4_perpendicular`, `dot4_commutative`, `dot4_collapses` |
+| Component-wise min/max | `min_basic`, `max_basic`, `min_negatives`, `max_negatives`, `min_includes_w`, `min_idempotent`, `min_commutative` |
 
 Build and run `tenvex_tests` from the generated project or makefile.
 
 ## Benchmarks
 
 A [Google Benchmark](https://github.com/google/benchmark) suite (vendored in `thirdparty/benchmark/`) lives in `src/benchmarks/` and is built as the `tenvex_bench` project. Build in **release** and run the resulting executable; on GCC/Clang it is built with `-msse4.1`. A subset can be selected at runtime, e.g. `tenvex_bench --benchmark_filter=Compound`.
+
+Cases cover both **latency** (serial dependency chains, e.g. `dot3`/`norm3`, and an AABB-box build that folds `min`/`max` into a running bound) and **throughput** (independent inputs the CPU can pipeline, e.g. isolated `dot3`/`dot4`, and single-op `min`/`max`).
 
 A naive scalar reference implementation - `naive::vec4` in `src/naive/naive_vec4.h` - mirrors the tenvex API and semantics with plain `float` math (everything `inline`, by-value, reciprocal-multiply for division/normalization). It is benchmarked side by side (the `BM_Naive_*` cases) and has its own mirrored test suite (`src/tests/naive_tests.cpp`), so the SIMD path can be compared against a straightforward baseline.
 
