@@ -175,3 +175,27 @@ static void BM_Naive_AABB_Latency(benchmark::State& state)
 	benchmark::DoNotOptimize(hi);
 }
 BENCHMARK(BM_Naive_AABB_Latency);
+
+static void BM_Naive_Abs_Throughput(benchmark::State& state)
+{
+	const auto a = make_vecs(1024, 1);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		vec4 r = abs(a[i]);
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 1023;
+	}
+}
+BENCHMARK(BM_Naive_Abs_Throughput);
+
+static void BM_Naive_Abs_Latency(benchmark::State& state)
+{
+	vec4 v { -1.0f, 2.0f, -3.0f, 4.0f };
+	for (auto _ : state)
+	{
+		v = abs(v - vec4 { 0.5f, 0.5f, 0.5f, 0.5f });
+		benchmark::DoNotOptimize(v);
+	}
+}
+BENCHMARK(BM_Naive_Abs_Latency);

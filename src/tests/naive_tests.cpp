@@ -407,4 +407,34 @@ TEST(naive_vec4, min_commutative)
 	EXPECT_TRUE(approx_eq(max(a, b), max(b, a)));
 }
 
+TEST(naive_vec4, abs_basic)
+{
+	vec4 a = { -1.0f, 2.0f, -3.0f, 4.0f };
+	vec4 check = { 1.0f, 2.0f, 3.0f, 4.0f };
+	vec4 result = abs(a);
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(naive_vec4, abs_all_negative)
+{
+	vec4 a = { -5.0f, -5.0f, -5.0f, -5.0f };
+	vec4 check = { 5.0f, 5.0f, 5.0f, 5.0f };
+	vec4 result = abs(a);
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(naive_vec4, abs_already_positive)
+{
+	vec4 a = { 1.0f, 2.0f, 3.0f, 4.0f };
+	vec4 result = abs(a);
+	EXPECT_TRUE(approx_eq(a, result));
+}
+
+TEST(naive_vec4, abs_zero)
+{
+	vec4 a = { 0.0f, 0.0f, 0.0f, 0.0f };
+	vec4 result = abs(a);
+	EXPECT_TRUE(approx_eq(a, result));
+}
+
 }
