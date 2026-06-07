@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "expressions/neg.h"
+#include "expressions/abs.h"
 #include "expressions/add.h"
 #include "expressions/sub.h"
 #include "expressions/scalar.h"

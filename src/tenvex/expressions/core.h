@@ -13,6 +13,12 @@
 namespace tnvx::detail
 {
 
+[[nodscard]] TNVX_INLINE
+vf4 abs(vf4 v)
+{
+	return _mm_andnot_ps(_mm_set1_ps(-0.0f), v);
+}
+
 [[nodiscard]] TNVX_INLINE
 float to_float(vf4 v)
 {

@@ -50,6 +50,16 @@ private:
 	return { v.x() * inv, v.y() * inv, v.z() * inv, v.w() * inv };
 }
 
+[[nodiscard]] inline vec4 abs(vec4 v) noexcept
+{
+	return {
+		std::fabs(v.x()),
+		std::fabs(v.y()),
+		std::fabs(v.z()),
+		std::fabs(v.w())
+	};
+}
+
 [[nodiscard]] inline float dot3(vec4 a, vec4 b) noexcept
 {
 	return a.x() * b.x() + a.y() * b.y() + a.z() * b.z();
