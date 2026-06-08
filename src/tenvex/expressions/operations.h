@@ -16,31 +16,31 @@ namespace tnvx
 
 template<vec_expr V, vec_expr Lo, vec_expr Hi>
 [[nodiscard]] TNVX_INLINE
-auto clamp(const V& v, const Lo& lo, const Hi& hi) noexcept;
+vec4 clamp(const V& v, const Lo& lo, const Hi& hi) noexcept;
 
 template<vec_expr V>
 [[nodiscard]] TNVX_INLINE
-auto saturate(const V& v) noexcept;
+vec4 saturate(const V& v) noexcept;
 
 template<vec_expr A, vec_expr B, scalar_expr T>
 [[nodiscard]] TNVX_INLINE
-auto lerp(const A& a, const B& b, const T& t) noexcept;
+vec4 lerp(const A& a, const B& b, const T& t) noexcept;
 
 template<vec_expr A, vec_expr B>
 [[nodiscard]] TNVX_INLINE
-auto lerp(const A& a, const B& b, float t) noexcept;
+vec4 lerp(const A& a, const B& b, float t) noexcept;
 
 template<vec_expr L, vec_expr R>
 [[nodiscard]] TNVX_INLINE
-auto dist3(const L& l, const R& r) noexcept;
+float dist3(const L& l, const R& r) noexcept;
 
 template<vec_expr L, vec_expr R>
 [[nodiscard]] TNVX_INLINE
-auto dist3_sq(const L& l, const R& r) noexcept;
+float dist3_sq(const L& l, const R& r) noexcept;
 
 template<vec_expr V, vec_expr N>
 [[nodiscard]] TNVX_INLINE
-auto reflect(const V& v, const N& n) noexcept;
+vec4 reflect(const V& v, const N& n) noexcept;
 
 }
 
