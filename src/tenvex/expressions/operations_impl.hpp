@@ -21,7 +21,14 @@ auto saturate(const V& v) noexcept
 
 template<vec_expr A, vec_expr B, scalar_expr T>
 TNVX_INLINE
-auto lerp(const A& a, const B& b, tnvx_ref_or_value_t<T> t) noexcept
+auto lerp(const A& a, const B& b, const T& t) noexcept
+{
+	return a + (b - a) * t;
+}
+
+template<vec_expr A, vec_expr B>
+TNVX_INLINE
+auto lerp(const A& a, const B& b, float t) noexcept
 {
 	return a + (b - a) * t;
 }
@@ -30,21 +37,21 @@ template<vec_expr L, vec_expr R>
 TNVX_INLINE
 auto dist3(const L& l, const R& r) noexcept
 {
-	return magnitude3(l, r);
+	return magnitude3(l - r);
 }
 
 template<vec_expr L, vec_expr R>
 TNVX_INLINE
 auto dist3_sq(const L& l, const R& r) noexcept
 {
-	return magnitude3_sq(l, r);
+	return magnitude3_sq(l - r);
 }
 
 template<vec_expr V, vec_expr N>
 TNVX_INLINE
 auto reflect(const V& v, const N& n) noexcept
 {
-	v - n * (dot3(v, n) * 2.0f);
+	return v - n * (dot3(v, n) * 2.0f);
 }
 
 }

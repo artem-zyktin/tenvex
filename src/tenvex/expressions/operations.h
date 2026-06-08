@@ -24,7 +24,11 @@ auto saturate(const V& v) noexcept;
 
 template<vec_expr A, vec_expr B, scalar_expr T>
 [[nodiscard]] TNVX_INLINE
-auto lerp(const A& a, const B& b, tnvx_ref_or_value_t<T> t) noexcept;
+auto lerp(const A& a, const B& b, const T& t) noexcept;
+
+template<vec_expr A, vec_expr B>
+[[nodiscard]] TNVX_INLINE
+auto lerp(const A& a, const B& b, float t) noexcept;
 
 template<vec_expr L, vec_expr R>
 [[nodiscard]] TNVX_INLINE
