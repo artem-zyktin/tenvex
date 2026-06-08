@@ -19,7 +19,7 @@ BSD 3-Clause License. Copyright (c) 2026 Artem Zyktin. See [LICENSE.txt](LICENSE
 - Expression-template engine: nodes are lazy and evaluated on assignment.
 - C++20 concepts (`expression`, `vec_expr`, `scalar_expr`) enforce type safety at compile time.
 - Storage policy: small trivially-copyable nodes are stored by value, larger ones by `const&`, which also avoids dangling references to temporary sub-expressions.
-- Operations: `+`, `-` (binary), `-` (unary negation), `*` (scalar), `/` (by scalar), `dot3`, `dot4`, `cross3`, `norm3`, `magnitude3`, `magnitude3_sq`, `min`, `max` (component-wise), `==`, `approx_eq`, and component accessors `x()`, `y()`, `z()`, `w()`.
+- Operations: `+`, `-` (binary), `-` (unary negation), `*` (scalar), `/` (by scalar), `dot3`, `dot4`, `cross3`, `norm3`, `magnitude3`, `magnitude3_sq`, `min`, `max`, `abs` (component-wise), `==`, `approx_eq`, and component accessors `x()`, `y()`, `z()`, `w()`.
 
 ## Requirements
 
@@ -64,6 +64,7 @@ float mag2 = magnitude3_sq(a); // 3D length squared, no sqrt - use for distance 
 // Component-wise min / max (all 4 lanes, including w) - e.g. growing an AABB
 vec4 lo = min(a, b);           // per-lane minimum
 vec4 hi = max(a, b);           // per-lane maximum
+vec4 av = abs(a);              // per-lane absolute value (clears sign bit)
 
 // Negation (unary minus) - works on any expression node, stays lazy
 vec4 neg_a   = -a;
@@ -113,7 +114,7 @@ bool approx2 = approx_eq(a, b, 1e-3f); // custom epsilon
 
 ### Two layers
 
-- **Eager kernel layer** (`expressions/core.h`, namespace `tnvx::detail`): `TNVX_INLINE` functions over `vf4` (`add`, `sub`, `mul`, `div`, `dot3`, `magnitude3`, `norm3`, `cross3`, `min`, `max`, `scalar`, `get_lane`, `eq`, `approx_eq`). This is the only place intrinsics live, and the only place the SIMD backend is selected.
+- **Eager kernel layer** (`expressions/core.h`, namespace `tnvx::detail`): `TNVX_INLINE` functions over `vf4` (`neg`, `abs`, `add`, `sub`, `mul`, `div`, `dot3`, `dot4`, `magnitude3`, `magnitude3_sq`, `norm3`, `cross3`, `min`, `max`, `scalar`, `get_lane`, `eq`, `approx_eq`). This is the only place intrinsics live, and the only place the SIMD backend is selected.
 - **Expression layer** (everything else in namespace `tnvx`): lazy nodes that compose and delegate down to the kernels. This layer operates only on `vf4` and contains no intrinsics.
 
 ### Expression templates
@@ -151,6 +152,7 @@ using tnvx_ref_or_value_t =
 | Node          | Concept       | Intrinsics                                                  | Notes                                                                       |
 | ------------- | ------------- | ----------------------------------------------------------- | --------------------------------------------------------------------------- |
 | `Neg<E>`      | vec / scalar  | `_mm_xor_ps` (sign mask)                                   | Unary negation; result is `vec_expr` when E is `vec_expr`, `scalar_expr` when E is `scalar_expr`; both stay lazy |
+| `Abs<E>`      | `vec_expr`    | `_mm_andnot_ps` (sign mask)                                | Component-wise absolute value; clears the sign bit of each lane (pure bit op, not arithmetic) |
 | `Scalar`      | `scalar_expr` | `_mm_set_ps1`                                               | Broadcasts a `float` to all 4 lanes                                         |
 | `Add<L,R>`    | `vec_expr`    | `_mm_add_ps`                                                |                                                                             |
 | `Sub<L,R>`    | `vec_expr`    | `_mm_sub_ps`                                                |                                                                             |
@@ -201,7 +203,7 @@ Build output is written to `bin/<system>/x64/<debug|release>/output/`.
 
 ## Running Tests
 
-The test suite uses Google Test (vendored in `thirdparty/gtest/`) and currently covers 50 cases:
+The test suite uses Google Test (vendored in `thirdparty/gtest/`) and currently covers 55 cases:
 
 | Category             | Tests                                                                                                      |
 | -------------------- | ---------------------------------------------------------------------------------------------------------- |
@@ -212,6 +214,7 @@ The test suite uses Google Test (vendored in `thirdparty/gtest/`) and currently 
 | Unary negation       | `neg_basic`, `neg_zero`, `neg_double`, `neg_compound`, `neg_expression`, `neg_scalar_stays_lazy`, `neg_scalar_in_expression` |
 | 4D dot product       | `dot4_basic`, `dot4_w_zero_matches_dot3`, `dot4_w_matters`, `dot4_w_only`, `dot4_perpendicular`, `dot4_commutative`, `dot4_collapses` |
 | Component-wise min/max | `min_basic`, `max_basic`, `min_negatives`, `max_negatives`, `min_includes_w`, `min_idempotent`, `min_commutative` |
+| Absolute value       | `abs_basic`, `abs_all_negative`, `abs_already_positive`, `abs_zero`, `abs_expression` |
 
 Build and run `tenvex_tests` from the generated project or makefile.
 
