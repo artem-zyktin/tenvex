@@ -245,8 +245,131 @@ static void BM_Abs_Latency(benchmark::State& state)
 	vec4 v { -1.0f, 2.0f, -3.0f, 4.0f };
 	for (auto _ : state)
 	{
-		v = abs(v - vec4 { 0.5f, 0.5f, 0.5f, 0.5f }); // цепочка через v
+		v = abs(v - vec4 { 0.5f, 0.5f, 0.5f, 0.5f });
 		benchmark::DoNotOptimize(v);
 	}
 }
 BENCHMARK(BM_Abs_Latency);
+
+static void BM_Clamp_Throughput(benchmark::State& state)
+{
+	const auto a = make_vecs(1024, 1);
+	const vec4 lo { 0.0f, 0.0f, 0.0f, 0.0f };
+	const vec4 hi { 1.0f, 1.0f, 1.0f, 1.0f };
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		vec4 r = clamp(a[i], lo, hi);
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 1023;
+	}
+}
+BENCHMARK(BM_Clamp_Throughput);
+
+static void BM_Clamp_Latency(benchmark::State& state)
+{
+	vec4 v { 0.5f, -2.0f, 3.0f, 0.25f };
+	const vec4 lo { 0.0f, 0.0f, 0.0f, 0.0f };
+	const vec4 hi { 1.0f, 1.0f, 1.0f, 1.0f };
+	for (auto _ : state)
+	{
+		v = clamp(v + vec4 { 0.1f, 0.1f, 0.1f, 0.1f }, lo, hi);
+		benchmark::DoNotOptimize(v);
+	}
+}
+BENCHMARK(BM_Clamp_Latency);
+
+static void BM_Saturate_Throughput(benchmark::State& state)
+{
+	const auto a = make_vecs(1024, 1);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		vec4 r = saturate(a[i]);
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 1023;
+	}
+}
+BENCHMARK(BM_Saturate_Throughput);
+
+static void BM_Lerp_Throughput(benchmark::State& state)
+{
+	const auto a = make_vecs(1024, 1);
+	const auto b = make_vecs(1024, 2);
+	const Scalar t { 0.35f };
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		vec4 r = lerp(a[i], b[i], t);
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 1023;
+	}
+}
+BENCHMARK(BM_Lerp_Throughput);
+
+static void BM_Lerp_Latency(benchmark::State& state)
+{
+	vec4 v { 0.0f, 0.0f, 0.0f, 0.0f };
+	const vec4 target { 1.0f, 2.0f, 3.0f, 0.0f };
+	const Scalar t { 0.25f };
+	for (auto _ : state)
+	{
+		v = lerp(v, target, t);          // v движется к target — цепочка через v
+		benchmark::DoNotOptimize(v);
+	}
+}
+BENCHMARK(BM_Lerp_Latency);
+
+static void BM_Dist3_Throughput(benchmark::State& state)
+{
+	const auto a = make_vecs(1024, 1);
+	const auto b = make_vecs(1024, 2);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		float r = dist3(a[i], b[i]);
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 1023;
+	}
+}
+BENCHMARK(BM_Dist3_Throughput);
+
+static void BM_Dist3Sq_Throughput(benchmark::State& state)
+{
+	const auto a = make_vecs(1024, 1);
+	const auto b = make_vecs(1024, 2);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		float r = dist3_sq(a[i], b[i]);
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 1023;
+	}
+}
+BENCHMARK(BM_Dist3Sq_Throughput);
+
+static void BM_Reflect_Throughput(benchmark::State& state)
+{
+	const auto v = make_vecs(1024, 1);
+	const auto n = make_vecs(1024, 2);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		vec4 r = reflect(v[i], n[i]);
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 1023;
+	}
+}
+BENCHMARK(BM_Reflect_Throughput);
+
+static void BM_Reflect_Latency(benchmark::State& state)
+{
+	vec4 v { 1.0f, -1.0f, 0.5f, 0.0f };
+	const vec4 n { 0.0f, 1.0f, 0.0f, 0.0f };
+	for (auto _ : state)
+	{
+		v = reflect(v, n);
+		benchmark::DoNotOptimize(v);
+	}
+}
+BENCHMARK(BM_Reflect_Latency);
