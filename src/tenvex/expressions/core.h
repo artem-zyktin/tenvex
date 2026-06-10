@@ -143,4 +143,28 @@ vf4 min(vf4 l, vf4 r) noexcept
 	return _mm_min_ps(l, r);
 }
 
+[[nodiscard]] TNVX_INLINE
+vf4 floor(vf4 v) noexcept
+{
+	return _mm_floor_ps(v);
+}
+
+[[nodiscard]] TNVX_INLINE
+vf4 round(vf4 v) noexcept
+{
+	return _mm_round_ps(v, _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC);
+}
+
+[[nodiscard]] TNVX_INLINE
+vf4 ceil(vf4 v) noexcept
+{
+	return _mm_ceil_ps(v);
+}
+
+[[nodiscard]] TNVX_INLINE
+vf4 frac(vf4 v) noexcept
+{
+	return _mm_sub_ps(v, _mm_floor_ps(v));
+}
+
 }
