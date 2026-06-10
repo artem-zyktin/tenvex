@@ -6,6 +6,7 @@
 #include "expressions/sub.h"
 #include "expressions/scalar.h"
 #include "expressions/mul.h"
+#include "expressions/hadamard.h"
 #include "expressions/div.h"
 #include "expressions/dot3.h"
 #include "expressions/dot4.h"
