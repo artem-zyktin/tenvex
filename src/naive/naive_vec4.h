@@ -165,4 +165,25 @@ inline bool approx_eq(vec4 a, vec4 b, float eps = 1e-6f) noexcept
 	return v - n * (dot3(v, n) * 2.0f);
 }
 
+[[nodiscard]] inline vec4 floor(vec4 v) noexcept
+{
+	return { std::floor(v.x()), std::floor(v.y()), std::floor(v.z()), std::floor(v.w()) };
+}
+
+[[nodiscard]] inline vec4 ceil(vec4 v) noexcept
+{
+	return { std::ceil(v.x()), std::ceil(v.y()), std::ceil(v.z()), std::ceil(v.w()) };
+}
+
+[[nodiscard]] inline vec4 round(vec4 v) noexcept
+{
+	return { std::nearbyint(v.x()), std::nearbyint(v.y()), std::nearbyint(v.z()), std::nearbyint(v.w()) };
+}
+
+[[nodiscard]] inline vec4 frac(vec4 v) noexcept
+{
+	return { v.x() - std::floor(v.x()), v.y() - std::floor(v.y()),
+			 v.z() - std::floor(v.z()), v.w() - std::floor(v.w()) };
+}
+
 }
