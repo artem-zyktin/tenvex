@@ -199,3 +199,124 @@ static void BM_Naive_Abs_Latency(benchmark::State& state)
 	}
 }
 BENCHMARK(BM_Naive_Abs_Latency);
+
+static void BM_Naive_Clamp_Throughput(benchmark::State& state)
+{
+	const auto a = make_vecs(1024, 1);
+	const vec4 lo { 0.0f, 0.0f, 0.0f, 0.0f };
+	const vec4 hi { 1.0f, 1.0f, 1.0f, 1.0f };
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		vec4 r = clamp(a[i], lo, hi);
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 1023;
+	}
+}
+BENCHMARK(BM_Naive_Clamp_Throughput);
+
+static void BM_Naive_Clamp_Latency(benchmark::State& state)
+{
+	vec4 v { 0.5f, -2.0f, 3.0f, 0.25f };
+	const vec4 lo { 0.0f, 0.0f, 0.0f, 0.0f };
+	const vec4 hi { 1.0f, 1.0f, 1.0f, 1.0f };
+	for (auto _ : state)
+	{
+		v = clamp(v + vec4 { 0.1f, 0.1f, 0.1f, 0.1f }, lo, hi);
+		benchmark::DoNotOptimize(v);
+	}
+}
+BENCHMARK(BM_Naive_Clamp_Latency);
+
+static void BM_Naive_Saturate_Throughput(benchmark::State& state)
+{
+	const auto a = make_vecs(1024, 1);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		vec4 r = saturate(a[i]);
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 1023;
+	}
+}
+BENCHMARK(BM_Naive_Saturate_Throughput);
+
+static void BM_Naive_Lerp_Throughput(benchmark::State& state)
+{
+	const auto a = make_vecs(1024, 1);
+	const auto b = make_vecs(1024, 2);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		vec4 r = lerp(a[i], b[i], 0.35f);
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 1023;
+	}
+}
+BENCHMARK(BM_Naive_Lerp_Throughput);
+
+static void BM_Naive_Lerp_Latency(benchmark::State& state)
+{
+	vec4 v { 0.0f, 0.0f, 0.0f, 0.0f };
+	const vec4 target { 1.0f, 2.0f, 3.0f, 0.0f };
+	for (auto _ : state)
+	{
+		v = lerp(v, target, 0.25f);
+		benchmark::DoNotOptimize(v);
+	}
+}
+BENCHMARK(BM_Naive_Lerp_Latency);
+
+static void BM_Naive_Dist3_Throughput(benchmark::State& state)
+{
+	const auto a = make_vecs(1024, 1);
+	const auto b = make_vecs(1024, 2);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		float r = dist3(a[i], b[i]);
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 1023;
+	}
+}
+BENCHMARK(BM_Naive_Dist3_Throughput);
+
+static void BM_Naive_Dist3Sq_Throughput(benchmark::State& state)
+{
+	const auto a = make_vecs(1024, 1);
+	const auto b = make_vecs(1024, 2);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		float r = dist3_sq(a[i], b[i]);
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 1023;
+	}
+}
+BENCHMARK(BM_Naive_Dist3Sq_Throughput);
+
+static void BM_Naive_Reflect_Throughput(benchmark::State& state)
+{
+	const auto v = make_vecs(1024, 1);
+	const auto n = make_vecs(1024, 2);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		vec4 r = reflect(v[i], n[i]);
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 1023;
+	}
+}
+BENCHMARK(BM_Naive_Reflect_Throughput);
+
+static void BM_Naive_Reflect_Latency(benchmark::State& state)
+{
+	vec4 v { 1.0f, -1.0f, 0.5f, 0.0f };
+	const vec4 n { 0.0f, 1.0f, 0.0f, 0.0f };
+	for (auto _ : state)
+	{
+		v = reflect(v, n);
+		benchmark::DoNotOptimize(v);
+	}
+}
+BENCHMARK(BM_Naive_Reflect_Latency);

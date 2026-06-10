@@ -437,4 +437,180 @@ TEST(naive_vec4, abs_zero)
 	EXPECT_TRUE(approx_eq(a, result));
 }
 
+TEST(naive_vec4, clamp_basic)
+{
+	vec4 v = { -2.0f, 0.5f, 5.0f, 0.0f };
+	vec4 lo = { 0.0f, 0.0f, 0.0f, 0.0f };
+	vec4 hi = { 1.0f, 1.0f, 1.0f, 1.0f };
+	vec4 check = { 0.0f, 0.5f, 1.0f, 0.0f };
+	vec4 result = clamp(v, lo, hi);
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(naive_vec4, clamp_custom_range)
+{
+	vec4 v = { 5.0f, 10.0f, 15.0f, 20.0f };
+	vec4 lo = { 8.0f, 8.0f, 8.0f, 8.0f };
+	vec4 hi = { 12.0f, 12.0f, 12.0f, 12.0f };
+	vec4 check = { 8.0f, 10.0f, 12.0f, 12.0f };
+	vec4 result = clamp(v, lo, hi);
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(naive_vec4, clamp_within_range)
+{
+	vec4 v = { 0.3f, 0.5f, 0.7f, 0.9f };
+	vec4 lo = { 0.0f, 0.0f, 0.0f, 0.0f };
+	vec4 hi = { 1.0f, 1.0f, 1.0f, 1.0f };
+	vec4 result = clamp(v, lo, hi);
+	EXPECT_TRUE(approx_eq(v, result));
+}
+
+TEST(naive_vec4, clamp_all_below)
+{
+	vec4 v = { -1.0f, -2.0f, -3.0f, -4.0f };
+	vec4 lo = { 0.0f, 0.0f, 0.0f, 0.0f };
+	vec4 hi = { 1.0f, 1.0f, 1.0f, 1.0f };
+	vec4 result = clamp(v, lo, hi);
+	EXPECT_TRUE(approx_eq(lo, result));
+}
+
+TEST(naive_vec4, clamp_all_above)
+{
+	vec4 v = { 5.0f, 6.0f, 7.0f, 8.0f };
+	vec4 lo = { 0.0f, 0.0f, 0.0f, 0.0f };
+	vec4 hi = { 1.0f, 1.0f, 1.0f, 1.0f };
+	vec4 result = clamp(v, lo, hi);
+	EXPECT_TRUE(approx_eq(hi, result));
+}
+
+TEST(naive_vec4, saturate_basic)
+{
+	vec4 v = { -0.5f, 0.3f, 1.5f, 0.0f };
+	vec4 check = { 0.0f, 0.3f, 1.0f, 0.0f };
+	vec4 result = saturate(v);
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(naive_vec4, saturate_within_range)
+{
+	vec4 v = { 0.1f, 0.5f, 0.9f, 0.0f };
+	vec4 result = saturate(v);
+	EXPECT_TRUE(approx_eq(v, result));
+}
+
+TEST(naive_vec4, saturate_clamps_negatives)
+{
+	vec4 v = { -1.0f, -2.0f, -3.0f, -4.0f };
+	vec4 check = { 0.0f, 0.0f, 0.0f, 0.0f };
+	vec4 result = saturate(v);
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(naive_vec4, saturate_clamps_above_one)
+{
+	vec4 v = { 2.0f, 3.0f, 4.0f, 5.0f };
+	vec4 check = { 1.0f, 1.0f, 1.0f, 1.0f };
+	vec4 result = saturate(v);
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(naive_vec4, lerp_at_zero)
+{
+	vec4 a = { 1.0f, 2.0f, 3.0f, 0.0f };
+	vec4 b = { 5.0f, 6.0f, 7.0f, 0.0f };
+	vec4 result = lerp(a, b, 0.0f);
+	EXPECT_TRUE(approx_eq(a, result));
+}
+
+TEST(naive_vec4, lerp_at_one)
+{
+	vec4 a = { 1.0f, 2.0f, 3.0f, 0.0f };
+	vec4 b = { 5.0f, 6.0f, 7.0f, 0.0f };
+	vec4 result = lerp(a, b, 1.0f);
+	EXPECT_TRUE(approx_eq(b, result));
+}
+
+TEST(naive_vec4, lerp_half)
+{
+	vec4 a = { 1.0f, 2.0f, 3.0f, 0.0f };
+	vec4 b = { 5.0f, 6.0f, 7.0f, 0.0f };
+	vec4 check = { 3.0f, 4.0f, 5.0f, 0.0f };
+	vec4 result = lerp(a, b, 0.5f);
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(naive_vec4, dist3_basic)
+{
+	vec4 l = { 0.0f, 0.0f, 0.0f, 0.0f };
+	vec4 r = { 3.0f, 4.0f, 0.0f, 0.0f };
+	float check = 5.0f;
+	float result = dist3(l, r);
+	EXPECT_FLOAT_EQ(check, result);
+}
+
+TEST(naive_vec4, dist3_zero)
+{
+	vec4 l = { 1.0f, 2.0f, 3.0f, 0.0f };
+	vec4 r = { 1.0f, 2.0f, 3.0f, 0.0f };
+	float check = 0.0f;
+	float result = dist3(l, r);
+	EXPECT_FLOAT_EQ(check, result);
+}
+
+TEST(naive_vec4, dist3_ignores_w)
+{
+	vec4 l = { 0.0f, 0.0f, 0.0f, 100.0f };
+	vec4 r = { 3.0f, 4.0f, 0.0f, -100.0f };
+	float check = 5.0f;
+	float result = dist3(l, r);
+	EXPECT_FLOAT_EQ(check, result);
+}
+
+TEST(naive_vec4, dist3_sq_basic)
+{
+	vec4 l = { 0.0f, 0.0f, 0.0f, 0.0f };
+	vec4 r = { 3.0f, 4.0f, 0.0f, 0.0f };
+	float check = 25.0f;
+	float result = dist3_sq(l, r);
+	EXPECT_FLOAT_EQ(check, result);
+}
+
+TEST(naive_vec4, dist3_sq_zero)
+{
+	vec4 l = { 1.0f, 2.0f, 3.0f, 0.0f };
+	vec4 r = { 1.0f, 2.0f, 3.0f, 0.0f };
+	float check = 0.0f;
+	float result = dist3_sq(l, r);
+	EXPECT_FLOAT_EQ(check, result);
+}
+
+TEST(naive_vec4, reflect_off_horizontal)
+{
+	vec4 v = { 1.0f, -1.0f, 0.0f, 0.0f };
+	vec4 n = { 0.0f, 1.0f, 0.0f, 0.0f };
+	vec4 check = { 1.0f, 1.0f, 0.0f, 0.0f };
+	vec4 result = reflect(v, n);
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(naive_vec4, reflect_scaled)
+{
+	vec4 v = { 3.0f, -4.0f, 0.0f, 0.0f };
+	vec4 n = { 0.0f, 1.0f, 0.0f, 0.0f };
+	vec4 check = { 3.0f, 4.0f, 0.0f, 0.0f };
+	vec4 result = reflect(v, n);
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(naive_vec4, reflect_diagonal)
+{
+	const float s = 0.70710678f;
+	vec4 v = { 1.0f, 0.0f, 0.0f, 0.0f };
+	vec4 n = { s, s, 0.0f, 0.0f };
+	vec4 check = { 0.0f, -1.0f, 0.0f, 0.0f };
+	vec4 result = reflect(v, n);
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
 }

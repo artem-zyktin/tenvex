@@ -135,4 +135,34 @@ inline bool approx_eq(vec4 a, vec4 b, float eps = 1e-6f) noexcept
 	};
 }
 
+[[nodiscard]] inline vec4 clamp(vec4 v, vec4 lo, vec4 hi) noexcept
+{
+	return min(max(v, lo), hi);
+}
+
+[[nodiscard]] inline vec4 saturate(vec4 v) noexcept
+{
+	return clamp(v, vec4 { 0.0f, 0.0f, 0.0f, 0.0f }, vec4 { 1.0f, 1.0f, 1.0f, 1.0f });
+}
+
+[[nodiscard]] inline vec4 lerp(vec4 a, vec4 b, float t) noexcept
+{
+	return a + (b - a) * t;
+}
+
+[[nodiscard]] inline float dist3(vec4 l, vec4 r) noexcept
+{
+	return magnitude3(l - r);
+}
+
+[[nodiscard]] inline float dist3_sq(vec4 l, vec4 r) noexcept
+{
+	return magnitude3_sq(l - r);
+}
+
+[[nodiscard]] inline vec4 reflect(vec4 v, vec4 n) noexcept
+{
+	return v - n * (dot3(v, n) * 2.0f);
+}
+
 }

@@ -16,3 +16,4 @@
 #include "expressions/min.h"
 #include "expressions/max.h"
 #include "expressions/vec4.h"
+#include "expressions/operations.h"

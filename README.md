@@ -19,7 +19,7 @@ BSD 3-Clause License. Copyright (c) 2026 Artem Zyktin. See [LICENSE.txt](LICENSE
 - Expression-template engine: nodes are lazy and evaluated on assignment.
 - C++20 concepts (`expression`, `vec_expr`, `scalar_expr`) enforce type safety at compile time.
 - Storage policy: small trivially-copyable nodes are stored by value, larger ones by `const&`, which also avoids dangling references to temporary sub-expressions.
-- Operations: `+`, `-` (binary), `-` (unary negation), `*` (scalar), `/` (by scalar), `dot3`, `dot4`, `cross3`, `norm3`, `magnitude3`, `magnitude3_sq`, `min`, `max`, `abs` (component-wise), `==`, `approx_eq`, and component accessors `x()`, `y()`, `z()`, `w()`.
+- Operations: `+`, `-` (binary), `-` (unary negation), `*` (scalar), `/` (by scalar), `dot3`, `dot4`, `cross3`, `norm3`, `magnitude3`, `magnitude3_sq`, `min`, `max`, `abs` (component-wise), `clamp`, `saturate`, `lerp`, `dist3`, `dist3_sq`, `reflect` (composed), `==`, `approx_eq`, and component accessors `x()`, `y()`, `z()`, `w()`.
 
 ## Requirements
 
@@ -65,6 +65,14 @@ float mag2 = magnitude3_sq(a); // 3D length squared, no sqrt - use for distance 
 vec4 lo = min(a, b);           // per-lane minimum
 vec4 hi = max(a, b);           // per-lane maximum
 vec4 av = abs(a);              // per-lane absolute value (clears sign bit)
+
+// Composed operations (free functions, eager - return concrete vec4 / float)
+vec4  cl = clamp(a, lo, hi);   // per-lane clamp to [lo, hi]
+vec4  sa = saturate(a);        // clamp to [0, 1]
+vec4  mi = lerp(a, b, 0.5f);   // linear interpolation; t is float or scalar_expr
+float di = dist3(a, b);        // 3D distance
+float d2 = dist3_sq(a, b);     // 3D distance squared, no sqrt
+vec4  rf = reflect(a, b);      // reflect a about (unit) normal b
 
 // Negation (unary minus) - works on any expression node, stays lazy
 vec4 neg_a   = -a;
@@ -174,6 +182,19 @@ Comparison helpers (free functions in `tnvx`, backed by `tnvx::detail`):
 | `operator==`                 | `_mm_cmpeq_ps` + `_mm_movemask_ps`      | Exact, all-lane equality       |
 | `approx_eq(a, b, eps=1e-6f)` | `_mm_andnot_ps` + `_mm_cmple_ps` + mask | Per-lane abs difference <= eps |
 
+### Composed operations
+
+Free functions in `tnvx` that compose the operators above. **They evaluate eagerly and return concrete types** (`vec4` / `float`), not expression nodes - returning a lazy expression that references function-local temporaries would dangle. Defined in `expressions/operations.h` (declarations) / `operations_impl.hpp` (definitions), included last in `tenvex.h`.
+
+| Function           | Returns | Composition                | Notes                                                                     |
+| ------------------ | ------- | -------------------------- | ------------------------------------------------------------------------- |
+| `clamp(v, lo, hi)` | `vec4`  | `min(max(v, lo), hi)`      | Per-lane clamp                                                            |
+| `saturate(v)`      | `vec4`  | `clamp(v, 0, 1)`           | Clamp to [0, 1]                                                          |
+| `lerp(a, b, t)`    | `vec4`  | `a + (b - a) * t`          | Two overloads: `float t` (by value) and `scalar_expr t` (folds in lazily) |
+| `dist3(l, r)`      | `float` | `magnitude3(l - r)`        | 3D distance                                                               |
+| `dist3_sq(l, r)`   | `float` | `magnitude3_sq(l - r)`     | No sqrt - use for distance compares                                       |
+| `reflect(v, n)`    | `vec4`  | `v - n * (dot3(v, n) * 2)` | Reflect `v` about unit normal `n`                                         |
+
 ## Building
 
 The build uses [Premake5](https://premake.github.io/); binaries are bundled in `premake/bin/` for all platforms. The workspace is x64-only and uses C++20, with `debug` and `release` configurations and `tenvex_tests` as the start project. On GCC/Clang the `tenvex_tests` project is built with `-msse4.1`; projects that consume the headers must enable SSE4.1 in their own build.
@@ -203,7 +224,7 @@ Build output is written to `bin/<system>/x64/<debug|release>/output/`.
 
 ## Running Tests
 
-The test suite uses Google Test (vendored in `thirdparty/gtest/`) and currently covers 55 cases:
+The test suite uses Google Test (vendored in `thirdparty/gtest/`) and currently covers 78 cases:
 
 | Category             | Tests                                                                                                      |
 | -------------------- | ---------------------------------------------------------------------------------------------------------- |
@@ -215,6 +236,9 @@ The test suite uses Google Test (vendored in `thirdparty/gtest/`) and currently 
 | 4D dot product       | `dot4_basic`, `dot4_w_zero_matches_dot3`, `dot4_w_matters`, `dot4_w_only`, `dot4_perpendicular`, `dot4_commutative`, `dot4_collapses` |
 | Component-wise min/max | `min_basic`, `max_basic`, `min_negatives`, `max_negatives`, `min_includes_w`, `min_idempotent`, `min_commutative` |
 | Absolute value       | `abs_basic`, `abs_all_negative`, `abs_already_positive`, `abs_zero`, `abs_expression` |
+| Clamp / saturate     | `clamp_basic`, `clamp_custom_range`, `clamp_within_range`, `clamp_all_below`, `clamp_all_above`, `clamp_expression`, `saturate_basic`, `saturate_within_range`, `saturate_clamps_negatives`, `saturate_clamps_above_one` |
+| Interpolation        | `lerp_at_zero`, `lerp_at_one`, `lerp_half`, `lerp_expression` |
+| Distance / reflect   | `dist3_basic`, `dist3_zero`, `dist3_ignores_w`, `dist3_sq_basic`, `dist3_sq_zero`, `reflect_off_horizontal`, `reflect_scaled`, `reflect_diagonal`, `reflect_expression` |
 
 Build and run `tenvex_tests` from the generated project or makefile.
 
