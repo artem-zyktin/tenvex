@@ -19,7 +19,7 @@ BSD 3-Clause License. Copyright (c) 2026 Artem Zyktin. See [LICENSE.txt](LICENSE
 - Expression-template engine: nodes are lazy and evaluated on assignment.
 - C++20 concepts (`expression`, `vec_expr`, `scalar_expr`) enforce type safety at compile time.
 - Storage policy: small trivially-copyable nodes are stored by value, larger ones by `const&`, which also avoids dangling references to temporary sub-expressions.
-- Operations: `+`, `-` (binary), `-` (unary negation), `*` (scalar), `/` (by scalar), `dot3`, `dot4`, `cross3`, `norm3`, `magnitude3`, `magnitude3_sq`, `min`, `max`, `abs` (component-wise), `clamp`, `saturate`, `lerp`, `dist3`, `dist3_sq`, `reflect` (composed), `==`, `approx_eq`, and component accessors `x()`, `y()`, `z()`, `w()`.
+- Operations: `+`, `-` (binary), `-` (unary negation), `*` (scalar), `/` (by scalar), `dot3`, `dot4`, `cross3`, `norm3`, `magnitude3`, `magnitude3_sq`, `min`, `max`, `abs`, `hadamard` (component-wise), `floor`, `ceil`, `round`, `frac` (rounding), `clamp`, `saturate`, `lerp`, `dist3`, `dist3_sq`, `reflect` (composed), `==`, `approx_eq`, and component accessors `x()`, `y()`, `z()`, `w()`.
 
 ## Requirements
 
@@ -65,6 +65,13 @@ float mag2 = magnitude3_sq(a); // 3D length squared, no sqrt - use for distance 
 vec4 lo = min(a, b);           // per-lane minimum
 vec4 hi = max(a, b);           // per-lane maximum
 vec4 av = abs(a);              // per-lane absolute value (clears sign bit)
+vec4 hp = hadamard(a, b);      // per-lane product (a.x*b.x, ...) - colors, non-uniform scale
+
+// Rounding (SSE4.1 native, per-lane)
+vec4 fl = floor(a);            // round toward -inf
+vec4 cl2 = ceil(a);            // round toward +inf
+vec4 rn = round(a);            // nearest, half-to-even (matches HLSL round / GLSL roundEven)
+vec4 fr = frac(a);             // fractional part in [0,1); wraps negatives (texture REPEAT)
 
 // Composed operations (free functions, eager - return concrete vec4 / float)
 vec4  cl = clamp(a, lo, hi);   // per-lane clamp to [lo, hi]
@@ -174,6 +181,11 @@ using tnvx_ref_or_value_t =
 | `Magn3Sq<E>`  | `scalar_expr` | `dot3(v,v)`                                                 | 3-component length squared (no `sqrt`); broadcast; convertible to `float`   |
 | `Min<L,R>`    | `vec_expr`    | `_mm_min_ps`                                                | Component-wise minimum across all 4 lanes                                   |
 | `Max<L,R>`    | `vec_expr`    | `_mm_max_ps`                                                | Component-wise maximum across all 4 lanes                                   |
+| `Hadamard<L,R>` | `vec_expr`  | `_mm_mul_ps`                                               | Component-wise (per-lane) product; named, not `operator*`, to avoid ambiguity with dot/cross |
+| `Floor<E>`    | `vec_expr`    | `_mm_floor_ps`                                             | Per-lane floor (round toward -inf)                                         |
+| `Ceil<E>`     | `vec_expr`    | `_mm_ceil_ps`                                              | Per-lane ceiling (round toward +inf)                                       |
+| `Round<E>`    | `vec_expr`    | `_mm_round_ps` (nearest)                                   | Per-lane round, half-to-even (matches HLSL `round` / GLSL `roundEven`)      |
+| `Frac<E>`     | `vec_expr`    | `_mm_sub_ps(v, floor(v))`                                  | Per-lane fractional part in [0,1); floor-based, wraps negatives correctly   |
 
 Comparison helpers (free functions in `tnvx`, backed by `tnvx::detail`):
 
@@ -224,7 +236,7 @@ Build output is written to `bin/<system>/x64/<debug|release>/output/`.
 
 ## Running Tests
 
-The test suite uses Google Test (vendored in `thirdparty/gtest/`) and currently covers 78 cases:
+The test suite uses Google Test (vendored in `thirdparty/gtest/`) and currently covers 88 cases:
 
 | Category             | Tests                                                                                                      |
 | -------------------- | ---------------------------------------------------------------------------------------------------------- |
@@ -239,6 +251,8 @@ The test suite uses Google Test (vendored in `thirdparty/gtest/`) and currently 
 | Clamp / saturate     | `clamp_basic`, `clamp_custom_range`, `clamp_within_range`, `clamp_all_below`, `clamp_all_above`, `clamp_expression`, `saturate_basic`, `saturate_within_range`, `saturate_clamps_negatives`, `saturate_clamps_above_one` |
 | Interpolation        | `lerp_at_zero`, `lerp_at_one`, `lerp_half`, `lerp_expression` |
 | Distance / reflect   | `dist3_basic`, `dist3_zero`, `dist3_ignores_w`, `dist3_sq_basic`, `dist3_sq_zero`, `reflect_off_horizontal`, `reflect_scaled`, `reflect_diagonal`, `reflect_expression` |
+| Hadamard product     | `hadamard_basic`, `hadamard_includes_w`, `hadamard_commutative`, `hadamard_expression` |
+| Rounding             | `floor_basic`, `floor_already_integer`, `ceil_basic`, `round_basic`, `round_half_to_even`, `frac_basic` |
 
 Build and run `tenvex_tests` from the generated project or makefile.
 
