@@ -741,4 +741,51 @@ TEST(vec4, reflect_expression)
 	EXPECT_TRUE(approx_eq(check, result));
 }
 
+TEST(vec4, floor_basic)
+{
+	vec4 v = { 1.5f, -1.5f, 2.9f, -2.1f };
+	vec4 check = { 1.0f, -2.0f, 2.0f, -3.0f };
+	vec4 result = floor(v);
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, floor_already_integer)
+{
+	vec4 v = { 3.0f, -4.0f, 0.0f, 7.0f };
+	vec4 result = floor(v);
+	EXPECT_TRUE(approx_eq(v, result));
+}
+
+TEST(vec4, ceil_basic)
+{
+	vec4 v = { 1.5f, -1.5f, 2.1f, -2.9f };
+	vec4 check = { 2.0f, -1.0f, 3.0f, -2.0f };
+	vec4 result = ceil(v);
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, round_basic)
+{
+	vec4 v = { 2.4f, 2.6f, -2.4f, -2.6f };
+	vec4 check = { 2.0f, 3.0f, -2.0f, -3.0f };
+	vec4 result = round(v);
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, round_half_to_even)
+{
+	vec4 v = { 0.5f, 1.5f, 2.5f, 3.5f };
+	vec4 check = { 0.0f, 2.0f, 2.0f, 4.0f };
+	vec4 result = round(v);
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, frac_basic)
+{
+	vec4 v = { 1.25f, 2.75f, -1.25f, 3.0f };
+	vec4 check = { 0.25f, 0.75f, 0.75f, 0.0f };
+	vec4 result = frac(v);
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
 }

@@ -1,0 +1,32 @@
+#pragma once
+
+#include "core.h"
+#include "expression.h"
+#include "traits.h"
+#include "concepts.h"
+
+namespace tnvx
+{
+
+template<vec_expr E>
+struct Round : Expr<Round<E>>
+{
+	TNVX_INLINE
+	explicit Round(const E& TNVX_RESTRICT e) noexcept;
+
+	[[nodiscard]] TNVX_INLINE
+	vf4 eval() const noexcept;
+
+private:
+	tnvx_ref_or_value_t<E> _e;
+};
+
+template<vec_expr E> inline constexpr bool is_vec_expr<Round<E>> = true;
+
+template<vec_expr E>
+[[nodiscard]] TNVX_INLINE
+Round<E> round(const E& e) noexcept;
+
+}
+
+#include "round_impl.hpp"

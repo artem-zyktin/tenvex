@@ -373,3 +373,55 @@ static void BM_Reflect_Latency(benchmark::State& state)
 	}
 }
 BENCHMARK(BM_Reflect_Latency);
+
+static void BM_Floor_Throughput(benchmark::State& state)
+{
+	const auto a = make_vecs(1024, 1);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		vec4 r = floor(a[i]);
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 1023;
+	}
+}
+BENCHMARK(BM_Floor_Throughput);
+
+static void BM_Ceil_Throughput(benchmark::State& state)
+{
+	const auto a = make_vecs(1024, 1);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		vec4 r = ceil(a[i]);
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 1023;
+	}
+}
+BENCHMARK(BM_Ceil_Throughput);
+
+static void BM_Round_Throughput(benchmark::State& state)
+{
+	const auto a = make_vecs(1024, 1);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		vec4 r = round(a[i]);
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 1023;
+	}
+}
+BENCHMARK(BM_Round_Throughput);
+
+static void BM_Frac_Throughput(benchmark::State& state)
+{
+	const auto a = make_vecs(1024, 1);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		vec4 r = frac(a[i]);
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 1023;
+	}
+}
+BENCHMARK(BM_Frac_Throughput);
