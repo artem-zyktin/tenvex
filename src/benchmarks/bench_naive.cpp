@@ -372,3 +372,29 @@ static void BM_Naive_Frac_Throughput(benchmark::State& state)
 	}
 }
 BENCHMARK(BM_Naive_Frac_Throughput);
+
+static void BM_Naive_Hadamard_Throughput(benchmark::State& state)
+{
+	const auto a = make_vecs(1024, 1);
+	const auto b = make_vecs(1024, 2);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		vec4 r = hadamard(a[i], b[i]);
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 1023;
+	}
+}
+BENCHMARK(BM_Naive_Hadamard_Throughput);
+
+static void BM_Naive_Hadamard_Latency(benchmark::State& state)
+{
+	vec4 v { 1.001f, 0.999f, 1.0f, 1.0f };
+	const vec4 k { 0.9999f, 1.0001f, 1.0f, 1.0f };
+	for (auto _ : state)
+	{
+		v = hadamard(v, k);            // цепочка через v (значения держатся около 1)
+		benchmark::DoNotOptimize(v);
+	}
+}
+BENCHMARK(BM_Naive_Hadamard_Latency);
