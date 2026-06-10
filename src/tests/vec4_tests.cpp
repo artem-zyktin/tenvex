@@ -788,4 +788,46 @@ TEST(vec4, frac_basic)
 	EXPECT_TRUE(approx_eq(check, result));
 }
 
+TEST(vec4, hadamard_basic)
+{
+	vec4 a = { 1.0f, 2.0f, 3.0f, 4.0f };
+	vec4 b = { 5.0f, 6.0f, 7.0f, 8.0f };
+	vec4 check = { 5.0f, 12.0f, 21.0f, 32.0f };
+	vec4 result = hadamard(a, b);
+
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, hadamard_includes_w)
+{
+	vec4 a = { 1.0f, 1.0f, 1.0f, 2.0f };
+	vec4 b = { 1.0f, 1.0f, 1.0f, 3.0f };
+	vec4 check = { 1.0f, 1.0f, 1.0f, 6.0f };
+	vec4 result = hadamard(a, b);
+
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, hadamard_commutative)
+{
+	vec4 a = { 1.0f, 2.0f, 3.0f, 4.0f };
+	vec4 b = { 5.0f, 6.0f, 7.0f, 8.0f };
+	vec4 ab = hadamard(a, b);
+	vec4 ba = hadamard(b, a);
+
+	EXPECT_TRUE(approx_eq(ab, ba));
+}
+
+TEST(vec4, hadamard_expression)
+{
+	vec4 a = { 1.0f, 2.0f, 3.0f, 0.0f };
+	vec4 b = { 2.0f, 2.0f, 2.0f, 0.0f };
+	vec4 check = { 4.0f, 8.0f, 12.0f, 0.0f };
+	vec4 result = hadamard(a + b, b);
+	vec4 expected = { 6.0f, 8.0f, 10.0f, 0.0f };
+
+	EXPECT_TRUE((vec_expr<decltype(hadamard(a + b, b))>));
+	EXPECT_TRUE(approx_eq(expected, result));
+}
+
 }
