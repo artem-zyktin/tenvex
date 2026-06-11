@@ -314,7 +314,7 @@ static void BM_Lerp_Latency(benchmark::State& state)
 	const Scalar t { 0.25f };
 	for (auto _ : state)
 	{
-		v = lerp(v, target, t);          // v движется к target — цепочка через v
+		v = lerp(v, target, t);
 		benchmark::DoNotOptimize(v);
 	}
 }

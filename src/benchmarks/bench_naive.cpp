@@ -393,7 +393,7 @@ static void BM_Naive_Hadamard_Latency(benchmark::State& state)
 	const vec4 k { 0.9999f, 1.0001f, 1.0f, 1.0f };
 	for (auto _ : state)
 	{
-		v = hadamard(v, k);            // цепочка через v (значения держатся около 1)
+		v = hadamard(v, k);
 		benchmark::DoNotOptimize(v);
 	}
 }
