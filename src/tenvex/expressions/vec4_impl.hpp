@@ -12,7 +12,7 @@ vec4::vec4(float x, float y, float z, float w) noexcept
 }
 
 TNVX_INLINE
-__m128 vec4::eval() const noexcept
+vf4 vec4::eval() const noexcept
 {
 	return _data;
 }

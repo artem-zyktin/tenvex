@@ -13,7 +13,7 @@
 namespace tnvx::detail
 {
 
-[[nodscard]] TNVX_INLINE
+[[nodiscard]] TNVX_INLINE
 vf4 abs(vf4 v)
 {
 	return _mm_andnot_ps(_mm_set1_ps(-0.0f), v);
