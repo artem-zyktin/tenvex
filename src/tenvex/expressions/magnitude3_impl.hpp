@@ -24,7 +24,7 @@ template<vec_expr E>
 TNVX_INLINE
 Magn3<E>::operator float() const noexcept
 {
-	return _mm_cvtss_f32(eval());
+	return detail::to_float(eval());
 }
 
 template<vec_expr E>
