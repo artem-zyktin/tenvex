@@ -1,6 +1,6 @@
 #pragma once
 
-#if !defined(TNVX_SSE41) || !defined(TNVX_NEON)
+#if !defined(TNVX_SSE41) && !defined(TNVX_NEON)
 
 // x86 SSE4.1
 #if defined(__SSE4_1__)
