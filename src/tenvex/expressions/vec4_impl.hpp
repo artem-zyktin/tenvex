@@ -7,7 +7,7 @@ namespace tnvx
 
 TNVX_INLINE
 vec4::vec4(float x, float y, float z, float w) noexcept
-	: _data(_mm_set_ps(w, z, y, x))
+	: _data(detail::set(w, z, y, x))
 {
 }
 
