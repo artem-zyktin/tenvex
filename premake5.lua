@@ -1,10 +1,18 @@
 workspace "tenvex"
-	architecture "x64"
 	configurations { "debug", "release" }
 	location "build"
 	startproject "tenvex_tests"
 
-outputdir = "%{cfg.system}/x64/%{cfg.buildcfg}"
+	platforms { "x64", "ARM64" }
+
+	filter "platforms:x64"
+		architecture "x86_64" -- Premake uses 'x86_64' internally for x64
+
+	filter "platforms:ARM64"
+		architecture "ARM64"
+	filter{}
+
+outputdir = "%{cfg.system}/%{cfg.architecture}/%{cfg.buildcfg}"
 
 project "gtest"
 	location "build"
@@ -205,9 +213,9 @@ project "tenvex_tests"
 	filter "system:macosx"
 		pic "on"
 
-	filter "toolset:gcc or toolset:clang"
-        buildoptions { "-msse4.1" }
-    filter {}
+	filter { "toolset:gcc or toolset:clang", "platforms:x64" }
+		buildoptions { "-msse4.1" }
+	filter {}
 
 project "tenvex_bench"
 	location "build"
@@ -257,7 +265,6 @@ project "tenvex_bench"
 	filter "system:macosx"
 		pic "on"
 
-	filter "toolset:gcc or toolset:clang"
+	filter { "toolset:gcc or toolset:clang", "platforms:x64" }
 		buildoptions { "-msse4.1" }
-
 	filter {}

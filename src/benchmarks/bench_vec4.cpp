@@ -4,7 +4,6 @@
 
 #include <vector>
 #include <random>
-#include <smmintrin.h>
 
 using namespace tnvx;
 
@@ -99,6 +98,8 @@ static void BM_Compound_tenvex(benchmark::State& state)
 }
 BENCHMARK(BM_Compound_tenvex);
 
+#if defined(TNVX_SSE41)
+#include <smmintrin.h>
 static __m128 dp3_raw(__m128 a, __m128 b) { return _mm_dp_ps(a, b, 0x7F); }
 
 static __m128 norm3_raw(__m128 v)
@@ -124,6 +125,74 @@ static void BM_Compound_intrinsics(benchmark::State& state)
 	}
 }
 BENCHMARK(BM_Compound_intrinsics);
+#elif defined(TNVX_NEON)
+#include <arm_neon.h>
+static float32x4_t dp3_raw(float32x4_t a, float32x4_t b)
+{
+	float32x4_t prod = vmulq_f32(a, b);
+	prod = vsetq_lane_f32(0.0f, prod, 3);
+	return vdupq_n_f32(vaddvq_f32(prod));
+}
+
+static float32x4_t norm3_raw(float32x4_t v)
+{
+	float32x4_t len = vsqrtq_f32(dp3_raw(v, v));
+	float32x4_t n = vdivq_f32(v, len);
+	return vsetq_lane_f32(vgetq_lane_f32(v, 3), n, 3);
+}
+
+static void BM_Compound_intrinsics(benchmark::State& state)
+{
+	const auto va = make_vecs(1024, 1);
+	const auto vb = make_vecs(1024, 2);
+	const auto vc = make_vecs(1024, 3);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		float32x4_t a = va[i].eval(), b = vb[i].eval(), c = vc[i].eval();
+		float32x4_t t = norm3_raw(vaddq_f32(a, vmulq_f32(b, vdupq_n_f32(2.0f))));
+		float32x4_t d = dp3_raw(b, c);
+		float32x4_t r = vaddq_f32(vmulq_f32(t, d), vmulq_f32(c, vdupq_n_f32(3.0f)));
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 1023;
+	}
+}
+BENCHMARK(BM_Compound_intrinsics);
+#endif
+
+static void BM_Compound_manual_kernels(benchmark::State& state)
+{
+	const auto va = make_vecs(1024, 1);
+	const auto vb = make_vecs(1024, 2);
+	const auto vc = make_vecs(1024, 3);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		using namespace tnvx::detail;
+		vf4 a = va[i].eval(), b = vb[i].eval(), c = vc[i].eval();
+		vf4 t = norm3(add(a, mul(b, set_all(2.0f))));
+		vf4 d = dot3(b, c);
+		vf4 r = add(mul(t, d), mul(c, set_all(3.0f)));
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 1023;
+	}
+}
+BENCHMARK(BM_Compound_manual_kernels);
+
+static void BM_Compound_tenvex_vf4(benchmark::State& state)
+{
+	const auto va = make_vecs(1024, 1);
+	const auto vb = make_vecs(1024, 2);
+	const auto vc = make_vecs(1024, 3);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		vf4 r = (norm3(va[i] + vb[i] * 2.0f) * dot3(vb[i], vc[i]) + vc[i] * 3.0f).eval();
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 1023;
+	}
+}
+BENCHMARK(BM_Compound_tenvex_vf4);
 
 // =====================================================================
 // Gameplay-style query: do two units face roughly the same way?
