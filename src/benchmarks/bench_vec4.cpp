@@ -125,6 +125,25 @@ static void BM_Compound_intrinsics(benchmark::State& state)
 	}
 }
 BENCHMARK(BM_Compound_intrinsics);
+
+static void BM_Compound_manual_kernels(benchmark::State& state)
+{
+	const auto va = make_vecs(1024, 1);
+	const auto vb = make_vecs(1024, 2);
+	const auto vc = make_vecs(1024, 3);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		using namespace tnvx::detail;
+		vf4 a = va[i].eval(), b = vb[i].eval(), c = vc[i].eval();
+		vf4 t = norm3(add(a, mul(b, set_all(2.0f))));
+		vf4 d = dot3(b, c);
+		vf4 r = add(mul(t, d), mul(c, set_all(3.0f)));
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 1023;
+	}
+}
+BENCHMARK(BM_Compound_manual_kernels);
 #elif defined(TNVX_NEON)
 #include <arm_neon.h>
 static float32x4_t dp3_raw(float32x4_t a, float32x4_t b)
