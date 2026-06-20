@@ -25,7 +25,7 @@ BSD 3-Clause License. Copyright (c) 2026 Artem Zyktin. See [LICENSE.txt](LICENSE
 - Header-only - just include `tenvex.h`.
 - Expression-template engine: nodes are lazy and evaluated on assignment.
 - C++20 concepts (`expression`, `vec_expr`, `scalar_expr`) enforce type safety at compile time.
-- Storage policy: small trivially-copyable nodes are stored by value, larger ones by `const&`, which also avoids dangling references to temporary sub-expressions.
+- Storage policy: leaves (trivially-copyable, 16 bytes or less) are stored by value; larger composite nodes by `const&`. Because that reference can outlive a temporary sub-expression, assign compound expressions to a `vec4` / `float` rather than `auto` (see [Performance and best practices](#performance-and-best-practices)).
 - Operations: `+`, `-` (binary), `-` (unary negation), `*` (scalar), `/` (by scalar), `dot3`, `dot4`, `cross3`, `norm3`, `magnitude3`, `magnitude3_sq`, `min`, `max`, `abs`, `hadamard` (component-wise), `floor`, `ceil`, `round`, `frac` (rounding), `clamp`, `saturate`, `lerp`, `dist3`, `dist3_sq`, `reflect` (composed), `==`, `approx_eq`, and component accessors `x()`, `y()`, `z()`, `w()`.
 
 ## Requirements
@@ -132,6 +132,45 @@ bool approx1 = approx_eq(a, b);        // default epsilon = 1e-6f
 bool approx2 = approx_eq(a, b, 1e-3f); // custom epsilon
 ```
 
+## Performance and best practices
+
+tenvex is zero-overhead when used the way the optimizer expects. A few rules keep the generated code tight and steer around the one real footgun.
+
+**Assign expressions to `vec4` / `float`; don't keep them in `auto`.** Operators and operations (`+`, `*`, `norm3`, `dot3`, ...) return *lazy nodes*, not values. A node stores operands of 16 bytes or less by value, but larger composite operands by `const&` (see [Storage policy](#storage-policy)). Those references point at sub-expression *temporaries* that die at the end of the full statement, so holding a compound expression in `auto` and using it afterwards dangles:
+
+```cpp
+auto e   = norm3(a + b * 2.0f);  // BAD: the inner Add<...> temporary is already dead here
+vec4 bad = e * dot3(b, c);       //      e.eval() reads a dangling reference -> garbage / inf / crash
+
+vec4 t    = norm3(a + b * 2.0f); // GOOD: assigning to vec4 evaluates immediately
+vec4 good = t * dot3(b, c);
+```
+
+Assigning to a `vec4` (or converting a scalar node to `float`) forces evaluation, which is what you want at the point of use anyway. `auto` is only safe when every operand outlives the expression - rarely worth the reasoning; just assign.
+
+**Bind a reused sub-expression to a value.** Nodes are pure - they carry no cache - so a sub-expression that appears twice in one statement is computed twice. If you reuse a term, evaluate it once into a `vec4`:
+
+```cpp
+vec4 r1 = norm3(a + b * 2.0f) * dot3(a + b * 2.0f, c); // 'a + b * 2.0f' built twice -> work done twice
+
+vec4 t  = a + b * 2.0f;                                // shared term computed once
+vec4 r2 = norm3(t) * dot3(t, c);
+```
+
+This is the right "cache". A mutable caching node would defeat the compiler's common-subexpression elimination and is a pessimization for small SIMD expressions; an explicit `vec4` binding has zero overhead and lets the compiler fuse freely.
+
+**Prefer the squared forms for comparisons.** `magnitude3_sq` and `dist3_sq` skip the `sqrt`. Use them whenever you only compare or threshold a distance (`dist3_sq(a, b) < r * r`) rather than needing the metric value.
+
+**Know where SIMD actually helps.** Reach for tenvex on *fused, arithmetic-heavy per-vector expressions* - that is where the lazy template earns its keep. It helps less, or not at all, in two cases worth knowing up front:
+
+| Pattern                                                       | Expectation                                                          |
+| ------------------------------------------------------------- | ------------------------------------------------------------------- |
+| Fused compound (`norm3(a + b*2) * dot3(b,c) + c*3`)           | Clear win over the scalar baseline                                  |
+| Isolated horizontal reduction (`dot3`, `norm3` on their own)  | Little gain - the cross-lane sum dominates, on SSE and NEON alike   |
+| Single-input element-wise pass over an array (`abs`, `floor`, `saturate`) | Memory-bandwidth bound - same time as scalar; SIMD width is irrelevant |
+
+**In a GCC/AArch64 hot loop, bind leaves to a value (or build that unit with Clang).** This is the one *(compiler x backend)* pair with an abstraction cost (see [Is the abstraction zero-cost?](#is-the-abstraction-zero-cost-compiler-x-backend)). Binding the leaf vectors to `vec4` / `vf4` before building the expression removes the dead stack frame GCC/AArch64 would otherwise materialize; compiling that translation unit with Clang avoids it entirely.
+
 ## Architecture
 
 ### Two layers
@@ -159,7 +198,7 @@ vec4 result = norm3(a + b * 2.0f) * dot3(b, c) + c * 3.0f;
 
 ### Storage policy
 
-Each node's operands are stored by value or by `const&` depending on size and triviality. This avoids dangling references to temporary sub-expressions:
+Each node's operands are stored by value or by `const&` depending on size and triviality. Leaves are small and stored by value; only larger composite nodes are held by `const&`. That reference can point at a temporary sub-expression, so a compound expression must not be kept in `auto` past its statement (see [Performance and best practices](#performance-and-best-practices)):
 
 ```cpp
 // trivially copyable && trivially destructible && sizeof(T) <= 16  ->  stored by value
@@ -245,6 +284,23 @@ make config=release_x64      # or: release_arm64, debug_x64, debug_arm64
 ```
 
 Build output is written to `bin/<system>/<arch>/<debug|release>/output/`.
+
+### Compiler choice and optimization
+
+tenvex only collapses to tight code with optimization on. Build the consuming target in **release** (`-O3` on GCC/Clang, `/O2` on MSVC); a debug build leaves the expression nodes as real calls and will be slow - that is expected, not a regression.
+
+**Compiler per platform.** On **x86-64**, GCC, Clang, and MSVC are all zero-cost - use whichever you already have. On **AArch64**, prefer **Clang**: it is zero-cost, whereas GCC's AArch64 backend adds roughly a third to compound expressions (a missed dead-store elimination, detailed under [Is the abstraction zero-cost?](#is-the-abstraction-zero-cost-compiler-x-backend)). If you must use GCC on AArch64, bind reused leaves to a `vec4` in hot loops.
+
+**SSE4.1 is an x64-only flag.** tenvex does not force `-msse4.1` onto consumers. On x64 with GCC/Clang you must enable it yourself (`-msse4.1`, or a wider arch such as `-march=native`); on AArch64, NEON is the baseline and needs no flag. The backend is then selected automatically in `expressions/config.h` from `__SSE4_1__` / `__ARM_NEON` (and `_M_X64` / `_M_ARM64` on MSVC) - there is no manual switch.
+
+**LTO and mixing compilers.** The bundled `release` configuration enables link-time optimization, and LTO bytecode is tied to the exact compiler and version that produced it - a build tree must not mix them. When you switch compiler or version, clean first:
+
+```sh
+make clean config=release_arm64
+make config=release_arm64 CC=clang CXX=clang++
+```
+
+A stale object from another toolchain surfaces at link time as `bytecode stream ... generated with LTO version X instead of the expected Y`; the fix is always a clean rebuild with one consistent compiler (or a separate build directory per toolchain).
 
 ## Running Tests
 
