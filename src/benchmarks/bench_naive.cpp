@@ -79,7 +79,8 @@ static void BM_Naive_Compound(benchmark::State& state)
 	std::size_t i = 0;
 	for (auto _ : state)
 	{
-		vec4 r = norm3(va[i] + vb[i] * 2.0f) * dot3(vb[i], vc[i]) + vc[i] * 3.0f;
+		vec4 a = va[i], b = vb[i], c = vc[i];
+		vec4 r = norm3(a + b * 2.0f) * dot3(b, c) + c * 3.0f;
 		benchmark::DoNotOptimize(r);
 		i = (i + 1) & 1023;
 	}
@@ -248,7 +249,8 @@ static void BM_Naive_Lerp_Throughput(benchmark::State& state)
 	std::size_t i = 0;
 	for (auto _ : state)
 	{
-		vec4 r = lerp(a[i], b[i], 0.35f);
+		vec4 av = a[i], bv = b[i];
+		vec4 r = lerp(av, bv, 0.35f);
 		benchmark::DoNotOptimize(r);
 		i = (i + 1) & 1023;
 	}
@@ -302,7 +304,8 @@ static void BM_Naive_Reflect_Throughput(benchmark::State& state)
 	std::size_t i = 0;
 	for (auto _ : state)
 	{
-		vec4 r = reflect(v[i], n[i]);
+		vec4 vv = v[i], nv = n[i];
+		vec4 r = reflect(vv, nv);
 		benchmark::DoNotOptimize(r);
 		i = (i + 1) & 1023;
 	}

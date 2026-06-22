@@ -10,6 +10,8 @@ using vf4 = __m128;
 #error "tenvex requires SSE4.1 backend"
 #endif
 
+#if defined(TNVX_SSE41)
+
 namespace tnvx::detail
 {
 
@@ -180,3 +182,5 @@ vf4 frac(vf4 v) noexcept
 }
 
 }
+
+#endif

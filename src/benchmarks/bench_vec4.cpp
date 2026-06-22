@@ -91,7 +91,8 @@ static void BM_Compound_tenvex(benchmark::State& state)
 	std::size_t i = 0;
 	for (auto _ : state)
 	{
-		vec4 r = norm3(va[i] + vb[i] * 2.0f) * dot3(vb[i], vc[i]) + vc[i] * 3.0f;
+		vec4 a = va[i], b = vb[i], c = vc[i];
+		vec4 r = norm3(a + b * 2.0f) * dot3(b, c) + c * 3.0f;
 		benchmark::DoNotOptimize(r);
 		i = (i + 1) & 1023;
 	}
@@ -187,7 +188,8 @@ static void BM_Compound_tenvex_vf4(benchmark::State& state)
 	std::size_t i = 0;
 	for (auto _ : state)
 	{
-		vf4 r = (norm3(va[i] + vb[i] * 2.0f) * dot3(vb[i], vc[i]) + vc[i] * 3.0f).eval();
+		vec4 a = va[i], b = vb[i], c = vc[i];
+		vf4 r = (norm3(a + b * 2.0f) * dot3(b, c) + c * 3.0f).eval();
 		benchmark::DoNotOptimize(r);
 		i = (i + 1) & 1023;
 	}
@@ -369,7 +371,8 @@ static void BM_Lerp_Throughput(benchmark::State& state)
 	std::size_t i = 0;
 	for (auto _ : state)
 	{
-		vec4 r = lerp(a[i], b[i], t);
+		vec4 av = a[i], bv = b[i];
+		vec4 r = lerp(av, bv, t);
 		benchmark::DoNotOptimize(r);
 		i = (i + 1) & 1023;
 	}
@@ -424,7 +427,8 @@ static void BM_Reflect_Throughput(benchmark::State& state)
 	std::size_t i = 0;
 	for (auto _ : state)
 	{
-		vec4 r = reflect(v[i], n[i]);
+		vec4 vv = v[i], nv = n[i];
+		vec4 r = reflect(vv, nv);
 		benchmark::DoNotOptimize(r);
 		i = (i + 1) & 1023;
 	}

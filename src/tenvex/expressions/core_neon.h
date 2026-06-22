@@ -10,6 +10,8 @@ using vf4 = float32x4_t;
 #error "tenvex requires NEON backend"
 #endif
 
+#if defined(TNVX_NEON)
+
 namespace tnvx::detail
 {
 
@@ -191,3 +193,5 @@ vf4 frac(vf4 v) noexcept
 }
 
 }
+
+#endif
