@@ -64,7 +64,8 @@ static void BM_Naive_Dot3_Throughput(benchmark::State& state)
 	std::size_t i = 0;
 	for (auto _ : state)
 	{
-		float d = dot3(a[i], b[i]);
+		vec4 aa = a[i], bb = b[i];
+		float d = dot3(aa, bb);
 		benchmark::DoNotOptimize(d);
 		i = (i + 1) & 1023;
 	}
@@ -125,7 +126,8 @@ static void BM_Naive_Dot4_Throughput(benchmark::State& state)
 	std::size_t i = 0;
 	for (auto _ : state)
 	{
-		float d = dot4(a[i], b[i]);
+		vec4 aa = a[i], bb = b[i];
+		float d = dot4(aa, bb);
 		benchmark::DoNotOptimize(d);
 		i = (i + 1) & 1023;
 	}
@@ -139,7 +141,8 @@ static void BM_Naive_Min_Throughput(benchmark::State& state)
 	std::size_t i = 0;
 	for (auto _ : state)
 	{
-		vec4 r = min(a[i], b[i]);
+		vec4 aa = a[i], bb = b[i];
+		vec4 r = min(aa, bb);
 		benchmark::DoNotOptimize(r);
 		i = (i + 1) & 1023;
 	}
@@ -153,7 +156,8 @@ static void BM_Naive_Max_Throughput(benchmark::State& state)
 	std::size_t i = 0;
 	for (auto _ : state)
 	{
-		vec4 r = max(a[i], b[i]);
+		vec4 aa = a[i], bb = b[i];
+		vec4 r = max(aa, bb);
 		benchmark::DoNotOptimize(r);
 		i = (i + 1) & 1023;
 	}
@@ -168,8 +172,9 @@ static void BM_Naive_AABB_Latency(benchmark::State& state)
 	std::size_t i = 0;
 	for (auto _ : state)
 	{
-		lo = min(lo, pts[i]);
-		hi = max(hi, pts[i]);
+		vec4 vtx = pts[i];
+		lo = min(lo, vtx);
+		hi = max(hi, vtx);
 		i = (i + 1) & 1023;
 	}
 	benchmark::DoNotOptimize(lo);
@@ -183,7 +188,8 @@ static void BM_Naive_Abs_Throughput(benchmark::State& state)
 	std::size_t i = 0;
 	for (auto _ : state)
 	{
-		vec4 r = abs(a[i]);
+		vec4 aa = a[i];
+		vec4 r = abs(aa);
 		benchmark::DoNotOptimize(r);
 		i = (i + 1) & 1023;
 	}
@@ -209,7 +215,8 @@ static void BM_Naive_Clamp_Throughput(benchmark::State& state)
 	std::size_t i = 0;
 	for (auto _ : state)
 	{
-		vec4 r = clamp(a[i], lo, hi);
+		vec4 aa = a[i];
+		vec4 r = clamp(aa, lo, hi);
 		benchmark::DoNotOptimize(r);
 		i = (i + 1) & 1023;
 	}
@@ -235,7 +242,8 @@ static void BM_Naive_Saturate_Throughput(benchmark::State& state)
 	std::size_t i = 0;
 	for (auto _ : state)
 	{
-		vec4 r = saturate(a[i]);
+		vec4 aa = a[i];
+		vec4 r = saturate(aa);
 		benchmark::DoNotOptimize(r);
 		i = (i + 1) & 1023;
 	}
@@ -276,7 +284,8 @@ static void BM_Naive_Dist3_Throughput(benchmark::State& state)
 	std::size_t i = 0;
 	for (auto _ : state)
 	{
-		float r = dist3(a[i], b[i]);
+		vec4 aa = a[i], bb = b[i];
+		float r = dist3(aa, bb);
 		benchmark::DoNotOptimize(r);
 		i = (i + 1) & 1023;
 	}
@@ -290,7 +299,8 @@ static void BM_Naive_Dist3Sq_Throughput(benchmark::State& state)
 	std::size_t i = 0;
 	for (auto _ : state)
 	{
-		float r = dist3_sq(a[i], b[i]);
+		vec4 aa = a[i], bb = b[i];
+		float r = dist3_sq(aa, bb);
 		benchmark::DoNotOptimize(r);
 		i = (i + 1) & 1023;
 	}
@@ -330,7 +340,8 @@ static void BM_Naive_Floor_Throughput(benchmark::State& state)
 	std::size_t i = 0;
 	for (auto _ : state)
 	{
-		vec4 r = floor(a[i]);
+		vec4 aa = a[i];
+		vec4 r = floor(aa);
 		benchmark::DoNotOptimize(r);
 		i = (i + 1) & 1023;
 	}
@@ -343,7 +354,8 @@ static void BM_Naive_Ceil_Throughput(benchmark::State& state)
 	std::size_t i = 0;
 	for (auto _ : state)
 	{
-		vec4 r = ceil(a[i]);
+		vec4 aa = a[i];
+		vec4 r = ceil(aa);
 		benchmark::DoNotOptimize(r);
 		i = (i + 1) & 1023;
 	}
@@ -356,7 +368,8 @@ static void BM_Naive_Round_Throughput(benchmark::State& state)
 	std::size_t i = 0;
 	for (auto _ : state)
 	{
-		vec4 r = round(a[i]);
+		vec4 aa = a[i];
+		vec4 r = round(aa);
 		benchmark::DoNotOptimize(r);
 		i = (i + 1) & 1023;
 	}
@@ -369,7 +382,8 @@ static void BM_Naive_Frac_Throughput(benchmark::State& state)
 	std::size_t i = 0;
 	for (auto _ : state)
 	{
-		vec4 r = frac(a[i]);
+		vec4 aa = a[i];
+		vec4 r = frac(aa);
 		benchmark::DoNotOptimize(r);
 		i = (i + 1) & 1023;
 	}
@@ -383,7 +397,8 @@ static void BM_Naive_Hadamard_Throughput(benchmark::State& state)
 	std::size_t i = 0;
 	for (auto _ : state)
 	{
-		vec4 r = hadamard(a[i], b[i]);
+		vec4 aa = a[i], bb = b[i];
+		vec4 r = hadamard(aa, bb);
 		benchmark::DoNotOptimize(r);
 		i = (i + 1) & 1023;
 	}
