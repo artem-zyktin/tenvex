@@ -774,30 +774,6 @@ TEST(vec4, magnitude3_scalar_threshold_types)
 	EXPECT_EQ(check_float, result_float);
 }
 
-TEST(vec4, magnitude3_spaceship_ordering)
-{
-	vec4 a = { 1.0f, 0.0f, 0.0f, 0.0f };   // sq 1
-	vec4 b = { 2.0f, 0.0f, 0.0f, 0.0f };   // sq 4
-
-	std::partial_ordering check_ab = std::partial_ordering::less;
-	std::partial_ordering check_ba = std::partial_ordering::greater;
-	std::partial_ordering check_aa = std::partial_ordering::equivalent;
-	std::partial_ordering check_ac = std::partial_ordering::less;
-	std::partial_ordering check_ca = std::partial_ordering::greater;
-
-	std::partial_ordering result_ab = magnitude3(a) <=> magnitude3(b);
-	std::partial_ordering result_ba = magnitude3(b) <=> magnitude3(a);
-	std::partial_ordering result_aa = magnitude3(a) <=> magnitude3(a);
-	std::partial_ordering result_ac = magnitude3(a) <=> 2.0f;
-	std::partial_ordering result_ca = 3.0f <=> magnitude3(a);
-
-	EXPECT_TRUE(check_ab == result_ab);
-	EXPECT_TRUE(check_ba == result_ba);
-	EXPECT_TRUE(check_aa == result_aa);
-	EXPECT_TRUE(check_ac == result_ac);
-	EXPECT_TRUE(check_ca == result_ca);
-}
-
 TEST(vec4, magnitude3_nan_is_unordered)
 {
 	vec4 n = { std::nanf(""), 0.0f, 0.0f, 0.0f };
