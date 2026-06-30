@@ -26,7 +26,7 @@ BSD 3-Clause License. Copyright (c) 2026 Artem Zyktin. See [LICENSE.txt](LICENSE
 - Expression-template engine: nodes are lazy and evaluated on assignment.
 - C++20 concepts (`expression`, `vec_expr`, `scalar_expr`) enforce type safety at compile time.
 - Storage policy: leaves (trivially-copyable, 16 bytes or less) are stored by value; larger composite nodes by `const&`. Because that reference can outlive a temporary sub-expression, assign compound expressions to a `vec4` / `float` rather than `auto` (see [Performance and best practices](#performance-and-best-practices)).
-- Operations: `+`, `-` (binary), `-` (unary negation), `*` (scalar), `/` (by scalar), `dot3`, `dot4`, `cross3`, `norm3`, `magnitude3`, `magnitude3_sq`, `min`, `max`, `abs`, `hadamard` (component-wise), `floor`, `ceil`, `round`, `frac` (rounding), `clamp`, `saturate`, `lerp`, `dist3`, `dist3_sq`, `reflect` (composed), `==`, `approx_eq`, and component accessors `x()`, `y()`, `z()`, `w()`.
+- Operations: `+`, `-` (binary), `-` (unary negation), `*` (scalar), `/` (by scalar), `dot3`, `dot4`, `cross3`, `norm3`, `norm3_fast` (approximate, see below), `magnitude3`, `magnitude3_sq`, `min`, `max`, `abs`, `hadamard` (component-wise), `floor`, `ceil`, `round`, `frac` (rounding), `clamp`, `saturate`, `lerp`, `dist3`, `dist3_sq`, `reflect` (composed), `==`, `approx_eq`, ordered magnitude comparisons (`<`, `<=`, `>`, `>=` on `magnitude3`, see [Comparison](#comparison)), and component accessors `x()`, `y()`, `z()`, `w()`.
 
 ## Requirements
 
@@ -132,6 +132,23 @@ bool approx1 = approx_eq(a, b);        // default epsilon = 1e-6f
 bool approx2 = approx_eq(a, b, 1e-3f); // custom epsilon
 ```
 
+**Ordered magnitude comparisons.** The relational operators `<`, `<=`, `>`, `>=` on `magnitude3` compare lengths *without computing either square root*. Because length is non-negative, ordering by length and ordering by squared length agree, so the comparison is rewritten to run on `magnitude3_sq` (a `dot3`, no `sqrt`):
+
+```cpp
+vec4 a = { ... }, b = { ... };
+
+bool closer = magnitude3(a) < magnitude3(b);   // no sqrt on either side
+bool inside = magnitude3(a) < radius;          // one sqrt removed; precondition: radius >= 0
+bool outside = 8.0f < magnitude3(a);           // scalar on either side
+```
+
+This is the only place in the library where the result is **not** bit-identical to the naive `length(a) < length(b)`: the squared form is in fact *more* discriminating near rounding collisions, and on the comparison path the abstraction is faster than the naive baseline (the compiler cannot prove the `sqrt` away on its own). Notes:
+
+- **Precondition for the scalar form:** the threshold must be non-negative (`magnitude3(a) < c` assumes `c >= 0`). A negative threshold is a caller error and is not checked.
+- **`==` / `!=` are deliberately *not* de-`sqrt`'d** — they fall back to the exact `float` length (two real `sqrt`s), since equality of lengths is exactly where rounding collisions bite hardest.
+- **NaN:** if any input is NaN the magnitude is NaN and all four relations read `false`, matching the IEEE behaviour of the exact path.
+- **Dynamic range caveat:** squaring doubles the exponent range, so the de-`sqrt` form can overflow on planetary/astronomical coordinates (and underflow on tiny vectors) where the exact `sqrt` form would not. For graphics-scale data this never triggers.
+
 ## Performance and best practices
 
 tenvex is zero-overhead when used the way the optimizer expects. A few rules keep the generated code tight and steer around the one real footgun.
@@ -159,7 +176,16 @@ vec4 r2 = norm3(t) * dot3(t, c);
 
 This is the right "cache". A mutable caching node would defeat the compiler's common-subexpression elimination and is a pessimization for small SIMD expressions; an explicit `vec4` binding has zero overhead and lets the compiler fuse freely.
 
-**Prefer the squared forms for comparisons.** `magnitude3_sq` and `dist3_sq` skip the `sqrt`. Use them whenever you only compare or threshold a distance (`dist3_sq(a, b) < r * r`) rather than needing the metric value.
+**Prefer the squared forms for comparisons.** `magnitude3_sq` and `dist3_sq` skip the `sqrt`. Use them whenever you only compare or threshold a distance (`dist3_sq(a, b) < r * r`) rather than needing the metric value. The ordered `magnitude3` comparisons (`magnitude3(a) < magnitude3(b)`, `magnitude3(a) < r`) apply the same trick automatically — see [Comparison](#comparison).
+
+**`norm3_fast` is not universally faster — measure before reaching for it.** `norm3_fast` replaces the exact `sqrt` + `div` of `norm3` with a hardware reciprocal-sqrt estimate refined by one Newton-Raphson step. Its result is approximate (near full `float` precision after the Newton step) and its speed is *backend- and mode-dependent*:
+
+| | throughput | latency (dependent chain) |
+| ---------------- | ---------- | ------------------------- |
+| x86-64 / SSE4.1  | ~1.1x faster | ~1.1x faster |
+| ARM64 / NEON     | ~1.1x faster | **~1.0x — slightly slower** |
+
+On Cortex-A76 the Newton-Raphson refinement is a 5-link dependency chain versus the 2 links of `fsqrt` + `fdiv`, so on the critical path `norm3_fast` *loses* to exact `norm3`. Use it only where normalization is throughput-bound, or x86-only, and never assume the folklore "rsqrt is faster" without checking your target. `norm3` remains the correct default; `norm3_fast` is an opt-in for callers who have measured a win.
 
 **Know where SIMD actually helps.** Reach for tenvex on *fused, arithmetic-heavy per-vector expressions* - that is where the lazy template earns its keep. It helps less, or not at all, in two cases worth knowing up front:
 
@@ -225,6 +251,7 @@ The **Intrinsics** column lists the SSE4.1 (x86-64) backend; the NEON (AArch64) 
 | `Dot4<L,R>`   | `scalar_expr` | `_mm_mul_ps` + `_mm_hadd_ps` x2                             | 4-component dot (includes w), broadcast to all lanes; convertible to `float` |
 | `Cross3<L,R>` | `vec_expr`    | `_mm_shuffle_ps` + `_mm_mul_ps` + `_mm_sub_ps`              | 3-component cross product; result `w = 0`                                   |
 | `Norm3<E>`    | `vec_expr`    | `dot3` + `_mm_sqrt_ps` + `_mm_div_ps` + `_mm_blend_ps`      | Normalizes xyz by the 3D magnitude; preserves w                             |
+| `Norm3Fast<E>` | `vec_expr`   | `dot3` + `_mm_rsqrt_ps` + Newton step + `_mm_mul_ps`        | Approximate normalize via reciprocal-sqrt estimate; preserves w; backend-dependent speed (see [Performance](#performance-and-best-practices)) |
 | `Magn3<E>`    | `scalar_expr` | `_mm_sqrt_ps` + `dot3(v,v)`                                  | 3-component length (ignores w), broadcast; convertible to `float`           |
 | `Magn3Sq<E>`  | `scalar_expr` | `dot3(v,v)`                                                 | 3-component length squared (no `sqrt`); broadcast; convertible to `float`   |
 | `Min<L,R>`    | `vec_expr`    | `_mm_min_ps`                                                | Component-wise minimum across all 4 lanes                                   |
