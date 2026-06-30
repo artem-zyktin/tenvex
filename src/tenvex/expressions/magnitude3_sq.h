@@ -12,7 +12,7 @@ template<vec_expr E>
 struct Magn3Sq : Expr<Magn3Sq<E>>
 {
 	TNVX_INLINE
-	explicit Magn3Sq(const E& e) noexcept;
+	explicit Magn3Sq(const E& TNVX_RESTRICT e) noexcept;
 
 	[[nodiscard]] TNVX_INLINE
 	vf4 eval() const noexcept;

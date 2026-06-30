@@ -7,7 +7,7 @@ namespace tnvx
 
 template<vec_expr E>
 TNVX_INLINE 
-Magn3Sq<E>::Magn3Sq(const E& e) noexcept
+Magn3Sq<E>::Magn3Sq(const E& TNVX_RESTRICT e) noexcept
 	: _e(e)
 {
 }
