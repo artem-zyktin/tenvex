@@ -1011,4 +1011,58 @@ TEST(vec4, norm3_fast_expression)
 	EXPECT_TRUE(approx_eq(check, result, 1e-3f));
 }
 
+TEST(vec4, div_by_scalar_expr_dot3)
+{
+	vec4 v = { 6.0f, 9.0f, 12.0f, 0.0f };
+	vec4 a = { 1.0f, 0.0f, 0.0f, 0.0f };
+	vec4 b = { 3.0f, 0.0f, 0.0f, 0.0f };
+	vec4 check = { 2.0f, 3.0f, 4.0f, 0.0f };
+	vec4 result = v / dot3(a, b);
+
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, div_by_scalar_expr_magnitude)
+{
+	vec4 v = { 6.0f, 9.0f, 12.0f, 3.0f };
+	vec4 a = { 1.0f, 2.0f, 2.0f, 0.0f };
+	vec4 check = { 2.0f, 3.0f, 4.0f, 1.0f };
+	vec4 result = v / magnitude3(a);
+
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, div_by_scalar_expr_stays_lazy)
+{
+	vec4 v = { 4.0f, 8.0f, 0.0f, 0.0f };
+	vec4 a = { 2.0f, 0.0f, 0.0f, 0.0f };
+	vec4 b = { 1.0f, 0.0f, 0.0f, 0.0f };
+
+	EXPECT_TRUE((vec_expr<decltype(v / dot3(a, b))>));
+
+	vec4 check = { 2.0f, 4.0f, 0.0f, 0.0f };
+	vec4 result = v / dot3(a, b);
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, div_by_scalar_expr_in_expression)
+{
+	vec4 v = { 6.0f, 9.0f, 12.0f, 0.0f };
+	vec4 a = { 1.0f, 0.0f, 0.0f, 0.0f };
+	vec4 b = { 3.0f, 0.0f, 0.0f, 0.0f };
+	vec4 check = { 8.0f, 12.0f, 16.0f, 0.0f };
+	vec4 result = v / dot3(a, b) + v;
+
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, div_by_float_still_works)
+{
+	vec4 v = { 3.0f, 6.0f, 0.0f, 0.0f };
+	vec4 check = { 1.0f, 2.0f, 0.0f, 0.0f };
+	vec4 result = v / 3.0f;
+
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
 }

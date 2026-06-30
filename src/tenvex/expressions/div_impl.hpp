@@ -27,4 +27,10 @@ Div<E, Scalar> operator/(const E& l, float r) noexcept
 	return { l, Scalar(r) };
 }
 
+template<vec_expr L, scalar_expr R>
+TNVX_INLINE Div<L, R> operator/(const L& l, const R& r) noexcept
+{
+	return { l, r };
+}
+
 }

@@ -28,6 +28,10 @@ template<vec_expr E>
 [[nodiscard]] TNVX_INLINE
 Div<E, Scalar> operator/(const E& l, float r) noexcept;
 
+template<vec_expr L, scalar_expr R>
+[[nodiscard]] TNVX_INLINE
+Div<L, R> operator/(const L& l, const R& r) noexcept;
+
 template<vec_expr L, scalar_expr R> inline constexpr bool is_vec_expr<Div<L, R>> = true;
 
 }
