@@ -33,4 +33,4 @@ template<vec_expr L, vec_expr R> inline constexpr bool is_scalar_expr<Dot3<L, R>
 
 }
 
-#include "dot3_impl.h"
+#include "dot3_impl.hpp"
