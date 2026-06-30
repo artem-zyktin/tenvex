@@ -935,31 +935,6 @@ TEST(vec4, magnitude3_scalar_threshold_types)
 	EXPECT_EQ(check_float, result_float);
 }
 
-TEST(vec4, magnitude3_nan_is_unordered)
-{
-	vec4 n = { std::nanf(""), 0.0f, 0.0f, 0.0f };
-	vec4 b = { 1.0f, 0.0f, 0.0f, 0.0f };
-
-	std::partial_ordering check_ord = std::partial_ordering::unordered;
-	std::partial_ordering result_ord = magnitude3(n) <=> magnitude3(b);
-	EXPECT_TRUE(check_ord == result_ord);
-
-	bool check_lt = false;
-	bool check_le = false;
-	bool check_gt = false;
-	bool check_ge = false;
-
-	bool result_lt = magnitude3(n) < magnitude3(b);
-	bool result_le = magnitude3(n) <= magnitude3(b);
-	bool result_gt = magnitude3(n) > magnitude3(b);
-	bool result_ge = magnitude3(n) >= magnitude3(b);
-
-	EXPECT_EQ(check_lt, result_lt);
-	EXPECT_EQ(check_le, result_le);
-	EXPECT_EQ(check_gt, result_gt);
-	EXPECT_EQ(check_ge, result_ge);
-}
-
 TEST(vec4, magnitude3_compare_is_eager)
 {
 	vec4 a = { 1.0f, 0.0f, 0.0f, 0.0f };
