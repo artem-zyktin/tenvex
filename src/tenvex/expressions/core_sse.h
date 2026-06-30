@@ -181,6 +181,25 @@ vf4 frac(vf4 v) noexcept
 	return _mm_sub_ps(v, _mm_floor_ps(v));
 }
 
+[[nodiscard]] TNVX_INLINE
+vf4 rsqrt(vf4 x) noexcept
+{
+	// 1/sqrt(x) estimate refined by one Newton-Raphson step:
+	// y1 = y0 * (1.5 - 0.5*x*y0*y0)
+	const vf4 y0 = _mm_rsqrt_ps(x);
+	const vf4 y0sq = _mm_mul_ps(y0, y0);
+	const vf4 t = _mm_sub_ps(_mm_set1_ps(1.5f),
+							 _mm_mul_ps(_mm_mul_ps(_mm_set1_ps(0.5f), x), y0sq));
+	return _mm_mul_ps(y0, t);
+}
+
+[[nodiscard]] TNVX_INLINE
+vf4 norm3_fast(vf4 v) noexcept
+{
+	const vf4 inv_len = rsqrt(dot3(v, v));
+	return _mm_blend_ps(_mm_mul_ps(v, inv_len), v, 0b1000);
+}
+
 }
 
 #endif

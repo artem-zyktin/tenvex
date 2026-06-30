@@ -588,3 +588,48 @@ static void BM_MagLess_Latency(benchmark::State& state)
 	}
 }
 BENCHMARK(BM_MagLess_Latency);
+
+// =====================================================================
+// Exact norm3 (sqrt + div) vs norm3_fast (rsqrt estimate + one Newton
+// step). The "rsqrt is faster" folklore predates cheap hardware sqrt/div;
+// on Zen3 and especially Cortex-A76 the Newton chain may not pay. Decide
+// by these numbers, per ISA, per mode - do not cross-compare modes.
+// =====================================================================
+static void BM_Norm3_Throughput(benchmark::State& state)
+{
+	const auto a = make_vecs(1024, 1);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		vec4 aa = a[i];
+		vec4 r = norm3(aa);
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 1023;
+	}
+}
+BENCHMARK(BM_Norm3_Throughput);
+
+static void BM_Norm3Fast_Throughput(benchmark::State& state)
+{
+	const auto a = make_vecs(1024, 1);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		vec4 aa = a[i];
+		vec4 r = norm3_fast(aa);
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 1023;
+	}
+}
+BENCHMARK(BM_Norm3Fast_Throughput);
+
+static void BM_Norm3Fast_Latency(benchmark::State& state)
+{
+	vec4 v { 1.0f, 2.0f, 3.0f, 1.0f };
+	for (auto _ : state)
+	{
+		v = norm3_fast(v) + vec4 { 1e-3f, 2e-3f, 3e-3f, 0.0f };
+		benchmark::DoNotOptimize(v);
+	}
+}
+BENCHMARK(BM_Norm3Fast_Latency);
