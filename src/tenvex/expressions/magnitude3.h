@@ -20,6 +20,9 @@ struct Magn3 : Expr<Magn3<E>>
 	[[nodiscard]] TNVX_INLINE
 	operator float() const noexcept;
 
+	[[nodiscard]] TNVX_INLINE
+	const E& operand() const noexcept;
+
 private:
 	tnvx_ref_or_value_t<E> _e;
 };
