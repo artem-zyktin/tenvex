@@ -11,15 +11,59 @@ namespace tnvx
 
 template<vec_expr A, vec_expr B>
 [[nodiscard]] TNVX_INLINE
-std::partial_ordering operator<=>(const Magn3<A>& a, const Magn3<B>& b) noexcept;
+bool operator<(const Magn3<A>& a, const Magn3<B>& b) noexcept;
 
-template<vec_expr A, class F> requires std::is_arithmetic_v<F>
+template<vec_expr A, typename F>
+requires std::is_arithmetic_v<F>
 [[nodiscard]] TNVX_INLINE
-std::partial_ordering operator<=>(const Magn3<A>& a, F c) noexcept;
+bool operator<(const Magn3<A>& a, F c) noexcept;
 
-template<vec_expr A, class F> requires std::is_arithmetic_v<F>
+template<vec_expr A, typename F>
+requires std::is_arithmetic_v<F>
 [[nodiscard]] TNVX_INLINE
-std::partial_ordering operator<=>(F c, const Magn3<A>& a) noexcept;
+bool operator<(F c, const Magn3<A>& a) noexcept;
+
+template<vec_expr A, vec_expr B>
+[[nodiscard]] TNVX_INLINE
+bool operator<=(const Magn3<A>& a, const Magn3<B>& b) noexcept;
+
+template<vec_expr A, typename F>
+requires std::is_arithmetic_v<F>
+[[nodiscard]] TNVX_INLINE
+bool operator<=(const Magn3<A>& a, F c) noexcept;
+
+template<vec_expr A, typename F>
+requires std::is_arithmetic_v<F>
+[[nodiscard]] TNVX_INLINE
+bool operator<=(F c, const Magn3<A>& a) noexcept;
+
+template<vec_expr A, vec_expr B>
+[[nodiscard]] TNVX_INLINE
+bool operator>(const Magn3<A>& a, const Magn3<B>& b) noexcept;
+
+template<vec_expr A, typename F>
+requires std::is_arithmetic_v<F>
+[[nodiscard]] TNVX_INLINE
+bool operator>(const Magn3<A>& a, F c) noexcept;
+
+template<vec_expr A, typename F>
+requires std::is_arithmetic_v<F>
+[[nodiscard]] TNVX_INLINE
+bool operator>(F c, const Magn3<A>& a) noexcept;
+
+template<vec_expr A, vec_expr B>
+[[nodiscard]] TNVX_INLINE
+bool operator>=(const Magn3<A>& a, const Magn3<B>& b) noexcept;
+
+template<vec_expr A, typename F>
+requires std::is_arithmetic_v<F>
+[[nodiscard]] TNVX_INLINE
+bool operator>=(const Magn3<A>& a, F c) noexcept;
+
+template<vec_expr A, typename F>
+requires std::is_arithmetic_v<F>
+[[nodiscard]] TNVX_INLINE
+bool operator>=(F c, const Magn3<A>& a) noexcept;
 
 }
 
