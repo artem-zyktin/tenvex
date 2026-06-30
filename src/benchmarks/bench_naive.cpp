@@ -449,15 +449,15 @@ BENCHMARK(BM_Naive_MagLessConst_Throughput);
 
 static void BM_Naive_MagLess_Latency(benchmark::State& state)
 {
-	vec4 a { 0.3f, 0.4f, 0.5f, 0.0f };
-	vec4 b { 0.9f, 0.1f, 0.2f, 0.0f };
-	float jitter = 0.0f;
+	const auto a = make_vecs(1024, 1);
+	const auto b = make_vecs(1024, 2);
+	std::size_t i = 0;
 	for (auto _ : state)
 	{
-		vec4 aa = a + vec4 { jitter, 0.0f, 0.0f, 0.0f };
-		bool closer = magnitude3(aa) < magnitude3(b);
-		jitter = closer ? 1e-6f : -1e-6f;
-		benchmark::DoNotOptimize(closer);
+		vec4 aa = a[i], bb = b[i];
+		bool closer = magnitude3(aa) < magnitude3(bb);
+		i = (i + (closer ? 1u : 3u)) & 1023;
+		benchmark::DoNotOptimize(i);
 	}
 }
 BENCHMARK(BM_Naive_MagLess_Latency);
