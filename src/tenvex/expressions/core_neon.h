@@ -194,4 +194,22 @@ vf4 frac(vf4 v) noexcept
 
 }
 
+[[nodiscard]] TNVX_INLINE
+vf4 rsqrt(vf4 x) noexcept
+{
+	// 1/sqrt(x) estimate refined by one Newton-Raphson step:
+	// y1 = y0 * (1.5 - 0.5*x*y0*y0)
+	float32x4_t y0 = vrsqrteq_f32(x);
+	y0 = vmulq_f32(y0, vrsqrtsq_f32(vmulq_f32(x, y0), y0));
+	return y0;
+}
+
+[[nodiscard]] TNVX_INLINE
+vf4 norm3_fast(vf4 v) noexcept
+{
+	const float32x4_t inv_len = rsqrt(dot3(v, v));
+	const float32x4_t n = vmulq_f32(v, inv_len);
+	return vsetq_lane_f32(vgetq_lane_f32(v, 3), n, 3);
+}
+
 #endif
