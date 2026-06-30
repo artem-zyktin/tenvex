@@ -972,4 +972,68 @@ TEST(vec4, magnitude3_compare_is_eager)
 	EXPECT_EQ(check, result);
 }
 
+TEST(vec4, norm3_fast_unit_length)
+{
+	vec4 a = { 3.0f, 1.0f, 4.0f, 0.0f };
+	float check = 1.0f;
+	float result = magnitude3(norm3_fast(a));
+
+	EXPECT_NEAR(check, result, 1e-3f);
+}
+
+TEST(vec4, norm3_fast_matches_exact)
+{
+	vec4 a = { 1.0f, 2.0f, 2.0f, 0.0f };
+	vec4 check = norm3(a);
+	vec4 result = norm3_fast(a);
+
+	EXPECT_TRUE(approx_eq(check, result, 1e-3f));
+}
+
+TEST(vec4, norm3_fast_axis_aligned)
+{
+	vec4 a = { 5.0f, 0.0f, 0.0f, 0.0f };
+	vec4 check = { 1.0f, 0.0f, 0.0f, 0.0f };
+	vec4 result = norm3_fast(a);
+
+	EXPECT_TRUE(approx_eq(check, result, 1e-3f));
+}
+
+TEST(vec4, norm3_fast_preserves_w)
+{
+	vec4 a = { 0.0f, 3.0f, 0.0f, 9.0f };
+	vec4 result = norm3_fast(a);
+
+	EXPECT_NEAR(result.y(), 1.0f, 1e-3f);
+	EXPECT_FLOAT_EQ(result.w(), 9.0f);
+}
+
+TEST(vec4, norm3_fast_ignores_w_in_length)
+{
+	vec4 a = { 3.0f, 0.0f, 4.0f, 100.0f };
+	float check = 1.0f;
+	float result = magnitude3(norm3_fast(a));
+
+	EXPECT_NEAR(check, result, 1e-3f);
+}
+
+TEST(vec4, norm3_fast_zero_vector_is_nan)
+{
+	vec4 z = { 0.0f, 0.0f, 0.0f, 0.0f };
+	vec4 result = norm3_fast(z);
+
+	EXPECT_TRUE(std::isnan(result.x()));
+}
+
+TEST(vec4, norm3_fast_expression)
+{
+	vec4 a = { 1.0f, 0.0f, 0.0f, 0.0f };
+	vec4 b = { 0.0f, 2.0f, 0.0f, 0.0f };
+	vec4 check = { 0.4472136f, 0.8944272f, 0.0f, 0.0f };
+	vec4 result = norm3_fast(a + b);
+
+	EXPECT_TRUE((vec_expr<decltype(norm3_fast(a + b))>));
+	EXPECT_TRUE(approx_eq(check, result, 1e-3f));
+}
+
 }
