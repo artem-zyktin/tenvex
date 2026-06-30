@@ -539,3 +539,52 @@ static void BM_Hadamard_Latency(benchmark::State& state)
 	}
 }
 BENCHMARK(BM_Hadamard_Latency);
+
+// =====================================================================
+// magnitude comparison: tenvex de-sqrts (Magn3Sq), naive does two sqrts.
+// Compare against the BM_Naive_MagLess_* mirror on identical seeds.
+// =====================================================================
+static void BM_MagLess_Throughput(benchmark::State& state)
+{
+	const auto a = make_vecs(1024, 1);
+	const auto b = make_vecs(1024, 2);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		vec4 aa = a[i], bb = b[i];
+		bool r = magnitude3(aa) < magnitude3(bb);
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 1023;
+	}
+}
+BENCHMARK(BM_MagLess_Throughput);
+
+static void BM_MagLessConst_Throughput(benchmark::State& state)
+{
+	const auto a = make_vecs(1024, 1);
+	const float radius = 0.75f;
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		vec4 aa = a[i];
+		bool r = magnitude3(aa) < radius;
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 1023;
+	}
+}
+BENCHMARK(BM_MagLessConst_Throughput);
+
+static void BM_MagLess_Latency(benchmark::State& state)
+{
+	const auto a = make_vecs(1024, 1);
+	const auto b = make_vecs(1024, 2);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		vec4 aa = a[i], bb = b[i];
+		bool closer = magnitude3(aa) < magnitude3(bb);
+		i = (i + (closer ? 1u : 3u)) & 1023;
+		benchmark::DoNotOptimize(i);
+	}
+}
+BENCHMARK(BM_MagLess_Latency);
