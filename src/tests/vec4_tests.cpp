@@ -832,4 +832,168 @@ TEST(vec4, hadamard_expression)
 	EXPECT_TRUE(approx_eq(expected, result));
 }
 
+TEST(vec4, magnitude3_less_all_relations)
+{
+	vec4 a = { 1.0f, 2.0f, 2.0f, 0.0f };
+	vec4 b = { 3.0f, 0.0f, 4.0f, 0.0f };
+
+	bool check_lt = true;
+	bool check_le = true;
+	bool check_gt = false;
+	bool check_ge = false;
+
+	bool result_lt = magnitude3(a) < magnitude3(b);
+	bool result_le = magnitude3(a) <= magnitude3(b);
+	bool result_gt = magnitude3(a) > magnitude3(b);
+	bool result_ge = magnitude3(a) >= magnitude3(b);
+
+	EXPECT_EQ(check_lt, result_lt);
+	EXPECT_EQ(check_le, result_le);
+	EXPECT_EQ(check_gt, result_gt);
+	EXPECT_EQ(check_ge, result_ge);
+}
+
+TEST(vec4, magnitude3_equal_relations)
+{
+	vec4 a = { 1.0f, 2.0f, 2.0f, 0.0f };
+	vec4 b = { 2.0f, 2.0f, 1.0f, 0.0f };
+
+	bool check_lt = false;
+	bool check_le = true;
+	bool check_gt = false;
+	bool check_ge = true;
+	bool check_eq = true;
+	bool check_ne = false;
+
+	bool result_lt = magnitude3(a) < magnitude3(b);
+	bool result_le = magnitude3(a) <= magnitude3(b);
+	bool result_gt = magnitude3(a) > magnitude3(b);
+	bool result_ge = magnitude3(a) >= magnitude3(b);
+	bool result_eq = magnitude3(a) == magnitude3(b);
+	bool result_ne = magnitude3(a) != magnitude3(b);
+
+	EXPECT_EQ(check_lt, result_lt);
+	EXPECT_EQ(check_le, result_le);
+	EXPECT_EQ(check_gt, result_gt);
+	EXPECT_EQ(check_ge, result_ge);
+	EXPECT_EQ(check_eq, result_eq);
+	EXPECT_EQ(check_ne, result_ne);
+}
+
+TEST(vec4, magnitude3_less_scalar_both_positions)
+{
+	vec4 a = { 3.0f, 0.0f, 4.0f, 0.0f };
+
+	bool check_lt6 = true;
+	bool check_lt4 = false;
+	bool check_gt4 = true;
+	bool check_le5 = true;
+	bool check_ge5 = true;
+
+	bool result_lt6 = magnitude3(a) < 6.0f;
+	bool result_lt4 = magnitude3(a) < 4.0f;
+	bool result_gt4 = magnitude3(a) > 4.0f;
+	bool result_le5 = magnitude3(a) <= 5.0f;
+	bool result_ge5 = magnitude3(a) >= 5.0f;
+
+	EXPECT_EQ(check_lt6, result_lt6);
+	EXPECT_EQ(check_lt4, result_lt4);
+	EXPECT_EQ(check_gt4, result_gt4);
+	EXPECT_EQ(check_le5, result_le5);
+	EXPECT_EQ(check_ge5, result_ge5);
+
+	bool check_6gt = true;
+	bool check_4lt = true;
+	bool check_5ge = true;
+
+	bool result_6gt = 6.0f >= magnitude3(a);
+	bool result_4lt = 4.0f < magnitude3(a);
+	bool result_5ge = 5.0f >= magnitude3(a);
+
+	EXPECT_EQ(check_6gt, result_6gt);
+	EXPECT_EQ(check_4lt, result_4lt);
+	EXPECT_EQ(check_5ge, result_5ge);
+}
+
+TEST(vec4, magnitude3_scalar_threshold_types)
+{
+	vec4 a = { 3.0f, 0.0f, 4.0f, 0.0f };
+
+	bool check_int_6 = true;
+	bool check_int_5 = false;
+	bool check_double = true;
+	bool check_float = true;
+
+	bool result_int_6 = magnitude3(a) < 6;
+	bool result_int_5 = magnitude3(a) < 5;
+	bool result_double = magnitude3(a) < 5.5;
+	bool result_float = magnitude3(a) < 5.5f;
+
+	EXPECT_EQ(check_int_6, result_int_6);
+	EXPECT_EQ(check_int_5, result_int_5);
+	EXPECT_EQ(check_double, result_double);
+	EXPECT_EQ(check_float, result_float);
+}
+
+TEST(vec4, magnitude3_spaceship_ordering)
+{
+	vec4 a = { 1.0f, 0.0f, 0.0f, 0.0f };   // sq 1
+	vec4 b = { 2.0f, 0.0f, 0.0f, 0.0f };   // sq 4
+
+	std::partial_ordering check_ab = std::partial_ordering::less;
+	std::partial_ordering check_ba = std::partial_ordering::greater;
+	std::partial_ordering check_aa = std::partial_ordering::equivalent;
+	std::partial_ordering check_ac = std::partial_ordering::less;
+	std::partial_ordering check_ca = std::partial_ordering::greater;
+
+	std::partial_ordering result_ab = magnitude3(a) <=> magnitude3(b);
+	std::partial_ordering result_ba = magnitude3(b) <=> magnitude3(a);
+	std::partial_ordering result_aa = magnitude3(a) <=> magnitude3(a);
+	std::partial_ordering result_ac = magnitude3(a) <=> 2.0f;
+	std::partial_ordering result_ca = 3.0f <=> magnitude3(a);
+
+	EXPECT_TRUE(check_ab == result_ab);
+	EXPECT_TRUE(check_ba == result_ba);
+	EXPECT_TRUE(check_aa == result_aa);
+	EXPECT_TRUE(check_ac == result_ac);
+	EXPECT_TRUE(check_ca == result_ca);
+}
+
+TEST(vec4, magnitude3_nan_is_unordered)
+{
+	vec4 n = { std::nanf(""), 0.0f, 0.0f, 0.0f };
+	vec4 b = { 1.0f, 0.0f, 0.0f, 0.0f };
+
+	std::partial_ordering check_ord = std::partial_ordering::unordered;
+	std::partial_ordering result_ord = magnitude3(n) <=> magnitude3(b);
+	EXPECT_TRUE(check_ord == result_ord);
+
+	bool check_lt = false;
+	bool check_le = false;
+	bool check_gt = false;
+	bool check_ge = false;
+
+	bool result_lt = magnitude3(n) < magnitude3(b);
+	bool result_le = magnitude3(n) <= magnitude3(b);
+	bool result_gt = magnitude3(n) > magnitude3(b);
+	bool result_ge = magnitude3(n) >= magnitude3(b);
+
+	EXPECT_EQ(check_lt, result_lt);
+	EXPECT_EQ(check_le, result_le);
+	EXPECT_EQ(check_gt, result_gt);
+	EXPECT_EQ(check_ge, result_ge);
+}
+
+TEST(vec4, magnitude3_compare_is_eager)
+{
+	vec4 a = { 1.0f, 0.0f, 0.0f, 0.0f };
+	vec4 b = { 2.0f, 0.0f, 0.0f, 0.0f };
+
+	bool check = true;
+	bool result = magnitude3(a) < magnitude3(b);
+
+	EXPECT_TRUE((std::same_as<decltype(result), bool>));
+	EXPECT_EQ(check, result);
+}
+
 }
