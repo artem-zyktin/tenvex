@@ -22,4 +22,7 @@ concept vec_expr = expression<T> && is_vec_expr<T>;
 template<typename T>
 concept scalar_expr = expression<T> && is_scalar_expr<T>;
 
+template<typename T>
+concept quat_expr = expression<T> && is_quat_expr<T>;
+
 }

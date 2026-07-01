@@ -26,6 +26,7 @@ private:
 
 template<vec_expr E> inline constexpr bool is_vec_expr<Neg<E>> = true;
 template<scalar_expr E> inline constexpr bool is_scalar_expr<Neg<E>> = true;
+template<quat_expr E> inline constexpr bool is_quat_expr<Neg<E>> = true;
 
 template<expression E>
 [[nodiscard]] TNVX_INLINE
