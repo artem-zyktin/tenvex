@@ -22,5 +22,6 @@
 #include "expressions/round.h"
 #include "expressions/ceil.h"
 #include "expressions/frac.h"
+#include "expressions/with_w.h"
 #include "expressions/operations.h"
 #include "expressions/vec4.h"
