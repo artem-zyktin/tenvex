@@ -200,6 +200,12 @@ vf4 norm3_fast(vf4 v) noexcept
 	return _mm_blend_ps(_mm_mul_ps(v, inv_len), v, 0b1000);
 }
 
+[[nodiscard]] TNVX_INLINE
+vf4 with_w(vf4 xyz_source, vf4 w_source)
+{
+	return _mm_blend_ps(xyz_source, w_source, 0b1000);
 }
+
+} // namespace tnvx::detail
 
 #endif
