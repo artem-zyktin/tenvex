@@ -210,6 +210,12 @@ vf4 norm3_fast(vf4 v) noexcept
 	return vsetq_lane_f32(vgetq_lane_f32(v, 3), n, 3);
 }
 
+[[nodiscard]] TNVX_INLINE
+vf4 with_w(vf4 xyz_source, vf4 w_source)
+{
+	return vcopyq_laneq_f32(xyz_source, 3, w_source, 3);
+}
+
 }
 
 #endif
