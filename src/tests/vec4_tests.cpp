@@ -1065,4 +1065,112 @@ TEST(vec4, div_by_float_still_works)
 	EXPECT_TRUE(approx_eq(check, result));
 }
 
+TEST(vec4, with_w_basic)
+{
+	vec4 value = { 1.0f, 2.0f, 3.0f, 4.0f };
+	vec4 w_src = { 0.0f, 0.0f, 0.0f, 9.0f };
+	vec4 check = { 1.0f, 2.0f, 3.0f, 9.0f };
+	vec4 result = with_w(value, w_src);
+
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+// The core contract: xyz must come from `value`, w must come from `w_source`.
+// Both operands carry distinct, non-trivial values in every lane, so a wrong
+// impl (keeping value's w, or leaking w_source's xyz) fails here.
+TEST(vec4, with_w_takes_w_from_source_not_value)
+{
+	vec4 value = { 1.0f, 2.0f, 3.0f, 99.0f };
+	vec4 w_src = { 7.0f, 8.0f, 9.0f, 5.0f };
+	vec4 check = { 1.0f, 2.0f, 3.0f, 5.0f };
+	vec4 result = with_w(value, w_src);
+
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, with_w_source_xyz_does_not_leak)
+{
+	vec4 value = { 1.0f, 2.0f, 3.0f, 0.0f };
+	vec4 w_src = { 50.0f, 60.0f, 70.0f, 8.0f };
+	vec4 result = with_w(value, w_src);
+
+	EXPECT_FLOAT_EQ(result.x(), 1.0f);
+	EXPECT_FLOAT_EQ(result.y(), 2.0f);
+	EXPECT_FLOAT_EQ(result.z(), 3.0f);
+	EXPECT_FLOAT_EQ(result.w(), 8.0f);
+}
+
+TEST(vec4, with_w_negative_w)
+{
+	vec4 value = { 1.0f, 2.0f, 3.0f, 4.0f };
+	vec4 w_src = { 0.0f, 0.0f, 0.0f, -2.5f };
+	vec4 check = { 1.0f, 2.0f, 3.0f, -2.5f };
+	vec4 result = with_w(value, w_src);
+
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, with_w_forces_zero_w)
+{
+	vec4 value = { 1.0f, 2.0f, 3.0f, 50.0f };
+	vec4 w_src = { 9.0f, 9.0f, 9.0f, 0.0f };
+	vec4 check = { 1.0f, 2.0f, 3.0f, 0.0f };
+	vec4 result = with_w(value, w_src);
+
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, with_w_value_expression)
+{
+	vec4 a = { 1.0f, 2.0f, 3.0f, 0.0f };
+	vec4 b = { 4.0f, 5.0f, 6.0f, 0.0f };
+	vec4 c = { 0.0f, 0.0f, 0.0f, 8.0f };
+	vec4 check = { 5.0f, 7.0f, 9.0f, 8.0f };
+	vec4 result = with_w(a + b, c);
+
+	EXPECT_TRUE((vec_expr<decltype(with_w(a + b, c))>));
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, with_w_source_expression)
+{
+	vec4 a = { 1.0f, 2.0f, 3.0f, 4.0f };
+	vec4 b = { 0.0f, 0.0f, 0.0f, 10.0f };
+	vec4 c = { 0.0f, 0.0f, 0.0f, 20.0f };
+	vec4 check = { 1.0f, 2.0f, 3.0f, 30.0f };
+	vec4 result = with_w(a, b + c);
+
+	EXPECT_TRUE((vec_expr<decltype(with_w(a, b + c))>));
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, with_w_shared_operand)
+{
+	vec4 a = { 1.0f, 2.0f, 3.0f, 5.0f };
+	vec4 b = { 10.0f, 20.0f, 30.0f, 100.0f };
+	vec4 check = { 11.0f, 22.0f, 33.0f, 5.0f };
+	vec4 result = with_w(a + b, a);
+
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, with_w_is_vec_expr)
+{
+	vec4 a = { 1.0f, 2.0f, 3.0f, 4.0f };
+	vec4 b = { 0.0f, 0.0f, 0.0f, 7.0f };
+
+	EXPECT_TRUE((vec_expr<decltype(with_w(a, b))>));
+}
+
+TEST(vec4, with_w_composes_in_expression)
+{
+	vec4 a = { 1.0f, 2.0f, 3.0f, 0.0f };
+	vec4 b = { 0.0f, 0.0f, 0.0f, 6.0f };
+	vec4 c = { 1.0f, 1.0f, 1.0f, 1.0f };
+	vec4 check = { 2.0f, 3.0f, 4.0f, 7.0f };
+	vec4 result = with_w(a, b) + c;
+
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
 }

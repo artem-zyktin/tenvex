@@ -73,6 +73,7 @@ vec4 lo = min(a, b);           // per-lane minimum
 vec4 hi = max(a, b);           // per-lane maximum
 vec4 av = abs(a);              // per-lane absolute value (clears sign bit)
 vec4 hp = hadamard(a, b);      // per-lane product (a.x*b.x, ...) - colors, non-uniform scale
+vec4 pw = with_w(a + b, a);    // xyz from a+b, keep a's w (tag / radius / material id)
 
 // Rounding (SSE4.1 native, per-lane)
 vec4 fl = floor(a);            // round toward -inf
@@ -98,6 +99,8 @@ vec4 result = norm3(a + b * 2.0f) * dot3(b, c) + c * 3.0f;
 ```
 
 `dot3` and `magnitude3` return scalar-expression nodes (`Dot3`, `Magn3`) that are implicitly convertible to `float` (the scalar is taken from lane 0), so `float d = dot3(a, b);` works, and they can also be used as operands inside a larger lazy expression.
+
+`with_w(value, w_source)` writes xyz from `value` and the w lane from `w_source` in a single blend - the library keeps the choice of *which* w survives at the call site instead of baking it into per-op `add3` / `mul3` variants.
 
 ### `vec4`
 
@@ -257,6 +260,7 @@ The **Intrinsics** column lists the SSE4.1 (x86-64) backend; the NEON (AArch64) 
 | `Min<L,R>`    | `vec_expr`    | `_mm_min_ps`                                                | Component-wise minimum across all 4 lanes                                   |
 | `Max<L,R>`    | `vec_expr`    | `_mm_max_ps`                                                | Component-wise maximum across all 4 lanes                                   |
 | `Hadamard<L,R>` | `vec_expr`  | `_mm_mul_ps`                                               | Component-wise (per-lane) product; named, not `operator*`, to avoid ambiguity with dot/cross |
+| `WithW<L,R>`  | `vec_expr`    | `_mm_blend_ps` (lane 3)                                     | xyz from the first operand, w from the second - a single blend, no arithmetic. The w-source is chosen explicitly at the call site (rather than a fixed `add3` / `mul3` convention); stays lazy |
 | `Floor<E>`    | `vec_expr`    | `_mm_floor_ps`                                             | Per-lane floor (round toward -inf)                                         |
 | `Ceil<E>`     | `vec_expr`    | `_mm_ceil_ps`                                              | Per-lane ceiling (round toward +inf)                                       |
 | `Round<E>`    | `vec_expr`    | `_mm_round_ps` (nearest)                                   | Per-lane round, half-to-even (matches HLSL `round` / GLSL `roundEven`)      |
@@ -331,7 +335,7 @@ A stale object from another toolchain surfaces at link time as `bytecode stream 
 
 ## Running Tests
 
-The test suite uses Google Test (vendored in `thirdparty/gtest/`) and currently covers 88 cases:
+The test suite uses Google Test (vendored in `thirdparty/gtest/`) and currently covers 98 cases:
 
 | Category             | Tests                                                                                                      |
 | -------------------- | ---------------------------------------------------------------------------------------------------------- |
@@ -347,6 +351,7 @@ The test suite uses Google Test (vendored in `thirdparty/gtest/`) and currently 
 | Interpolation        | `lerp_at_zero`, `lerp_at_one`, `lerp_half`, `lerp_expression` |
 | Distance / reflect   | `dist3_basic`, `dist3_zero`, `dist3_ignores_w`, `dist3_sq_basic`, `dist3_sq_zero`, `reflect_off_horizontal`, `reflect_scaled`, `reflect_diagonal`, `reflect_expression` |
 | Hadamard product     | `hadamard_basic`, `hadamard_includes_w`, `hadamard_commutative`, `hadamard_expression` |
+| w-lane blend         | `with_w_basic`, `with_w_takes_w_from_source_not_value`, `with_w_source_xyz_does_not_leak`, `with_w_negative_w`, `with_w_forces_zero_w`, `with_w_value_expression`, `with_w_source_expression`, `with_w_shared_operand`, `with_w_is_vec_expr`, `with_w_composes_in_expression` |
 | Rounding             | `floor_basic`, `floor_already_integer`, `ceil_basic`, `round_basic`, `round_half_to_even`, `frac_basic` |
 
 Build and run `tenvex_tests` from the generated project or makefile.
