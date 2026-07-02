@@ -6,6 +6,7 @@ namespace tnvx
 {
 
 template<expression L, expression R>
+requires scalable<L, R>
 TNVX_INLINE
 Mul<L, R>::Mul(const L& TNVX_RESTRICT l, const R& TNVX_RESTRICT r) noexcept
 	: _l(l)
@@ -14,6 +15,7 @@ Mul<L, R>::Mul(const L& TNVX_RESTRICT l, const R& TNVX_RESTRICT r) noexcept
 }
 
 template<expression L, expression R>
+requires scalable<L, R>
 TNVX_INLINE
 vf4 Mul<L, R>::eval() const noexcept
 {

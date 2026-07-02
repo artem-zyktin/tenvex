@@ -1173,4 +1173,216 @@ TEST(vec4, with_w_composes_in_expression)
 	EXPECT_TRUE(approx_eq(check, result));
 }
 
+// Scalar-expression arithmetic: scalar+scalar, scalar+float, float+scalar
+// (and the same for '-') must stay LAZY - never collapse to float via
+// operator float(). dot3 is used as the scalar-expression source.
+// dot3(a,b) = 10, dot3(c,d) = 6 throughout.
+
+TEST(vec4, scalar_add_scalar)
+{
+	vec4 a = { 1.0f, 0.0f, 3.0f, 0.0f };
+	vec4 b = { 1.0f, 2.0f, 3.0f, 0.0f };
+	vec4 c = { 2.0f, 0.0f, 0.0f, 0.0f };
+	vec4 d = { 3.0f, 0.0f, 0.0f, 0.0f };
+	float check = 16.0f;
+
+	float result = dot3(a, b) + dot3(c, d);
+
+	EXPECT_TRUE((!std::same_as<decltype(dot3(a, b) + dot3(c, d)), float>));
+	EXPECT_TRUE((scalar_expr<decltype(dot3(a, b) + dot3(c, d))>));
+	EXPECT_FLOAT_EQ(check, result);
+}
+
+// Hot-path guard: dot3 + literal must NOT bounce through operator float().
+TEST(vec4, scalar_add_float)
+{
+	vec4 a = { 1.0f, 0.0f, 3.0f, 0.0f };
+	vec4 b = { 1.0f, 2.0f, 3.0f, 0.0f };
+	float check = 12.0f;
+
+	float result = dot3(a, b) + 2.0f;
+
+	EXPECT_TRUE((!std::same_as<decltype(dot3(a, b) + 2.0f), float>));
+	EXPECT_TRUE((scalar_expr<decltype(dot3(a, b) + 2.0f)>));
+	EXPECT_FLOAT_EQ(check, result);
+}
+
+TEST(vec4, float_add_scalar)
+{
+	vec4 a = { 1.0f, 0.0f, 3.0f, 0.0f };
+	vec4 b = { 1.0f, 2.0f, 3.0f, 0.0f };
+	float check = 15.0f;
+
+	float result = 5.0f + dot3(a, b);
+
+	EXPECT_TRUE((!std::same_as<decltype(5.0f + dot3(a, b)), float>));
+	EXPECT_TRUE((scalar_expr<decltype(5.0f + dot3(a, b))>));
+	EXPECT_FLOAT_EQ(check, result);
+}
+
+// The motivating expression: (dot(a,b) + dot(c,d)) * e stays lazy and yields a vec4.
+TEST(vec4, scalar_add_in_expression_1)
+{
+	vec4 a = { 1.0f, 0.0f, 3.0f, 0.0f };
+	vec4 b = { 1.0f, 2.0f, 3.0f, 0.0f };
+	vec4 c = { 2.0f, 0.0f, 0.0f, 0.0f };
+	vec4 d = { 3.0f, 0.0f, 0.0f, 0.0f };
+	vec4 e = { 1.0f, 2.0f, 3.0f, 0.0f };
+	vec4 check = { 16.0f, 32.0f, 48.0f, 0.0f };
+	vec4 result = (dot3(a, b) + dot3(c, d)) * e;
+	EXPECT_TRUE((vec_expr<decltype((dot3(a, b) + dot3(c, d)) * e)>));
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, scalar_add_in_expression_2)
+{
+	vec4 a = { 1.0f, 0.0f, 3.0f, 0.0f };
+	vec4 b = { 1.0f, 2.0f, 3.0f, 0.0f };
+	vec4 c = { 2.0f, 0.0f, 0.0f, 0.0f };
+	vec4 d = { 3.0f, 0.0f, 0.0f, 0.0f };
+	vec4 e = { 1.0f, 2.0f, 3.0f, 0.0f };
+	vec4 check = { 11.0f, 22.0f, 33.0f, 0.0f };
+	vec4 result = (dot3(a, b) + dist3(c, d)) * e;
+	EXPECT_TRUE((vec_expr<decltype((dot3(a, b) + dist3(c, d)) * e)>));
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, scalar_add_in_expression_3)
+{
+	vec4 a = { 1.0f, 0.0f, 3.0f, 0.0f };
+	vec4 b = { 1.0f, 2.0f, 3.0f, 0.0f };
+	vec4 c = { 2.0f, 0.0f, 0.0f, 0.0f };
+	vec4 e = { 1.0f, 2.0f, 3.0f, 0.0f };
+	vec4 check = { 12.0f, 24.0f, 36.0f, 0.0f };
+	vec4 result = (dot3(a, b) + magnitude3(c)) * e;
+	EXPECT_TRUE((vec_expr<decltype((dot3(a, b) + magnitude3(c)) * e)>));
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, scalar_add_in_expression_4)
+{
+	vec4 a = { 1.0f, 0.0f, 3.0f, 0.0f };
+	vec4 b = { 1.0f, 2.0f, 3.0f, 0.0f };
+	vec4 c = { 2.0f, 0.0f, 0.0f, 0.0f };
+	vec4 d = { 3.0f, 0.0f, 0.0f, 0.0f };
+	vec4 e = { 1.0f, 2.0f, 3.0f, 0.0f };
+	vec4 check = { 16.0f, 32.0f, 48.0f, 0.0f };
+	vec4 result = (dot3(a, b) + dot4(c, d)) * e;
+	EXPECT_TRUE((vec_expr<decltype((dot3(a, b) + dot4(c, d)) * e)>));
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, scalar_add_nested)
+{
+	vec4 a = { 1.0f, 0.0f, 3.0f, 0.0f };
+	vec4 b = { 1.0f, 2.0f, 3.0f, 0.0f };
+	vec4 c = { 2.0f, 0.0f, 0.0f, 0.0f };
+	vec4 d = { 3.0f, 0.0f, 0.0f, 0.0f };
+	float check = 18.0f;
+
+	float result = (dot3(a, b) + 2.0f) + dot3(c, d);
+
+	EXPECT_TRUE((scalar_expr<decltype((dot3(a, b) + 2.0f) + dot3(c, d))>));
+	EXPECT_FLOAT_EQ(check, result);
+}
+
+TEST(vec4, scalar_sub_scalar)
+{
+	vec4 a = { 1.0f, 0.0f, 3.0f, 0.0f };
+	vec4 b = { 1.0f, 2.0f, 3.0f, 0.0f };
+	vec4 c = { 2.0f, 0.0f, 0.0f, 0.0f };
+	vec4 d = { 3.0f, 0.0f, 0.0f, 0.0f };
+	float check = 4.0f;
+
+	float r = dot3(a, b) - dot3(c, d);
+
+	EXPECT_TRUE((!std::same_as<decltype(dot3(a, b) - dot3(c, d)), float>));
+	EXPECT_TRUE((scalar_expr<decltype(dot3(a, b) - dot3(c, d))>));
+	EXPECT_FLOAT_EQ(check, r);
+}
+
+TEST(vec4, scalar_sub_float)
+{
+	vec4 a = { 1.0f, 0.0f, 3.0f, 0.0f };
+	vec4 b = { 1.0f, 2.0f, 3.0f, 0.0f };
+	float check = 8.0f;
+
+	float result = dot3(a, b) - 2.0f;
+
+	EXPECT_TRUE((!std::same_as<decltype(dot3(a, b) - 2.0f), float>));
+	EXPECT_TRUE((scalar_expr<decltype(dot3(a, b) - 2.0f)>));
+	EXPECT_FLOAT_EQ(check, result);
+}
+
+TEST(vec4, float_sub_scalar)
+{
+	vec4 a = { 1.0f, 0.0f, 3.0f, 0.0f };
+	vec4 b = { 1.0f, 2.0f, 3.0f, 0.0f };
+	float check = 10.0f;
+
+	float result = 20.0f - dot3(a, b);
+
+	EXPECT_TRUE((!std::same_as<decltype(20.0f - dot3(a, b)), float>));
+	EXPECT_TRUE((scalar_expr<decltype(20.0f - dot3(a, b))>));
+	EXPECT_FLOAT_EQ(check, result);
+}
+
+TEST(vec4, scalar_sub_in_expression_1)
+{
+	vec4 a = { 1.0f, 0.0f, 3.0f, 0.0f };
+	vec4 b = { 1.0f, 2.0f, 3.0f, 0.0f };
+	vec4 c = { 2.0f, 0.0f, 0.0f, 0.0f };
+	vec4 d = { 3.0f, 0.0f, 0.0f, 0.0f };
+	vec4 e = { 1.0f, 2.0f, 3.0f, 0.0f };
+	vec4 check = { 4.0f, 8.0f, 12.0f, 0.0f };
+	vec4 result = (dot3(a, b) - dot3(c, d)) * e;
+
+	EXPECT_TRUE((vec_expr<decltype((dot3(a, b) - dot3(c, d)) * e)>));
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, scalar_sub_in_expression_2)
+{
+	vec4 a = { 1.0f, 0.0f, 3.0f, 0.0f };
+	vec4 b = { 1.0f, 2.0f, 3.0f, 0.0f };
+	vec4 c = { 2.0f, 0.0f, 0.0f, 0.0f };
+	vec4 d = { 3.0f, 0.0f, 0.0f, 0.0f };
+	vec4 e = { 1.0f, 2.0f, 3.0f, 0.0f };
+
+	vec4 check = { 9.0f, 18.0f, 27.0f, 0.0f };
+	vec4 result = (dot3(a, b) - dist3(c, d)) * e;
+
+	EXPECT_TRUE((vec_expr<decltype((dot3(a, b) - dist3(c, d)) * e)>));
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, scalar_sub_in_expression_3)
+{
+	vec4 a = { 1.0f, 0.0f, 3.0f, 0.0f };
+	vec4 b = { 1.0f, 2.0f, 3.0f, 0.0f };
+	vec4 c = { 2.0f, 0.0f, 0.0f, 0.0f };
+	vec4 e = { 1.0f, 2.0f, 3.0f, 0.0f };
+
+	vec4 check = { 8.0f, 16.0f, 24.0f, 0.0f };
+	vec4 result = (dot3(a, b) - magnitude3(c)) * e;
+
+	EXPECT_TRUE((vec_expr<decltype((dot3(a, b) - magnitude3(c)) * e)>));
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, scalar_sub_in_expression_4)
+{
+	vec4 a = { 1.0f, 0.0f, 3.0f, 0.0f };
+	vec4 b = { 1.0f, 2.0f, 3.0f, 0.0f };
+	vec4 c = { 2.0f, 0.0f, 0.0f, 0.0f };
+	vec4 d = { 3.0f, 0.0f, 0.0f, 0.0f };
+	vec4 e = { 1.0f, 2.0f, 3.0f, 0.0f };
+
+	vec4 check = { 4.0f, 8.0f, 12.0f, 0.0f };
+	vec4 result = (dot3(a, b) - dot4(c, d)) * e;
+
+	EXPECT_TRUE((vec_expr<decltype((dot3(a, b) - dot4(c, d)) * e)>));
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
 }

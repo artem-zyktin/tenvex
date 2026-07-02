@@ -11,6 +11,7 @@ namespace tnvx
 {
 
 template<expression L, expression R>
+requires scalable<L, R>
 struct Mul : Expr<Mul<L, R>>
 {
 	TNVX_INLINE

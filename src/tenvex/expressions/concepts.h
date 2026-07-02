@@ -22,4 +22,10 @@ concept vec_expr = expression<T> && is_vec_expr<T>;
 template<typename T>
 concept scalar_expr = expression<T> && is_scalar_expr<T>;
 
+template<typename L, typename R>
+concept same_category = (vec_expr<L> && vec_expr<R>) || (scalar_expr<L> && scalar_expr<R>);
+
+template<typename L, typename R>
+concept scalable = scalar_expr<L> || scalar_expr<R>;
+
 }
