@@ -25,3 +25,4 @@
 #include "expressions/with_w.h"
 #include "expressions/operations.h"
 #include "expressions/vec4.h"
+#include "expressions/quat.h"
