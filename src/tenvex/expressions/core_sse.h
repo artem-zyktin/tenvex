@@ -62,7 +62,14 @@ template<int lane>
 [[nodiscard]] TNVX_INLINE
 float get_lane(vf4 v) noexcept
 {
-	return _mm_cvtss_f32(_mm_shuffle_ps(v, v, _MM_SHUFFLE(0, 0, 0, lane)));
+	if constexpr (lane == 0)
+	{
+		return _mm_cvtss_f32(v);
+	}
+	else
+	{
+		return _mm_cvtss_f32(_mm_shuffle_ps(v, v, _MM_SHUFFLE(0, 0, 0, lane)));
+	}
 }
 
 [[nodiscard]] TNVX_INLINE
