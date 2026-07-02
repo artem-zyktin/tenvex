@@ -47,13 +47,13 @@ float quat::w() const noexcept
 }
 
 TNVX_INLINE
-bool tnvx::approx_eq(const quat& lhs, const quat& rhs, float eps) noexcept
+bool approx_eq(const quat& lhs, const quat& rhs, float eps) noexcept
 {
 	return detail::approx_eq(lhs.eval(), rhs.eval(), eps);
 }
 
 TNVX_INLINE
-bool tnvx::operator==(const quat& lhs, const quat& rhs) noexcept
+bool operator==(const quat& lhs, const quat& rhs) noexcept
 {
 	return detail::eq(lhs.eval(), rhs.eval());
 }
