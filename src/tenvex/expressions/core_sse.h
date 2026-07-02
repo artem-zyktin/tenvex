@@ -78,6 +78,11 @@ vf4 neg(vf4 v) noexcept
 	return _mm_xor_ps(v, _mm_set1_ps(-0.0f));
 }
 
+[[nodiscard]] TNVX_INLINE vf4 conjugate(vf4 q) noexcept
+{
+	return _mm_xor_ps(q, _mm_set_ps(0.0f, -0.0f, -0.0f, -0.0f));
+}
+
 [[nodiscard]] TNVX_INLINE
 vf4 add(vf4 l, vf4 r) noexcept
 {

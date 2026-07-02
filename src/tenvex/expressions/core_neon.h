@@ -74,6 +74,12 @@ vf4 neg(vf4 v) noexcept
 	return vnegq_f32(v);
 }
 
+[[nodiscard]] TNVX_INLINE vf4 conjugate(vf4 q) noexcept
+{
+	const uint32_t m[4] = { 0x80000000u, 0x80000000u, 0x80000000u, 0x00000000u };
+	return vreinterpretq_f32_u32(veorq_u32(vreinterpretq_u32_f32(q), vld1q_u32(m)));
+}
+
 [[nodiscard]] TNVX_INLINE
 vf4 add(vf4 l, vf4 r) noexcept
 {
