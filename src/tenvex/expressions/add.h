@@ -31,6 +31,7 @@ private:
 
 template<vec_expr L, vec_expr R> inline constexpr bool is_vec_expr<Add<L, R>> = true;
 template<scalar_expr L, scalar_expr R> inline constexpr bool is_scalar_expr<Add<L, R>> = true;
+template<quat_expr L, quat_expr R> inline constexpr bool is_quat_expr<Add<L, R>> = true;
 
 template<vec_expr L, vec_expr R>
 [[nodiscard]] TNVX_INLINE
@@ -47,6 +48,10 @@ Add<E, Scalar> operator+(const E& l, float r) noexcept;
 template<scalar_expr E>
 [[nodiscard]] TNVX_INLINE
 Add<Scalar, E> operator+(float l, const E& e) noexcept;
+
+template<quat_expr L, quat_expr R>
+[[nodiscard]] TNVX_INLINE
+Add<L, R> operator+(const L& l, const R& r) noexcept;
 
 }
 
