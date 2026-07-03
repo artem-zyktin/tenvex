@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cmath>
+
 namespace naive
 {
 
@@ -49,6 +51,20 @@ private:
 		a.w() * b.z() + a.x() * b.y() - a.y() * b.x() + a.z() * b.w(),  // z
 		a.w() * b.w() - a.x() * b.x() - a.y() * b.y() - a.z() * b.z()   // w
 	};
+}
+
+inline bool operator==(quat a, quat b) noexcept
+{
+	return a.x() == b.x() && a.y() == b.y()
+		&& a.z() == b.z() && a.w() == b.w();
+}
+
+inline bool approx_eq(quat a, quat b, float eps = 1e-6f) noexcept
+{
+	return std::fabs(a.x() - b.x()) <= eps
+		&& std::fabs(a.y() - b.y()) <= eps
+		&& std::fabs(a.z() - b.z()) <= eps
+		&& std::fabs(a.w() - b.w()) <= eps;
 }
 
 }
