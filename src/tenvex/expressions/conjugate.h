@@ -9,7 +9,7 @@ namespace tnvx
 {
 
 template<quat_expr E>
-struct Conj : public Expr<Conj<E>>
+struct Conj : Expr<Conj<E>>
 {
 	TNVX_INLINE
 	explicit Conj(const E& TNVX_RESTRICT expr) noexcept;

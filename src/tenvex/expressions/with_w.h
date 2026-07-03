@@ -9,7 +9,7 @@ namespace tnvx
 {
 
 template<vec_expr L, vec_expr R>
-struct WithW : public Expr<WithW<L, R>>
+struct WithW : Expr<WithW<L, R>>
 {
 	TNVX_INLINE
 	WithW(const L& TNVX_RESTRICT l, const R& TNVX_RESTRICT r) noexcept;
