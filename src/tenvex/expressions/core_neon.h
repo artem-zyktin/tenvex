@@ -222,6 +222,30 @@ vf4 with_w(vf4 xyz_source, vf4 w_source)
 	return vcopyq_laneq_f32(xyz_source, 3, w_source, 3);
 }
 
+[[nodiscard]] TNVX_INLINE
+vf4 quat_mul(vf4 a, vf4 b) noexcept
+{
+	const vf4 aw = vdupq_laneq_f32(a, 3);
+	const vf4 ax = vdupq_laneq_f32(a, 0);
+	const vf4 ay = vdupq_laneq_f32(a, 1);
+	const vf4 az = vdupq_laneq_f32(a, 2);
+
+	const vf4 b3 = vrev64q_f32(b);     // (by,bx,bw,bz)
+	const vf4 b2 = vextq_f32(b, b, 2); // (bz,bw,bx,by)
+	const vf4 b1 = vrev64q_f32(b2);    // (bw,bz,by,bx)
+
+	const uint32_t m1[4] = { 0x0, 0x80000000, 0x0, 0x80000000 }; // (+,-,+,-)
+	const uint32_t m2[4] = { 0x0, 0x0, 0x80000000, 0x80000000 }; // (+,+,-,-)
+	const uint32_t m3[4] = { 0x80000000, 0x0, 0x0, 0x80000000 }; // (-,+,+,-)
+
+	const vf4 t0 = vmulq_f32(aw, b);
+	const vf4 t1 = vreinterpretq_f32_u32(veorq_u32(vreinterpretq_u32_f32(vmulq_f32(ax, b1)), vld1q_u32(m1)));
+	const vf4 t2 = vreinterpretq_f32_u32(veorq_u32(vreinterpretq_u32_f32(vmulq_f32(ay, b2)), vld1q_u32(m2)));
+	const vf4 t3 = vreinterpretq_f32_u32(veorq_u32(vreinterpretq_u32_f32(vmulq_f32(az, b3)), vld1q_u32(m3)));
+
+	return vaddq_f32(vaddq_f32(t0, t1), vaddq_f32(t2, t3));
+}
+
 }
 
 #endif

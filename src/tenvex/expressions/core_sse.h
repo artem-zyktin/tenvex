@@ -218,6 +218,30 @@ vf4 with_w(vf4 xyz_source, vf4 w_source)
 	return _mm_blend_ps(xyz_source, w_source, 0b1000);
 }
 
+[[nodiscard]] TNVX_INLINE
+vf4 quat_mul(vf4 a, vf4 b) noexcept
+{
+	const vf4 aw = _mm_shuffle_ps(a, a, _MM_SHUFFLE(3, 3, 3, 3));
+	const vf4 ax = _mm_shuffle_ps(a, a, _MM_SHUFFLE(0, 0, 0, 0));
+	const vf4 ay = _mm_shuffle_ps(a, a, _MM_SHUFFLE(1, 1, 1, 1));
+	const vf4 az = _mm_shuffle_ps(a, a, _MM_SHUFFLE(2, 2, 2, 2));
+
+	const vf4 b1 = _mm_shuffle_ps(b, b, _MM_SHUFFLE(0, 1, 2, 3)); // (bw,bz,by,bx)
+	const vf4 b2 = _mm_shuffle_ps(b, b, _MM_SHUFFLE(1, 0, 3, 2)); // (bz,bw,bx,by)
+	const vf4 b3 = _mm_shuffle_ps(b, b, _MM_SHUFFLE(2, 3, 0, 1)); // (by,bx,bw,bz)
+
+	const vf4 s1 = _mm_set_ps(-0.0f, 0.0f, -0.0f, 0.0f); // (+,-,+,-)
+	const vf4 s2 = _mm_set_ps(-0.0f, -0.0f, 0.0f, 0.0f); // (+,+,-,-)
+	const vf4 s3 = _mm_set_ps(-0.0f, 0.0f, 0.0f, -0.0f); // (-,+,+,-)
+
+	const vf4 t0 = _mm_mul_ps(aw, b);
+	const vf4 t1 = _mm_xor_ps(_mm_mul_ps(ax, b1), s1);
+	const vf4 t2 = _mm_xor_ps(_mm_mul_ps(ay, b2), s2);
+	const vf4 t3 = _mm_xor_ps(_mm_mul_ps(az, b3), s3);
+
+	return _mm_add_ps(_mm_add_ps(t0, t1), _mm_add_ps(t2, t3));
+}
+
 } // namespace tnvx::detail
 
 #endif
