@@ -71,3 +71,18 @@ static void BM_Naive_QuatMul_Throughput(benchmark::State& state)
 	}
 }
 BENCHMARK(BM_Naive_QuatMul_Throughput);
+
+static void BM_Naive_QuatHamilton_Throughput(benchmark::State& state)
+{
+	const auto a = make_quats(1024, 1);
+	const auto b = make_quats(1024, 2);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		quat aa = a[i], bb = b[i];
+		quat r = aa * bb;
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 1023;
+	}
+}
+BENCHMARK(BM_Naive_QuatHamilton_Throughput);
