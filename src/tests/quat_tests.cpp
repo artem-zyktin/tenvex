@@ -340,8 +340,32 @@ TEST(quat, dot4_is_scalar_expr)
 TEST(quat, dot4_rejects_mixed_category)
 {
 	// vec x quat is ill-formed by construction; the concept is the guard.
-	EXPECT_TRUE((dot4_operands<quat, quat>));
-	EXPECT_FALSE((dot4_operands<vec4, quat>));
+	EXPECT_TRUE((same_packed_category<quat, quat>));
+	EXPECT_FALSE((same_packed_category<vec4, quat>));
+}
+
+// ---------------------------------------------------------------------------
+// magnitude4: the 4-lane length. Same node as vec4 via packed_expr.
+// ---------------------------------------------------------------------------
+
+TEST(quat, magnitude4_basic)
+{
+	quat q = { 1, 2, 2, 4 };
+	// sqrt(1 + 4 + 4 + 16) = 5
+	EXPECT_FLOAT_EQ(5.0f, float(magnitude4(q)));
+}
+
+TEST(quat, magnitude4_of_unit_is_one)
+{
+	quat q = { 0, 0, 0.70710678f, 0.70710678f };
+	EXPECT_NEAR(1.0f, float(magnitude4(q)), 1e-5f);
+}
+
+TEST(quat, magnitude4_is_scalar_expr)
+{
+	quat q = { 1, 2, 2, 4 };
+	EXPECT_TRUE((scalar_expr<decltype(magnitude4(q))>));
+	EXPECT_FALSE((quat_expr<decltype(magnitude4(q))>));
 }
 
 }

@@ -1454,4 +1454,35 @@ TEST(vec4, ceil_already_integer)
 	EXPECT_TRUE(approx_eq(v, result));
 }
 
+// ---------------------------------------------------------------------------
+// magnitude4: the 4-lane length. Shared node with quat via packed_expr.
+// ---------------------------------------------------------------------------
+TEST(vec4, magnitude4_basic)
+{
+	vec4 v = { 1, 2, 2, 4 };
+	EXPECT_FLOAT_EQ(5.0f, float(magnitude4(v)));
+}
+
+TEST(vec4, magnitude4_counts_w)
+{
+	vec4 v = { 0, 3, 4, 12 };
+	EXPECT_FLOAT_EQ(5.0f, float(magnitude3(v)));
+	EXPECT_FLOAT_EQ(13.0f, float(magnitude4(v)));
+}
+
+TEST(vec4, magnitude4_is_scalar_expr)
+{
+	vec4 v = { 1, 2, 2, 4 };
+	EXPECT_TRUE((scalar_expr<decltype(magnitude4(v))>));
+	EXPECT_FALSE((vec_expr<decltype(magnitude4(v))>));
+}
+
+TEST(vec4, magnitude4_accepts_packed_rejects_scalar)
+{
+	vec4 v = { 1, 2, 3, 4 };
+	EXPECT_TRUE((packed_expr<vec4>));
+	EXPECT_TRUE((packed_expr<quat>));
+	EXPECT_FALSE((packed_expr<decltype(dot4(v, v))>));
+}
+
 }

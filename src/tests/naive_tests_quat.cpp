@@ -222,4 +222,10 @@ TEST(naive_quat, dot4_uses_all_four_lanes)
 
 }
 
+TEST(naive_quat, magnitude4_basic)
+{
+	quat q = { 1, 2, 2, 4 };
+	EXPECT_FLOAT_EQ(magnitude4(q), 5.0f);
+}
+
 }

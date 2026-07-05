@@ -811,6 +811,17 @@ TEST(vec4, magnitude3_compare_is_eager)
 	EXPECT_EQ(check, result);
 }
 
+TEST(naive_vec4, magnitude4_basic)
+{
+	vec4 v = { 1.0f, 2.0f, 2.0f, 4.0f };
+	EXPECT_FLOAT_EQ(magnitude4(v), 5.0f);
+}
 
+TEST(naive_vec4, magnitude4_counts_w)
+{
+	vec4 v = { 0.0f, 3.0f, 4.0f, 12.0f };
+	EXPECT_FLOAT_EQ(magnitude3(v), 5.0f);
+	EXPECT_FLOAT_EQ(magnitude4(v), 13.0f);
+}
 
 }
