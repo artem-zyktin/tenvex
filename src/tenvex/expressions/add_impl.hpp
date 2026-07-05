@@ -59,4 +59,11 @@ Add<Scalar, E> operator+(float l, const E& e) noexcept
 	return { Scalar(l), e };
 }
 
+template<quat_expr L, quat_expr R>
+TNVX_INLINE
+Add<L, R> operator+(const L& l, const R& r) noexcept
+{
+	return { l, r };
+}
+
 }

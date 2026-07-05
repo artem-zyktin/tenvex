@@ -1385,4 +1385,73 @@ TEST(vec4, scalar_sub_in_expression_4)
 	EXPECT_TRUE(approx_eq(check, result));
 }
 
+// Closes ET-composition gaps: abs/neg have an _expression test, their unary
+// siblings floor/ceil/round/frac and the core op cross3 did not. Plus a
+// ceil_already_integer twin for the existing floor_already_integer.
+// (max idempotent/commutative/includes_w are already covered inside the
+// min_* tests, and frac negatives inside frac_basic - nothing to add there.)
+
+TEST(vec4, cross_expression)
+{
+	vec4 a = { 1.0f, 2.0f, 3.0f, 0.0f };
+	vec4 b = { 0.0f, 1.0f, 1.0f, 0.0f };
+	vec4 c = { 1.0f, 0.0f, 0.0f, 0.0f };
+	vec4 check = vec4 { 0.0f, 2.0f, -1.0f, 0.0f };
+	vec4 result = cross3(a - b, c);
+
+	EXPECT_TRUE((vec_expr<decltype(cross3(a - b, c))>));
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, floor_expression)
+{
+	vec4 a = { 3.5f, 4.5f, 5.25f, 0.0f };
+	vec4 b = { 1.0f, 1.0f, 1.0f, 0.0f };
+	vec4 check = vec4 { 2.0f, 3.0f, 4.0f, 0.0f };
+	vec4 result = floor(a - b);
+
+	EXPECT_TRUE((vec_expr<decltype(floor(a - b))>));
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, ceil_expression)
+{
+	vec4 a = { 3.5f, 4.5f, 5.25f, 0.0f };
+	vec4 b = { 1.0f, 1.0f, 1.0f, 0.0f };
+	vec4 check = vec4 { 3.0f, 4.0f, 5.0f, 0.0f };
+	vec4 result = ceil(a - b);
+
+	EXPECT_TRUE((vec_expr<decltype(ceil(a - b))>));
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, round_expression)
+{
+	vec4 a = { 3.5f, 4.5f, 5.25f, 0.0f };
+	vec4 b = { 1.0f, 1.0f, 1.0f, 0.0f };
+	vec4 check = vec4 { 2.0f, 4.0f, 4.0f, 0.0f }; // half-to-even: 2.5->2, 3.5->4
+	vec4 result = round(a - b);
+
+	EXPECT_TRUE((vec_expr<decltype(round(a - b))>));
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, frac_expression)
+{
+	vec4 a = { 3.5f, 4.5f, 5.25f, 0.0f };
+	vec4 b = { 1.0f, 1.0f, 1.0f, 0.0f };
+	vec4 check = vec4 { 0.5f, 0.5f, 0.25f, 0.0f };
+	vec4 result = frac(a - b);
+
+	EXPECT_TRUE((vec_expr<decltype(frac(a - b))>));
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, ceil_already_integer)
+{
+	vec4 v = { 3.0f, -4.0f, 0.0f, 7.0f };
+	vec4 result = ceil(v);
+	EXPECT_TRUE(approx_eq(v, result));
+}
+
 }

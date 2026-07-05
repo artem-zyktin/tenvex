@@ -14,7 +14,7 @@ WithW<L, R>::WithW(const L& TNVX_RESTRICT l, const R& TNVX_RESTRICT r) noexcept
 }
 
 template<vec_expr L, vec_expr R>
-inline TNVX_INLINE vf4 WithW<L, R>::eval() const noexcept
+TNVX_INLINE vf4 WithW<L, R>::eval() const noexcept
 {
 	return detail::with_w(_l.eval(), _r.eval());
 }

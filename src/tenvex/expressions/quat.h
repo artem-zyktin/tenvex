@@ -1,0 +1,52 @@
+#pragma once
+
+#include "core.h"
+#include "expression.h"
+#include "traits.h"
+#include "concepts.h"
+
+namespace tnvx
+{
+
+struct alignas(16) quat : Expr<quat>
+{
+	TNVX_INLINE
+	quat() noexcept = default;
+
+	TNVX_INLINE
+	quat(float x, float y, float z, float w) noexcept;
+
+	template<quat_expr E>
+	TNVX_INLINE
+	quat(const E& e) noexcept;
+
+	[[nodiscard]] TNVX_INLINE
+	vf4 eval() const noexcept;
+
+	[[nodiscard]] TNVX_INLINE
+	float x() const noexcept;
+
+	[[nodiscard]] TNVX_INLINE
+	float y() const noexcept;
+
+	[[nodiscard]] TNVX_INLINE
+	float z() const noexcept;
+
+	[[nodiscard]] TNVX_INLINE
+	float w() const noexcept;
+
+private:
+	vf4 _data;
+};
+
+template<> inline constexpr bool is_quat_expr<quat> = true;
+
+TNVX_INLINE
+bool approx_eq(const quat& lhs, const quat& rhs, float eps = 1e-6f) noexcept;
+
+TNVX_INLINE
+bool operator==(const quat& lhs, const quat& rhs) noexcept;
+
+}
+
+#include "quat_impl.hpp"
