@@ -824,4 +824,25 @@ TEST(naive_vec4, magnitude4_counts_w)
 	EXPECT_FLOAT_EQ(magnitude4(v), 13.0f);
 }
 
+TEST(naive_vec4, magnitude4_sq_basic)
+{
+	vec4 v = { 1.0f, 2.0f, 2.0f, 4.0f };
+	float check = 25.0f;
+	float result = magnitude4_sq(v);
+
+	EXPECT_FLOAT_EQ(check, result);
+}
+
+TEST(naive_vec4, magnitude4_sq_counts_w)
+{
+	vec4 v = { 0.0f, 3.0f, 4.0f, 12.0f };
+	float check3 = 25.0f;
+	float check4 = 169.0f;
+	float result3 = magnitude3_sq(v);
+	float result4 = magnitude4_sq(v);
+
+	EXPECT_FLOAT_EQ(check3, result3);
+	EXPECT_FLOAT_EQ(check4, result4);
+}
+
 }

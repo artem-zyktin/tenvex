@@ -530,3 +530,31 @@ static void BM_Naive_Magnitude4_Throughput(benchmark::State& state)
 	}
 }
 BENCHMARK(BM_Naive_Magnitude4_Throughput);
+
+static void BM_Naive_Magnitude4Sq_Latency(benchmark::State& state)
+{
+	vec4 a { 1.0f, 2.0f, 3.0f, 4.0f };
+	float acc = 0.0f;
+	for (auto _ : state)
+	{
+		vec4 aa = a + vec4 { acc, 0.0f, 0.0f, 0.0f };
+		float m = magnitude4_sq(aa);
+		acc = m * 1e-7f;
+		benchmark::DoNotOptimize(acc);
+	}
+}
+BENCHMARK(BM_Naive_Magnitude4Sq_Latency);
+
+static void BM_Naive_Magnitude4Sq_Throughput(benchmark::State& state)
+{
+	const auto a = make_vecs(1024, 1);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		vec4 aa = a[i];
+		float m = magnitude4_sq(aa);
+		benchmark::DoNotOptimize(m);
+		i = (i + 1) & 1023;
+	}
+}
+BENCHMARK(BM_Naive_Magnitude4Sq_Throughput);

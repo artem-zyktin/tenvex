@@ -368,4 +368,29 @@ TEST(quat, magnitude4_is_scalar_expr)
 	EXPECT_FALSE((quat_expr<decltype(magnitude4(q))>));
 }
 
+TEST(quat, magnitude4_sq_basic)
+{
+	quat q = { 1, 2, 2, 4 };
+	float check = 25.0f;
+	float result = magnitude4_sq(q);
+
+	EXPECT_FLOAT_EQ(check, result);
+}
+
+TEST(quat, magnitude4_sq_of_unit_is_one)
+{
+	quat q = { 0, 0, 0.70710678f, 0.70710678f };
+	float check = 1.0f;
+	float result = magnitude4_sq(q);
+
+	EXPECT_NEAR(check, result, 1e-5f);
+}
+
+TEST(quat, magnitude4_sq_is_scalar_expr)
+{
+	quat q = { 1, 2, 2, 4 };
+	EXPECT_TRUE((scalar_expr<decltype(magnitude4_sq(q))>));
+	EXPECT_FALSE((quat_expr<decltype(magnitude4_sq(q))>));
+}
+
 }

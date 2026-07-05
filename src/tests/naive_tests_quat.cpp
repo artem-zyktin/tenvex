@@ -228,4 +228,13 @@ TEST(naive_quat, magnitude4_basic)
 	EXPECT_FLOAT_EQ(magnitude4(q), 5.0f);
 }
 
+TEST(naive_quat, magnitude4_sq_basic)
+{
+	quat q = { 1, 2, 2, 4 };
+	float check = 25.0f;
+	float result = magnitude4_sq(q);
+
+	EXPECT_FLOAT_EQ(check, result);
+}
+
 }
