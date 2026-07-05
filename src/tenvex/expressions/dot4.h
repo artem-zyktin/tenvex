@@ -8,7 +8,8 @@
 namespace tnvx
 {
 
-template<vec_expr L, vec_expr R>
+template<expression L, expression R>
+requires dot4_operands<L, R>
 struct Dot4 : Expr<Dot4<L, R>>
 {
 	TNVX_INLINE
@@ -27,7 +28,8 @@ private:
 
 template<vec_expr L, vec_expr R> inline constexpr bool is_scalar_expr<Dot4<L, R>> = true;
 
-template<vec_expr L, vec_expr R>
+template<expression L, expression R>
+requires dot4_operands<L, R>
 [[nodiscard]] TNVX_INLINE
 Dot4<L, R> dot4(const L& l, const R& r) noexcept;
 
