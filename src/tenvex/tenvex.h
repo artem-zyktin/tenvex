@@ -24,6 +24,7 @@
 #include "expressions/frac.h"
 #include "expressions/conjugate.h"
 #include "expressions/quat_mul.h"
+#include "expressions/rotate.h"
 #include "expressions/with_w.h"
 #include "expressions/operations.h"
 #include "expressions/vec4.h"
