@@ -140,6 +140,18 @@ vf4 magnitude3_sq(vf4 v) noexcept
 }
 
 [[nodiscard]] TNVX_INLINE
+vf4 magnitude4(vf4 v) noexcept
+{
+	return _mm_sqrt_ps(dot4(v, v));
+}
+
+[[nodiscard]] TNVX_INLINE
+vf4 magnitude4_sq(vf4 v) noexcept
+{
+	return dot4(v, v);
+}
+
+[[nodiscard]] TNVX_INLINE
 vf4 norm3(vf4 v) noexcept
 {
 	return _mm_blend_ps(_mm_div_ps(v, magnitude3(v)), v, 0b1000);

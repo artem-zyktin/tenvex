@@ -133,6 +133,18 @@ vf4 magnitude3_sq(vf4 v) noexcept
 }
 
 [[nodiscard]] TNVX_INLINE
+vf4 magnitude4(vf4 v) noexcept
+{
+	return vsqrtq_f32(dot4(v, v));
+}
+
+[[nodiscard]] TNVX_INLINE
+vf4 magnitude4_sq(vf4 v) noexcept
+{
+	return dot4(v, v);
+}
+
+[[nodiscard]] TNVX_INLINE
 vf4 norm3(vf4 v) noexcept
 {
 	const float32x4_t n = vdivq_f32(v, magnitude3(v));
