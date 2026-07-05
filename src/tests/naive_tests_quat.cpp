@@ -90,8 +90,10 @@ TEST(naive_quat, hamilton_identity)
 {
 	quat a = { 1, 2, 3, 4 };
 	quat id = { 0, 0, 0, 1 };
-	EXPECT_TRUE(approx_eq(a, a * id));
-	EXPECT_TRUE(approx_eq(a, id * a));
+	quat result1 = a * id;
+	quat result2 = id * a;
+	EXPECT_TRUE(approx_eq(a, result1));
+	EXPECT_TRUE(approx_eq(a, result2));
 }
 
 TEST(naive_quat, hamilton_associative)
@@ -100,8 +102,10 @@ TEST(naive_quat, hamilton_associative)
 	quat b = { 5, 6, 7, 8 };
 	quat c = { 2, -1, 4, -3 };
 	quat check = { 156, -138, -288, -174 };
-	EXPECT_TRUE(approx_eq(check, (a * b) * c));
-	EXPECT_TRUE(approx_eq(check, a * (b * c)));
+	quat result1 = (a * b) * c;
+	quat result2 = a * (b * c);
+	EXPECT_TRUE(approx_eq(check, result1));
+	EXPECT_TRUE(approx_eq(check, result2));
 }
 
 TEST(naive_quat, hamilton_distributes_over_add)
@@ -110,8 +114,97 @@ TEST(naive_quat, hamilton_distributes_over_add)
 	quat b = { 5, 6, 7, 8 };
 	quat c = { 2, -1, 4, -3 };
 	quat check = { 40, 40, 50, -30 };
-	EXPECT_TRUE(approx_eq(check, a * (b + c)));
-	EXPECT_TRUE(approx_eq(check, quat(a * b) + quat(a * c)));
+	quat result1 = a * (b + c);
+	quat result2 = a * b + a * c;
+	EXPECT_TRUE(approx_eq(check, result1));
+	EXPECT_TRUE(approx_eq(check, result2));
+}
+
+// ---------------------------------------------------------------------------
+// Conjugate: flip the imaginary part (x,y,z), keep the real part (w).
+// ---------------------------------------------------------------------------
+
+TEST(naive_quat, conj_flips_xyz_keeps_w)
+{
+	quat q = { 1, 2, 3, 4 };
+	quat check = { -1, -2, -3, 4 };
+	quat result = conj(q);
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(naive_quat, conj_of_pure_negates_xyz)
+{
+	quat v = { 1, 2, 3, 0 };
+	quat check = { -1, -2, -3, 0 };
+	quat result = conj(v);
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(naive_quat, conj_involutive)
+{
+	quat q = { 1, 2, 3, 4 };
+	quat result = conj(conj(q));
+	EXPECT_TRUE(approx_eq(q, result));
+}
+
+TEST(naive_quat, conj_anti_homomorphism)
+{
+	// conj(a * b) == conj(b) * conj(a)
+	quat a = { 1, 2, 3, 4 };
+	quat b = { 5, 6, 7, 8 };
+	quat check = { -24, -48, -48, -6 };
+	quat result1 = conj(a * b);
+	quat result2 = conj(b) * conj(a);
+	EXPECT_TRUE(approx_eq(check, result1));
+	EXPECT_TRUE(approx_eq(check, result2));
+}
+
+// ---------------------------------------------------------------------------
+// Rotation (sandwich q * v * conj(q)); vector v is a pure quaternion (w = 0).
+// qz = 90 deg about Z: sin45 = cos45 = 0.70710678.
+// ---------------------------------------------------------------------------
+
+TEST(naive_quat, rotate_z90_x)
+{
+	quat qz = { 0, 0, 0.70710678f, 0.70710678f };
+	vec4 check = { 0, 1, 0, 0 };
+	vec4 result = rotate(qz, quat { 1, 0, 0, 0 });
+	EXPECT_TRUE(approx_eq(check, result, 1e-5f));
+}
+
+TEST(naive_quat, rotate_z90_y)
+{
+	quat qz = { 0, 0, 0.70710678f, 0.70710678f };
+	vec4 check = { -1, 0, 0, 0 };
+	vec4 result = rotate(qz, quat { 0, 1, 0, 0 });
+	EXPECT_TRUE(approx_eq(check, result, 1e-5f));
+}
+
+TEST(naive_quat, rotate_z90_z_axis_fixed)
+{
+	quat qz = { 0, 0, 0.70710678f, 0.70710678f };
+	vec4 check = { 0, 0, 1, 0 };
+	vec4 result = rotate(qz, quat { 0, 0, 1, 0 });
+	EXPECT_TRUE(approx_eq(check, result, 1e-5f));
+}
+
+TEST(naive_quat, rotate_identity_is_noop)
+{
+	quat id = { 0, 0, 0, 1 };
+	vec4 v = { 1, 2, 3, 0 };
+	vec4 result = rotate(id, v);
+	EXPECT_TRUE(approx_eq(v, result, 1e-6f));
+}
+
+TEST(naive_quat, rotate_composition)
+{
+	quat qz = { 0, 0, 0.70710678f, 0.70710678f };
+	vec4 x = { 1, 0, 0, 0 };
+	vec4 check = { -1, 0, 0, 0 };
+	vec4 twice = rotate(qz, rotate(qz, x));
+	vec4 once = rotate(qz * qz, x);
+	EXPECT_TRUE(approx_eq(check, twice, 1e-4f));
+	EXPECT_TRUE(approx_eq(once, twice, 1e-4f));
 }
 
 }

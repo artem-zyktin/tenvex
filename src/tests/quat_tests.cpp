@@ -238,4 +238,73 @@ TEST(quat, hamilton_composes_and_scales)
 	EXPECT_TRUE(approx_eq(check, result));
 }
 
+TEST(quat, rotate_z90_axes)
+{
+	quat qz = { 0, 0, 0.70710678f, 0.70710678f };
+	EXPECT_TRUE(approx_eq(vec4 { 0, 1, 0, 0 }, rotate(vec4 { 1, 0, 0, 0 }, qz), 1e-5f)); // x -> y
+	EXPECT_TRUE(approx_eq(vec4 { -1, 0, 0, 0 }, rotate(vec4 { 0, 1, 0, 0 }, qz), 1e-5f)); // y -> -x
+	EXPECT_TRUE(approx_eq(vec4 { 0, 0, 1, 0 }, rotate(vec4 { 0, 0, 1, 0 }, qz	), 1e-5f)); // z -> z
+}
+
+TEST(quat, rotate_identity_is_noop)
+{
+	quat id = { 0, 0, 0, 1 };
+	vec4 v = { 1, 2, 3, 0 };
+	EXPECT_TRUE(approx_eq(v, rotate(v, id), 1e-6f));
+}
+
+TEST(quat, rotate_perpendicular_equals_cross3)
+{
+	// 90 deg about n=z, applied to v perpendicular to n, equals cross3(n, v).
+	quat qz = { 0, 0, 0.70710678f, 0.70710678f };
+	vec4 n = { 0, 0, 1, 0 };
+	vec4 v = { 1, 0, 0, 0 };
+	EXPECT_TRUE(approx_eq(vec4(cross3(n, v)), rotate(v, qz), 1e-5f));
+}
+
+TEST(quat, rotate_leaves_axis_fixed)
+{
+	quat qz = { 0, 0, 0.70710678f, 0.70710678f };
+	vec4 axis = { 0, 0, 1, 0 };
+	EXPECT_TRUE(approx_eq(axis, rotate(axis, qz), 1e-6f));
+}
+
+TEST(quat, rotate_preserves_length)
+{
+	quat qz = { 0, 0, 0.70710678f, 0.70710678f };
+	vec4 v = { 1, 2, 3, 0 };
+	float rotated = magnitude3(rotate(v, qz));
+	float original = magnitude3(v);
+	EXPECT_NEAR(original, rotated, 1e-4f);
+}
+
+TEST(quat, rotate_preserves_dot)
+{
+	quat qz = { 0, 0, 0.70710678f, 0.70710678f };
+	vec4 a = { 1, 2, 3, 0 };
+	vec4 b = { 4, 5, 6, 0 };
+	float before = dot3(a, b);
+	float after = dot3(vec4(rotate(a, qz)), vec4(rotate(b, qz)));
+	EXPECT_NEAR(before, after, 1e-3f);
+}
+
+TEST(quat, rotate_composition_matches_hamilton)
+{
+	// rotate(q, rotate(q, v)) == rotate(q*q, v).  q*q = 180 about z, so x -> -x.
+	quat qz = { 0, 0, 0.70710678f, 0.70710678f };
+	vec4 x = { 1, 0, 0, 0 };
+	vec4 twice = rotate(rotate(x, qz), qz);
+	vec4 once = rotate(x, qz * qz);
+	EXPECT_TRUE(approx_eq(twice, once, 1e-4f));
+	EXPECT_TRUE(approx_eq(vec4 { -1, 0, 0, 0 }, twice, 1e-4f));
+}
+
+TEST(quat, rotate_is_vec_expr)
+{
+	quat qz = { 0, 0, 0.70710678f, 0.70710678f };
+	vec4 v = { 1, 0, 0, 0 };
+	EXPECT_TRUE((vec_expr<decltype(rotate(v, qz))>));
+	EXPECT_FALSE((quat_expr<decltype(rotate(v, qz))>));
+}
+
 }

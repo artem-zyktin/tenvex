@@ -86,3 +86,45 @@ static void BM_Naive_QuatHamilton_Throughput(benchmark::State& state)
 	}
 }
 BENCHMARK(BM_Naive_QuatHamilton_Throughput);
+
+static std::vector<vec4> make_vecs(int n, unsigned seed)
+{
+	std::mt19937 rng(seed);
+	std::uniform_real_distribution<float> d(-1.0f, 1.0f);
+	std::vector<vec4> v;
+	v.reserve(n);
+	for (int i = 0; i < n; ++i)
+		v.push_back(vec4 { d(rng), d(rng), d(rng), 0.0f });
+	return v;
+}
+
+static void BM_Naive_QuatConj_Throughput(benchmark::State& state)
+{
+	const auto a = make_quats(1024, 1);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		quat qq = a[i];
+		quat r = conj(qq);
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 1023;
+	}
+}
+BENCHMARK(BM_Naive_QuatConj_Throughput);
+
+static void BM_Naive_QuatRotate_Throughput(benchmark::State& state)
+{
+	const auto qs = make_quats(1024, 1);
+	const auto vs = make_vecs(1024, 3);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		quat qq = qs[i];
+		vec4 vv = vs[i];
+		quat pv = { vv.x(), vv.y(), vv.z(), 0.0f };
+		quat r = (qq * pv) * conj(qq);
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 1023;
+	}
+}
+BENCHMARK(BM_Naive_QuatRotate_Throughput);

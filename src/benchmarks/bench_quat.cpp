@@ -87,3 +87,48 @@ static void BM_QuatHamilton_Throughput(benchmark::State& state)
 	}
 }
 BENCHMARK(BM_QuatHamilton_Throughput);
+
+static std::vector<vec4> make_vecs(int n, unsigned seed)
+{
+	std::mt19937 rng(seed);
+	std::uniform_real_distribution<float> d(-1.0f, 1.0f);
+	std::vector<vec4> v;
+	v.reserve(n);
+	for (int i = 0; i < n; ++i)
+		v.push_back(vec4 { d(rng), d(rng), d(rng), 0.0f });
+	return v;
+}
+
+// conj is a single xorps - like the add/sub/mul quat benches this is a
+// zero-cost confirmation, not an advantage benchmark.
+static void BM_QuatConj_Throughput(benchmark::State& state)
+{
+	const auto a = make_quats(1024, 1);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		quat qq = a[i];
+		quat r = conj(qq);
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 1023;
+	}
+}
+BENCHMARK(BM_QuatConj_Throughput);
+
+// rotate(v, q) = the sandwich q * v * conj(q). tenvex fuses it into one node;
+// rotate() is a vec_expr, so bind the result to a concrete vec4.
+static void BM_QuatRotate_Throughput(benchmark::State& state)
+{
+	const auto qs = make_quats(1024, 1);
+	const auto vs = make_vecs(1024, 3);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		quat qq = qs[i];
+		vec4 vv = vs[i];
+		vec4 r = rotate(vv, qq);
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 1023;
+	}
+}
+BENCHMARK(BM_QuatRotate_Throughput);

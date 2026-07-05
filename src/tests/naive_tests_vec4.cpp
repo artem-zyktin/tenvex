@@ -811,4 +811,6 @@ TEST(vec4, magnitude3_compare_is_eager)
 	EXPECT_EQ(check, result);
 }
 
+
+
 }

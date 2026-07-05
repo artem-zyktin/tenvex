@@ -633,3 +633,30 @@ static void BM_Norm3Fast_Latency(benchmark::State& state)
 	}
 }
 BENCHMARK(BM_Norm3Fast_Latency);
+
+static void BM_Cross3_Latency(benchmark::State& state)
+{
+	vec4 v { 1.0f, 0.0f, 0.0f, 0.0f };
+	vec4 k { 0.0f, 1.0f, 0.0f, 0.0f };
+	for (auto _ : state)
+	{
+		v = cross3(v, k) + vec4 { 1e-3f, 2e-3f, 3e-3f, 0.0f }; // chain through v
+		benchmark::DoNotOptimize(v);
+	}
+}
+BENCHMARK(BM_Cross3_Latency);
+
+static void BM_Cross3_Throughput(benchmark::State& state)
+{
+	const auto a = make_vecs(1024, 1);
+	const auto b = make_vecs(1024, 2);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		vec4 aa = a[i], bb = b[i];
+		vec4 r = cross3(aa, bb);
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 1023;
+	}
+}
+BENCHMARK(BM_Cross3_Throughput);
