@@ -243,7 +243,7 @@ vf4 quat_mul(vf4 a, vf4 b) noexcept
 }
 
 [[nodiscard]] TNVX_INLINE
-vf4 rotate(vf4 q, vf4 v) noexcept
+vf4 rotate(vf4 v, vf4 q) noexcept
 {
 	// v' = v + 2w(n x v) + 2(n x (n x v)),  n = q.xyz, w = q.w.  q must be unit
 	const vf4 c1 = cross3(q, v);
