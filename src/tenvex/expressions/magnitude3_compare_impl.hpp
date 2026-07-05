@@ -17,6 +17,11 @@ requires std::is_arithmetic_v<F>
 TNVX_INLINE
 bool operator<(const Magn3<A>& a, F c) noexcept
 {
+	if (c < 0)
+	{
+		return false;
+	}
+
 	return float(magnitude3_sq(a.operand())) < float(c) * float(c);
 }
 
@@ -25,6 +30,11 @@ requires std::is_arithmetic_v<F>
 TNVX_INLINE
 bool operator<(F c, const Magn3<A>& a) noexcept
 {
+	if (c < 0)
+	{
+		return true;
+	}
+
 	return float(c) * float(c) < float(magnitude3_sq(a.operand()));
 }
 
@@ -40,6 +50,11 @@ requires std::is_arithmetic_v<F>
 TNVX_INLINE
 bool operator<=(const Magn3<A>& a, F c) noexcept
 {
+	if (c < 0)
+	{
+		return false;
+	}
+
 	return float(magnitude3_sq(a.operand())) <= float(c) * float(c);
 }
 
@@ -48,6 +63,11 @@ requires std::is_arithmetic_v<F>
 TNVX_INLINE
 bool operator<=(F c, const Magn3<A>& a) noexcept
 {
+	if (c < 0)
+	{
+		return true;
+	}
+
 	return float(c) * float(c) <= float(magnitude3_sq(a.operand()));
 }
 
@@ -63,6 +83,11 @@ requires std::is_arithmetic_v<F>
 TNVX_INLINE
 bool operator>(const Magn3<A>& a, F c) noexcept
 {
+	if (c < 0)
+	{
+		return true;
+	}
+
 	return float(magnitude3_sq(a.operand())) > float(c) * float(c);
 }
 
@@ -71,6 +96,11 @@ requires std::is_arithmetic_v<F>
 TNVX_INLINE
 bool operator>(F c, const Magn3<A>& a) noexcept
 {
+	if (c < 0)
+	{
+		return false;
+	}
+
 	return float(c) * float(c) > float(magnitude3_sq(a.operand()));
 }
 
@@ -86,6 +116,11 @@ requires std::is_arithmetic_v<F>
 TNVX_INLINE
 bool operator>=(const Magn3<A>& a, F c) noexcept
 {
+	if (c < 0)
+	{
+		return true;
+	}
+
 	return float(magnitude3_sq(a.operand())) >= float(c) * float(c);
 }
 
@@ -94,6 +129,11 @@ requires std::is_arithmetic_v<F>
 TNVX_INLINE
 bool operator>=(F c, const Magn3<A>& a) noexcept
 {
+	if (c < 0)
+	{
+		return false;
+	}
+
 	return float(c) * float(c) >= float(magnitude3_sq(a.operand()));
 }
 

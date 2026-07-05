@@ -79,16 +79,7 @@ inline bool approx_eq(quat a, quat b, float eps = 1e-6f) noexcept
 		&& std::fabs(a.w() - b.w()) <= eps;
 }
 
-// Active rotation of a vector by a unit quaternion: q * v * conj(q).
-// The rotation quaternion is the FIRST argument; the vector (w = 0) is the
-// second (as quat or vec4). Returns the rotated vector as vec4 (w = 0).
-[[nodiscard]] inline vec4 rotate(quat q, quat v) noexcept
-{
-	const quat r = (q * v) * conj(q);
-	return { r.x(), r.y(), r.z(), 0.0f };
-}
-
-[[nodiscard]] inline vec4 rotate(quat q, vec4 v) noexcept
+[[nodiscard]] inline vec4 rotate(vec4 v, quat q) noexcept
 {
 	const quat r = (q * v) * conj(q);
 	return { r.x(), r.y(), r.z(), 0.0f };

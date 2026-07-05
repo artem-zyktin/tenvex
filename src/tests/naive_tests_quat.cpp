@@ -166,17 +166,17 @@ TEST(naive_quat, conj_anti_homomorphism)
 
 TEST(naive_quat, rotate_z90_x)
 {
-	quat qz = { 0, 0, 0.70710678f, 0.70710678f };
+	quat q = { 0, 0, 0.70710678f, 0.70710678f };
 	vec4 check = { 0, 1, 0, 0 };
-	vec4 result = rotate(qz, quat { 1, 0, 0, 0 });
+	vec4 result = rotate(vec4 { 1, 0, 0, 0 }, q);
 	EXPECT_TRUE(approx_eq(check, result, 1e-5f));
 }
 
 TEST(naive_quat, rotate_z90_y)
 {
-	quat qz = { 0, 0, 0.70710678f, 0.70710678f };
+	quat q = { 0, 0, 0.70710678f, 0.70710678f };
 	vec4 check = { -1, 0, 0, 0 };
-	vec4 result = rotate(qz, quat { 0, 1, 0, 0 });
+	vec4 result = rotate(vec4 { 0, 1, 0, 0 }, q);
 	EXPECT_TRUE(approx_eq(check, result, 1e-5f));
 }
 
@@ -184,7 +184,7 @@ TEST(naive_quat, rotate_z90_z_axis_fixed)
 {
 	quat qz = { 0, 0, 0.70710678f, 0.70710678f };
 	vec4 check = { 0, 0, 1, 0 };
-	vec4 result = rotate(qz, quat { 0, 0, 1, 0 });
+	vec4 result = rotate(vec4 { 0, 0, 1, 0 }, qz);
 	EXPECT_TRUE(approx_eq(check, result, 1e-5f));
 }
 
@@ -192,7 +192,7 @@ TEST(naive_quat, rotate_identity_is_noop)
 {
 	quat id = { 0, 0, 0, 1 };
 	vec4 v = { 1, 2, 3, 0 };
-	vec4 result = rotate(id, v);
+	vec4 result = rotate(vec4 { 1, 2, 3, 0 }, id);
 	EXPECT_TRUE(approx_eq(v, result, 1e-6f));
 }
 
@@ -201,8 +201,8 @@ TEST(naive_quat, rotate_composition)
 	quat qz = { 0, 0, 0.70710678f, 0.70710678f };
 	vec4 x = { 1, 0, 0, 0 };
 	vec4 check = { -1, 0, 0, 0 };
-	vec4 twice = rotate(qz, rotate(qz, x));
-	vec4 once = rotate(qz * qz, x);
+	vec4 twice = rotate(rotate(x, qz), qz);
+	vec4 once = rotate(x, qz * qz);
 	EXPECT_TRUE(approx_eq(check, twice, 1e-4f));
 	EXPECT_TRUE(approx_eq(once, twice, 1e-4f));
 }
