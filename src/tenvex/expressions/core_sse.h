@@ -242,6 +242,19 @@ vf4 quat_mul(vf4 a, vf4 b) noexcept
 	return _mm_add_ps(_mm_add_ps(t0, t1), _mm_add_ps(t2, t3));
 }
 
+[[nodiscard]] TNVX_INLINE
+vf4 rotate(vf4 q, vf4 v) noexcept
+{
+	// v' = v + 2w(n x v) + 2(n x (n x v)),  n = q.xyz, w = q.w.  q must be unit
+	const vf4 c1 = cross3(q, v);
+	const vf4 c2 = cross3(q, c1);
+	const vf4 wq = _mm_shuffle_ps(q, q, _MM_SHUFFLE(3, 3, 3, 3));
+	const vf4 two = _mm_set1_ps(2.0f);
+	const vf4 t1 = mul(mul(two, wq), c1);
+	const vf4 t2 = mul(two, c2);
+	return add(v, add(t1, t2));
+}
+
 } // namespace tnvx::detail
 
 #endif

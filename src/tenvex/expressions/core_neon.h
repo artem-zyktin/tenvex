@@ -246,6 +246,19 @@ vf4 quat_mul(vf4 a, vf4 b) noexcept
 	return vaddq_f32(vaddq_f32(t0, t1), vaddq_f32(t2, t3));
 }
 
+[[nodiscard]] TNVX_INLINE
+vf4 rotate(vf4 q, vf4 v) noexcept
+{
+	// v' = v + 2w(n x v) + 2(n x (n x v)),  n = q.xyz, w = q.w.  q must be unit
+	const vf4 c1 = cross3(q, v);
+	const vf4 c2 = cross3(q, c1);
+	const vf4 wq = vdupq_laneq_f32(q, 3);
+	const vf4 two = vdupq_n_f32(2.0f);
+	const vf4 t1 = mul(mul(two, wq), c1);
+	const vf4 t2 = mul(two, c2);
+	return add(v, add(t1, t2));
+}
+
 }
 
 #endif
