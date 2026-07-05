@@ -72,12 +72,14 @@ Mul<Scalar, E> operator*(float l, const E& r) noexcept
 }
 
 template<quat_expr E>
+TNVX_INLINE
 Mul<Scalar, E> operator*(float l, const E& r) noexcept
 {
 	return { Scalar(l), r };
 }
 
 template<quat_expr E>
+TNVX_INLINE
 Mul<E, Scalar> operator*(const E& l, float r) noexcept
 {
 	return { l, Scalar(r) };
