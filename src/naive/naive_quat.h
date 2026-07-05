@@ -1,5 +1,7 @@
 #pragma once
 
+#include "naive_vec4.h"
+
 #include <cmath>
 
 namespace naive
@@ -43,6 +45,11 @@ private:
 	return q * s;
 }
 
+[[nodiscard]] inline quat conj(quat q) noexcept
+{
+	return { -q.x(), -q.y(), -q.z(), q.w() };
+}
+
 [[nodiscard]] inline quat operator*(quat a, quat b) noexcept   // Hamilton
 {
 	return {
@@ -51,6 +58,11 @@ private:
 		a.w() * b.z() + a.x() * b.y() - a.y() * b.x() + a.z() * b.w(),  // z
 		a.w() * b.w() - a.x() * b.x() - a.y() * b.y() - a.z() * b.z()   // w
 	};
+}
+
+[[nodiscard]] inline quat operator*(quat q, vec4 v) noexcept   // q * (v as pure quaternion, w = 0)
+{
+	return q * quat { v.x(), v.y(), v.z(), 0.0f };
 }
 
 inline bool operator==(quat a, quat b) noexcept
@@ -65,6 +77,21 @@ inline bool approx_eq(quat a, quat b, float eps = 1e-6f) noexcept
 		&& std::fabs(a.y() - b.y()) <= eps
 		&& std::fabs(a.z() - b.z()) <= eps
 		&& std::fabs(a.w() - b.w()) <= eps;
+}
+
+// Active rotation of a vector by a unit quaternion: q * v * conj(q).
+// The rotation quaternion is the FIRST argument; the vector (w = 0) is the
+// second (as quat or vec4). Returns the rotated vector as vec4 (w = 0).
+[[nodiscard]] inline vec4 rotate(quat q, quat v) noexcept
+{
+	const quat r = (q * v) * conj(q);
+	return { r.x(), r.y(), r.z(), 0.0f };
+}
+
+[[nodiscard]] inline vec4 rotate(quat q, vec4 v) noexcept
+{
+	const quat r = (q * v) * conj(q);
+	return { r.x(), r.y(), r.z(), 0.0f };
 }
 
 }
