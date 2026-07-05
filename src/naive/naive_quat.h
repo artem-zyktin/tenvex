@@ -85,4 +85,9 @@ inline bool approx_eq(quat a, quat b, float eps = 1e-6f) noexcept
 	return { r.x(), r.y(), r.z(), 0.0f };
 }
 
+[[nodiscard]] inline float dot4(quat a, quat b) noexcept
+{
+	return a.x() * b.x() + a.y() * b.y() + a.z() * b.z() + a.w() * b.w();
+}
+
 }

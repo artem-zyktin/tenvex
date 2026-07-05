@@ -307,4 +307,41 @@ TEST(quat, rotate_is_vec_expr)
 	EXPECT_FALSE((quat_expr<decltype(rotate(v, qz))>));
 }
 
+TEST(quat, dot4_basic)
+{
+	quat a = { 1, 2, 3, 4 };
+	quat b = { 5, 6, 7, 8 };
+	// 1*5 + 2*6 + 3*7 + 4*8 = 5 + 12 + 21 + 32 = 70
+	EXPECT_FLOAT_EQ(70.0f, float(dot4(a, b)));
+}
+
+TEST(quat, dot4_uses_all_four_lanes)
+{
+	quat a = { 0, 0, 0, 2 };
+	quat b = { 1, 1, 1, 3 };
+	EXPECT_FLOAT_EQ(6.0f, float(dot4(a, b)));
+}
+
+TEST(quat, dot4_commutative)
+{
+	quat a = { 1, 2, 3, 4 };
+	quat b = { 5, 6, 7, 8 };
+	EXPECT_FLOAT_EQ(float(dot4(a, b)), float(dot4(b, a)));
+}
+
+TEST(quat, dot4_is_scalar_expr)
+{
+	quat a = { 1, 2, 3, 4 };
+	quat b = { 5, 6, 7, 8 };
+	EXPECT_TRUE((scalar_expr<decltype(dot4(a, b))>));
+	EXPECT_FALSE((quat_expr<decltype(dot4(a, b))>));
+}
+
+TEST(quat, dot4_rejects_mixed_category)
+{
+	// vec x quat is ill-formed by construction; the concept is the guard.
+	EXPECT_TRUE((dot4_operands<quat, quat>));
+	EXPECT_FALSE((dot4_operands<vec4, quat>));
+}
+
 }

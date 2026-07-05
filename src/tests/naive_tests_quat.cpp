@@ -207,4 +207,19 @@ TEST(naive_quat, rotate_composition)
 	EXPECT_TRUE(approx_eq(once, twice, 1e-4f));
 }
 
+TEST(naive_quat, dot4_basic)
+{
+	quat a = { 1, 2, 3, 4 };
+	quat b = { 5, 6, 7, 8 };
+	EXPECT_FLOAT_EQ(70.0f, dot4(a, b));
+}
+
+TEST(naive_quat, dot4_uses_all_four_lanes)
+{
+	quat a = { 0, 0, 0, 2 };
+	quat b = { 1, 1, 1, 3 };
+	EXPECT_FLOAT_EQ(6.0f, dot4(a, b));
+
+}
+
 }
