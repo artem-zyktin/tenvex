@@ -31,6 +31,9 @@ concept same_category = (vec_expr<L> && vec_expr<R>)
 						|| (quat_expr<L> && quat_expr<R>);
 
 template<typename L, typename R>
+concept dot4_operands = (vec_expr<L> && vec_expr<R>) || (quat_expr<L> && quat_expr<R>);
+
+template<typename L, typename R>
 concept scalable = scalar_expr<L> || scalar_expr<R>;
 
 }
