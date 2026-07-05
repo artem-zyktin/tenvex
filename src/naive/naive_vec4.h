@@ -191,4 +191,14 @@ inline bool approx_eq(vec4 a, vec4 b, float eps = 1e-6f) noexcept
 	return { a.x() * b.x(), a.y() * b.y(), a.z() * b.z(), a.w() * b.w() };
 }
 
+[[nodiscard]] inline float magnitude4(vec4 v) noexcept
+{
+	return std::sqrt(dot4(v, v));
+}
+
+[[nodiscard]] inline float magnitude4_sq(vec4 v) noexcept
+{
+	return dot4(v, v);
+}
+
 }

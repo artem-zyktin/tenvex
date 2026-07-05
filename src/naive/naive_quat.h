@@ -90,4 +90,14 @@ inline bool approx_eq(quat a, quat b, float eps = 1e-6f) noexcept
 	return a.x() * b.x() + a.y() * b.y() + a.z() * b.z() + a.w() * b.w();
 }
 
+[[nodiscard]] inline float magnitude4(quat q) noexcept
+{
+	return std::sqrt(dot4(q, q));
+}
+
+[[nodiscard]] inline float magnitude4_sq(quat q) noexcept
+{
+	return dot4(q, q);
+}
+
 }
