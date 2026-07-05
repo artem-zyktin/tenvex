@@ -128,3 +128,33 @@ static void BM_Naive_QuatRotate_Throughput(benchmark::State& state)
 	}
 }
 BENCHMARK(BM_Naive_QuatRotate_Throughput);
+
+static void BM_Naive_QuatDot4_Latency(benchmark::State& state)
+{
+	quat a { 1.0f, 2.0f, 3.0f, 4.0f };
+	quat b { 0.5f, 0.5f, 0.5f, 0.5f };
+	float acc = 0.0f;
+	for (auto _ : state)
+	{
+		quat bb = b + quat { acc, 0.0f, 0.0f, 0.0f };
+		float d = dot4(a, bb);
+		acc = d * 1e-7f;
+		benchmark::DoNotOptimize(acc);
+	}
+}
+BENCHMARK(BM_Naive_QuatDot4_Latency);
+
+static void BM_Naive_QuatDot4_Throughput(benchmark::State& state)
+{
+	const auto a = make_quats(1024, 1);
+	const auto b = make_quats(1024, 2);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		quat aa = a[i], bb = b[i];
+		float d = dot4(aa, bb);
+		benchmark::DoNotOptimize(d);
+		i = (i + 1) & 1023;
+	}
+}
+BENCHMARK(BM_Naive_QuatDot4_Throughput);
