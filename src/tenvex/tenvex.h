@@ -13,6 +13,7 @@
 #include "expressions/magnitude3.h"
 #include "expressions/magnitude3_sq.h"
 #include "expressions/magnitude3_compare.h"
+#include "expressions/magnitude4.h"
 #include "expressions/norm3.h"
 #include "expressions/norm3_fast.h"
 #include "expressions/cross3.h"
