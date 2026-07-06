@@ -107,4 +107,10 @@ inline bool approx_eq(quat a, quat b, float eps = 1e-6f) noexcept
 	return { c.x() / d, c.y() / d, c.z() / d, c.w() / d };
 }
 
+[[nodiscard]] inline quat normalize(quat q) noexcept
+{
+	float len = magnitude4(q);
+	return { q.x() / len, q.y() / len, q.z() / len, q.w() / len };
+}
+
 }

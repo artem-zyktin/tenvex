@@ -253,4 +253,20 @@ TEST(naive_quat, inverse_of_unit_equals_conj)
 	EXPECT_TRUE(approx_eq(check, result, 1e-5f));
 }
 
+TEST(naive_quat, normalize_scalar_quat)
+{
+	quat q = { 0, 0, 0, 2 };
+	quat check = { 0, 0, 0, 1 };
+	quat result = normalize(q);
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(naive_quat, normalize_uniform)
+{
+	quat q = { 1, 1, 1, 1 };
+	quat check = { 0.5f, 0.5f, 0.5f, 0.5f };
+	quat result = normalize(q);
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
 }
