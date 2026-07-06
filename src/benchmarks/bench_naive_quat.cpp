@@ -242,3 +242,31 @@ static void BM_Naive_QuatInverse_Throughput(benchmark::State& state)
 	}
 }
 BENCHMARK(BM_Naive_QuatInverse_Throughput);
+
+static void BM_Naive_QuatNormalize_Latency(benchmark::State& state)
+{
+	quat a { 1.0f, 2.0f, 3.0f, 4.0f };
+	float acc = 0.0f;
+	for (auto _ : state)
+	{
+		quat aa = a + quat { acc, 0.0f, 0.0f, 0.0f };
+		quat r = normalize(aa);
+		acc = r.x() * 1e-7f;
+		benchmark::DoNotOptimize(acc);
+	}
+}
+BENCHMARK(BM_Naive_QuatNormalize_Latency);
+
+static void BM_Naive_QuatNormalize_Throughput(benchmark::State& state)
+{
+	const auto a = make_quats(1024, 1);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		quat qq = a[i];
+		quat r = normalize(qq);
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 1023;
+	}
+}
+BENCHMARK(BM_Naive_QuatNormalize_Throughput);
