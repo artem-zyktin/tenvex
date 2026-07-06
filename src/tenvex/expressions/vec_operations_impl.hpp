@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "operations.h"
+#include "vec_operations.h"
 
 namespace tnvx
 {

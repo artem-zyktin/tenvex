@@ -15,7 +15,7 @@ BSD 3-Clause License. Copyright (c) 2026 Artem Zyktin. See [LICENSE.txt](LICENSE
 - **x86-64 / SSE4.1**
 - **ARM64 / NEON** (Cortex-A76 / Raspberry Pi 5, GCC and Clang)
 
-Both backends cover the full API, including **quaternions** - type, Hamilton product (`*`), `conj`, and `rotate` (see [Quaternions](#quaternions)).
+Both backends cover the full API.
 
 **Planned**
 
@@ -25,10 +25,10 @@ Both backends cover the full API, including **quaternions** - type, Hamilton pro
 
 - Header-only - just include `tenvex.h`.
 - Expression-template engine: nodes are lazy and evaluated on assignment.
-- C++20 concepts (`expression`, `vec_expr`, `scalar_expr`) enforce type safety at compile time.
+- C++20 concepts (`expression`, `vec_expr`, `scalar_expr`, `quat_expr`, `packed_expr`) enforce type safety at compile time.
 - Storage policy: leaves (trivially-copyable, 16 bytes or less) are stored by value; larger composite nodes by `const&`. Because that reference can outlive a temporary sub-expression, assign compound expressions to a `vec4` / `float` rather than `auto` (see [Performance and best practices](#performance-and-best-practices)).
-- Operations: `+`, `-` (binary), `-` (unary negation), `*` (scalar), `/` (by scalar), `dot3`, `dot4`, `cross3`, `norm3`, `norm3_fast` (approximate, see below), `magnitude3`, `magnitude3_sq`, `min`, `max`, `abs`, `hadamard` (component-wise), `floor`, `ceil`, `round`, `frac` (rounding), `clamp`, `saturate`, `lerp`, `dist3`, `dist3_sq`, `reflect` (composed), `==`, `approx_eq`, ordered magnitude comparisons (`<`, `<=`, `>`, `>=` on `magnitude3`, see [Comparison](#comparison)), and component accessors `x()`, `y()`, `z()`, `w()`.
-- Quaternions: a 16-byte `quat` type with Hamilton product (`*`), `conj` (conjugate), `rotate` (rotate a `vec4` by a unit quaternion), plus `+`, `-`, scalar `*`, `==`, and `approx_eq`. See [Quaternions](#quaternions).
+- Operations: `+`, `-` (binary), `-` (unary negation), `*` (scalar), `/` (by scalar), `dot3`, `dot4`, `cross3`, `norm3`, `norm3_fast` (approximate, see below), `magnitude3`, `magnitude3_sq`, `magnitude4`, `magnitude4_sq`, `min`, `max`, `abs`, `hadamard` (component-wise), `floor`, `ceil`, `round`, `frac` (rounding), `clamp`, `saturate`, `lerp`, `dist3`, `dist3_sq`, `reflect` (composed), `==`, `approx_eq`, ordered magnitude comparisons (`<`, `<=`, `>`, `>=` on `magnitude3`, see [Comparison](#comparison)), and component accessors `x()`, `y()`, `z()`, `w()`. The 4-lane reductions `dot4`, `magnitude4`, and `magnitude4_sq` accept a `quat` as well as a `vec4`.
+- A `quat` type with Hamilton product (`*`), `conj`, `normalize`, `inverse`, `rotate`, `slerp`, `nlerp`, and the usual `+`, `-`, scalar `*`, `==`, `approx_eq` (see [Quaternions](#quaternions)).
 
 ## Requirements
 
@@ -69,6 +69,8 @@ vec4  cr   = cross3(a, b);     // 3D cross product, result w = 0
 vec4  n    = norm3(a);         // normalize xyz, w preserved
 float mag  = magnitude3(a);    // 3D length (ignores w)
 float mag2 = magnitude3_sq(a); // 3D length squared, no sqrt - use for distance compares
+float mag4 = magnitude4(a);    // 4D length (includes w)
+float m4sq = magnitude4_sq(a); // 4D length squared, no sqrt
 
 // Component-wise min / max (all 4 lanes, including w) - e.g. growing an AABB
 vec4 lo = min(a, b);           // per-lane minimum
@@ -177,17 +179,23 @@ Operations (all lazy nodes, evaluated on assignment, same as vectors):
 
 ```cpp
 quat c = conj(q);          // Conj      - negate xyz, keep w; for a unit quaternion this is its inverse
+quat n = normalize(q);     // Normalize - scale to unit length (q / magnitude4(q)); stays a quat node
+quat iv = inverse(q);      // Inverse   - conj(q) / magnitude4_sq(q); equals conj for a unit quaternion
 quat h = q1 * q2;          // QuatMul   - Hamilton product; non-commutative; composes rotations
 quat a = q1 + q2;          // Add / Sub - component-wise, stay quaternion-typed
 quat s = q * 2.0f;         // scalar *  - scales all four lanes (float or scalar_expr)
 
 vec4 vr = rotate(v, q);    // Rotate    - rotate vec4 v by unit quaternion q; result is a vec4
 
+// Interpolation (composed convenience - eager, return a concrete quat, assume unit inputs)
+quat sl = slerp(q1, q2, 0.5f); // spherical linear interp; shortest arc; constant angular velocity
+quat nl = nlerp(q1, q2, 0.5f); // normalized lerp; cheaper (no acos/sin), approximate for large arcs
+
 bool same = (q1 == q2);        // exact, all-lane equality
 bool near = approx_eq(q1, q2); // default epsilon = 1e-6f
 ```
 
-`rotate(v, q)` returns the rotated **vector** (a `vec_expr`, so it stays lazy and can feed a larger expression); the `w` lane of `v` is carried through unchanged. It uses the cross-product form `v + 2w(n x v) + 2(n x (n x v))` (with `n = q.xyz`, `w = q.w`), which is the sandwich `q * v * conj(q)` for a **unit** `q` - the unit precondition is assumed, not checked. `conj`, `*`, `+`, `-`, and `rotate` are lazy nodes: the same "assign to a concrete type, don't hold a compound expression in `auto`" rule from [Performance and best practices](#performance-and-best-practices) applies to quaternion expressions too.
+`rotate(v, q)` returns the rotated **vector** (a `vec_expr`, so it stays lazy and can feed a larger expression); the `w` lane of `v` is carried through unchanged. It uses the cross-product form `v + 2w(n x v) + 2(n x (n x v))` (with `n = q.xyz`, `w = q.w`), which is the sandwich `q * v * conj(q)` for a **unit** `q` - the unit precondition is assumed, not checked. `conj`, `normalize`, `inverse`, `*`, `+`, `-`, and `rotate` are lazy nodes: the same "assign to a concrete type, don't hold a compound expression in `auto`" rule from [Performance and best practices](#performance-and-best-practices) applies to quaternion expressions too. `slerp` and `nlerp` are composed convenience functions - like `lerp` / `reflect` on vectors they evaluate eagerly and return a concrete `quat`. Both assume unit-length inputs, take the shortest arc (via the sign of `dot4`), and fall back to a normalized lerp when the inputs are nearly parallel; `nlerp` skips the `acos` / `sin` entirely, trading constant angular velocity for speed.
 
 ## Performance and best practices
 
@@ -241,7 +249,7 @@ On Cortex-A76 the Newton-Raphson refinement is a 5-link dependency chain versus 
 
 ### Two layers
 
-- **Eager kernel layer** (`expressions/core.h`, namespace `tnvx::detail`): `TNVX_INLINE` functions over `vf4` (`neg`, `abs`, `add`, `sub`, `mul`, `div`, `dot3`, `dot4`, `magnitude3`, `magnitude3_sq`, `norm3`, `cross3`, `min`, `max`, `scalar`, `get_lane`, `eq`, `approx_eq`, and the quaternion kernels `conjugate`, `quat_mul`, `rotate`). This is the only place intrinsics live, and the only place the SIMD backend is selected: `core.h` dispatches to `core_sse.h` (SSE4.1) or `core_neon.h` (NEON) per the autodetected target.
+- **Eager kernel layer** (`expressions/core.h`, namespace `tnvx::detail`): `TNVX_INLINE` functions over `vf4` (`neg`, `abs`, `add`, `sub`, `mul`, `div`, `dot3`, `dot4`, `magnitude3`, `magnitude3_sq`, `magnitude4`, `magnitude4_sq`, `norm3`, `cross3`, `min`, `max`, `scalar`, `get_lane`, `eq`, `approx_eq`, and the quaternion kernels `conjugate`, `quat_mul`, `rotate`, `normalize`, `inverse`). This is the only place intrinsics live, and the only place the SIMD backend is selected: `core.h` dispatches to `core_sse.h` (SSE4.1) or `core_neon.h` (NEON) per the autodetected target.
 - **Expression layer** (everything else in namespace `tnvx`): lazy nodes that compose and delegate down to the kernels. This layer operates only on `vf4` and contains no intrinsics.
 
 ### Expression templates
@@ -262,6 +270,8 @@ vec4 result = norm3(a + b * 2.0f) * dot3(b, c) + c * 3.0f;
 | `vec_expr<T>`    | An `expression` marked as a vector expression (`is_vec_expr<T>`)        |
 | `scalar_expr<T>` | An `expression` marked as a scalar expression (`is_scalar_expr<T>`)     |
 | `quat_expr<T>`   | An `expression` marked as a quaternion expression (`is_quat_expr<T>`)   |
+| `packed_expr<T>` | A `vec_expr` or `quat_expr` — a 4-lane packed value, as opposed to a collapsed scalar |
+| `same_packed_category<L,R>` | Two `packed_expr` of the same category (both vectors or both quaternions); the operand rule for `dot4` |
 
 ### Storage policy
 
@@ -289,12 +299,14 @@ The **Intrinsics** column lists the SSE4.1 (x86-64) backend; the NEON (AArch64) 
 | `Mul<L,R>`    | vec / scalar  | `_mm_mul_ps`                                                | Scalar multiply only (no component-wise `vec * vec`). Operands may be vector×scalar, scalar×vector, or scalar×scalar; a scalar operand is a `float` or a scalar expression |
 | `Div<L,R>`    | `vec_expr`    | `_mm_div_ps`                                                | Vector divided by a scalar (`float`)                                        |
 | `Dot3<L,R>`   | `scalar_expr` | `_mm_mul_ps` + shuffles + `_mm_add_ss`                      | 3-component dot (ignores w), broadcast to all lanes; convertible to `float` |
-| `Dot4<L,R>`   | `scalar_expr` | `_mm_mul_ps` + `_mm_hadd_ps` x2                             | 4-component dot (includes w), broadcast to all lanes; convertible to `float` |
+| `Dot4<L,R>`   | `scalar_expr` | `_mm_mul_ps` + `_mm_hadd_ps` x2                             | 4-component dot (includes w), broadcast to all lanes; convertible to `float`; operands are two vectors or two quaternions (`same_packed_category`) |
 | `Cross3<L,R>` | `vec_expr`    | `_mm_shuffle_ps` + `_mm_mul_ps` + `_mm_sub_ps`              | 3-component cross product; result `w = 0`                                   |
 | `Norm3<E>`    | `vec_expr`    | `dot3` + `_mm_sqrt_ps` + `_mm_div_ps` + `_mm_blend_ps`      | Normalizes xyz by the 3D magnitude; preserves w                             |
 | `Norm3Fast<E>` | `vec_expr`   | `dot3` + `_mm_rsqrt_ps` + Newton step + `_mm_mul_ps`        | Approximate normalize via reciprocal-sqrt estimate; preserves w; backend-dependent speed (see [Performance](#performance-and-best-practices)) |
 | `Magn3<E>`    | `scalar_expr` | `_mm_sqrt_ps` + `dot3(v,v)`                                  | 3-component length (ignores w), broadcast; convertible to `float`           |
 | `Magn3Sq<E>`  | `scalar_expr` | `dot3(v,v)`                                                 | 3-component length squared (no `sqrt`); broadcast; convertible to `float`   |
+| `Magn4<E>`    | `scalar_expr` | `_mm_sqrt_ps` + `dot4(v,v)`                                 | 4-component length (includes w), for a vector or quaternion (`packed_expr`); broadcast; convertible to `float` |
+| `Magn4Sq<E>`  | `scalar_expr` | `dot4(v,v)`                                                 | 4-component length squared (no `sqrt`), for a vector or quaternion (`packed_expr`); broadcast; convertible to `float` |
 | `Min<L,R>`    | `vec_expr`    | `_mm_min_ps`                                                | Component-wise minimum across all 4 lanes                                   |
 | `Max<L,R>`    | `vec_expr`    | `_mm_max_ps`                                                | Component-wise maximum across all 4 lanes                                   |
 | `Hadamard<L,R>` | `vec_expr`  | `_mm_mul_ps`                                               | Component-wise (per-lane) product; named, not `operator*`, to avoid ambiguity with dot/cross |
@@ -304,6 +316,8 @@ The **Intrinsics** column lists the SSE4.1 (x86-64) backend; the NEON (AArch64) 
 | `Round<E>`    | `vec_expr`    | `_mm_round_ps` (nearest)                                   | Per-lane round, half-to-even (matches HLSL `round` / GLSL `roundEven`)      |
 | `Frac<E>`     | `vec_expr`    | `_mm_sub_ps(v, floor(v))`                                  | Per-lane fractional part in [0,1); floor-based, wraps negatives correctly   |
 | `Conj<E>`     | `quat_expr`   | `_mm_xor_ps` (sign mask on xyz)                            | Quaternion conjugate: negates xyz, keeps w; involutive; inverse of a unit quaternion |
+| `Normalize<E>` | `quat_expr`  | `dot4(q,q)` + `_mm_sqrt_ps` + `_mm_div_ps`                | Scales a quaternion to unit length (`q / magnitude4(q)`); stays a `quat_expr` (vectors use `norm3`) |
+| `Inverse<E>`  | `quat_expr`   | `conjugate` + `dot4(q,q)` + `_mm_div_ps`                   | Quaternion inverse `conj(q) / magnitude4_sq(q)`; equals `conj` for a unit quaternion |
 | `QuatMul<L,R>` | `quat_expr`  | shuffles + `_mm_mul_ps` + `_mm_xor_ps` + `_mm_add_ps`      | Hamilton product (`operator*` on two `quat_expr`); non-commutative; composes rotations |
 | `Rotate<V,Q>` | `vec_expr`    | `cross3` x2 + `_mm_mul_ps` + `_mm_add_ps`                  | Rotates vector V by unit quaternion Q via `v + 2w(n x v) + 2(n x (n x v))`; result is a `vec_expr`, w carried from V |
 
@@ -316,7 +330,7 @@ Comparison helpers (free functions in `tnvx`, backed by `tnvx::detail`):
 
 ### Composed operations
 
-Free functions in `tnvx` that compose the operators above. **They evaluate eagerly and return concrete types** (`vec4` / `float`), not expression nodes - returning a lazy expression that references function-local temporaries would dangle. Defined in `expressions/operations.h` (declarations) / `operations_impl.hpp` (definitions), included last in `tenvex.h`.
+Free functions in `tnvx` that compose the operators above. **They evaluate eagerly and return concrete types** (`vec4` / `float`), not expression nodes - returning a lazy expression that references function-local temporaries would dangle. Defined in `expressions/operations.h` (declarations) / `operations_impl.hpp` (definitions), included last in `tenvex.h`; the quaternion convenience functions `slerp` / `nlerp` live alongside in `expressions/quat_operations.h`.
 
 | Function           | Returns | Composition                | Notes                                                                     |
 | ------------------ | ------- | -------------------------- | ------------------------------------------------------------------------- |
@@ -326,6 +340,8 @@ Free functions in `tnvx` that compose the operators above. **They evaluate eager
 | `dist3(l, r)`      | `float` | `magnitude3(l - r)`        | 3D distance                                                               |
 | `dist3_sq(l, r)`   | `float` | `magnitude3_sq(l - r)`     | No sqrt - use for distance compares                                       |
 | `reflect(v, n)`    | `vec4`  | `v - n * (dot3(v, n) * 2)` | Reflect `v` about unit normal `n`                                         |
+| `slerp(a, b, t)`   | `quat`  | shortest-path + `acos` / `sin` arc | Spherical linear interpolation of unit quaternions; constant angular velocity; falls back to `nlerp` when near-parallel. In `quat_operations.h` |
+| `nlerp(a, b, t)`   | `quat`  | shortest-path + `normalize(lerp)` | Normalized lerp; cheaper than `slerp` (no `acos` / `sin`), approximate for large arcs. In `quat_operations.h` |
 
 ## Building
 
@@ -376,7 +392,7 @@ A stale object from another toolchain surfaces at link time as `bytecode stream 
 
 ## Running Tests
 
-The test suite uses Google Test (vendored in `thirdparty/gtest/`) and covers 168 cases - 136 vector / expression and 32 quaternion. The table below groups the suite by area (representative names):
+The test suite uses Google Test (vendored in `thirdparty/gtest/`) and covers 321 cases - 227 vector / expression and 94 quaternion. The table below groups the suite by area (representative names):
 
 | Category             | Tests                                                                                                      |
 | -------------------- | ---------------------------------------------------------------------------------------------------------- |
@@ -386,6 +402,7 @@ The test suite uses Google Test (vendored in `thirdparty/gtest/`) and covers 168
 | Type system          | `dot3_times_literal_collapses`, `magnitude3_times_literal_collapses`                                       |
 | Unary negation       | `neg_basic`, `neg_zero`, `neg_double`, `neg_compound`, `neg_expression`, `neg_scalar_stays_lazy`, `neg_scalar_in_expression` |
 | 4D dot product       | `dot4_basic`, `dot4_w_zero_matches_dot3`, `dot4_w_matters`, `dot4_w_only`, `dot4_perpendicular`, `dot4_commutative`, `dot4_collapses` |
+| 4D length            | `magnitude4_basic`, `magnitude4_counts_w`, `magnitude4_is_scalar_expr`, `magnitude4_accepts_packed_rejects_scalar`, `magnitude4_sq_basic`, `magnitude4_sq_counts_w` |
 | Component-wise min/max | `min_basic`, `max_basic`, `min_negatives`, `max_negatives`, `min_includes_w`, `min_idempotent`, `min_commutative` |
 | Absolute value       | `abs_basic`, `abs_all_negative`, `abs_already_positive`, `abs_zero`, `abs_expression` |
 | Clamp / saturate     | `clamp_basic`, `clamp_custom_range`, `clamp_within_range`, `clamp_all_below`, `clamp_all_above`, `clamp_expression`, `saturate_basic`, `saturate_within_range`, `saturate_clamps_negatives`, `saturate_clamps_above_one` |
@@ -400,6 +417,9 @@ The test suite uses Google Test (vendored in `thirdparty/gtest/`) and covers 168
 | Quaternion add / mul | `add_quat_quat`, `sub_quat_quat`, `add_composes_with_conjugate`, `mul_quat_float_scales_all_lanes`, `mul_float_quat`, `mul_quat_scalar_expr`, `mul_quat_scalar_disjoint_category` |
 | Hamilton product     | `hamilton_product`, `hamilton_non_commutative`, `hamilton_basis_units`, `hamilton_identity`, `hamilton_associative`, `hamilton_distributes_over_add`, `hamilton_times_conjugate_is_pure_real`, `hamilton_category`, `hamilton_composes_and_scales` |
 | Quaternion rotate    | `rotate_z90_axes`, `rotate_identity_is_noop`, `rotate_perpendicular_equals_cross3`, `rotate_leaves_axis_fixed`, `rotate_preserves_length`, `rotate_preserves_dot`, `rotate_composition_matches_hamilton`, `rotate_is_vec_expr` |
+| Quaternion reductions | `dot4_basic`, `dot4_uses_all_four_lanes`, `dot4_commutative`, `dot4_is_scalar_expr`, `dot4_rejects_mixed_category`, `magnitude4_basic`, `magnitude4_of_unit_is_one`, `magnitude4_sq_basic` (the shared `dot4` / `magnitude4` nodes on a `quat`) |
+| Quaternion normalize / inverse | `normalize_scalar_quat`, `normalize_uniform`, `normalize_yields_unit_length`, `normalize_is_quat_expr`, `inverse_scalar_quat`, `inverse_of_unit_equals_conj`, `inverse_times_self_is_identity`, `inverse_is_quat_expr` |
+| Quaternion interpolation | `slerp_endpoint_start`, `slerp_endpoint_end`, `slerp_midpoint_is_halfway_arc`, `slerp_takes_shortest_path`, `slerp_preserves_unit_length`, `nlerp_midpoint_is_renormalized_chord`, `nlerp_takes_shortest_path`, `nlerp_preserves_unit_length` |
 
 Build and run `tenvex_tests` from the generated project or makefile.
 
@@ -409,7 +429,7 @@ A [Google Benchmark](https://github.com/google/benchmark) suite (vendored in `th
 
 Cases cover both **latency** (serial dependency chains, e.g. `dot3`/`norm3`, and an AABB-box build that folds `min`/`max` into a running bound) and **throughput** (independent inputs the CPU can pipeline, e.g. isolated `dot3`/`dot4`, and single-op `min`/`max`).
 
-A naive scalar reference implementation - `naive::vec4` in `src/naive/naive_vec4.h` (and `naive::quat` in `src/naive/naive_quat.h`) - mirrors the tenvex API and semantics with plain `float` math (everything `inline`, by-value, reciprocal-multiply for division/normalization). It is benchmarked side by side (the `BM_Naive_*` cases) and has its own mirrored test suites (`src/tests/naive_tests_vec4.cpp`, `src/tests/naive_tests_quat.cpp`), so the SIMD path can be compared against a straightforward baseline. Quaternion operations are covered by `src/benchmarks/bench_quat.cpp` (`BM_Quat{Add,Sub,Mul,Hamilton,Conj,Rotate}_Throughput`) against the matching `BM_Naive_Quat*` baselines.
+A naive scalar reference implementation - `naive::vec4` in `src/naive/naive_vec4.h` (and `naive::quat` in `src/naive/naive_quat.h`) - mirrors the tenvex API and semantics with plain `float` math (everything `inline`, by-value, reciprocal-multiply for division/normalization). It is benchmarked side by side (the `BM_Naive_*` cases) and has its own mirrored test suites (`src/tests/naive_tests_vec4.cpp`, `src/tests/naive_tests_quat.cpp`), so the SIMD path can be compared against a straightforward baseline. Quaternion operations are covered by `src/benchmarks/bench_quat.cpp` (`BM_Quat{Add,Sub,Mul,Hamilton,Conj,Rotate}_Throughput`; latency and throughput for the shared 4-lane reductions `BM_Quat{Dot4,Magnitude4,Magnitude4Sq}`, the unit-quaternion ops `BM_Quat{Normalize,Inverse}`, and the interpolators `BM_Quat{Slerp,Nlerp}`) against the matching `BM_Naive_Quat*` baselines. `slerp` is transcendental-bound (`acos` + `sin` dominate, so the SIMD and scalar paths run neck and neck), whereas `nlerp` shows the usual split - a small throughput win for the packed path, a latency loss to its two serial horizontal reductions. The same reductions on `vec4` are `BM_{Dot4,Magnitude4,Magnitude4Sq}` in `bench_vec4.cpp`.
 
 ### Is the abstraction zero-cost? (compiler x backend)
 

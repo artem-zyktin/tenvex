@@ -44,4 +44,4 @@ vec4 reflect(const V& v, const N& n) noexcept;
 
 }
 
-#include "operations_impl.hpp"
+#include "vec_operations_impl.hpp"

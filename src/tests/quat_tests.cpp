@@ -307,4 +307,247 @@ TEST(quat, rotate_is_vec_expr)
 	EXPECT_FALSE((quat_expr<decltype(rotate(v, qz))>));
 }
 
+TEST(quat, dot4_basic)
+{
+	quat a = { 1, 2, 3, 4 };
+	quat b = { 5, 6, 7, 8 };
+	// 1*5 + 2*6 + 3*7 + 4*8 = 5 + 12 + 21 + 32 = 70
+	EXPECT_FLOAT_EQ(70.0f, float(dot4(a, b)));
+}
+
+TEST(quat, dot4_uses_all_four_lanes)
+{
+	quat a = { 0, 0, 0, 2 };
+	quat b = { 1, 1, 1, 3 };
+	EXPECT_FLOAT_EQ(6.0f, float(dot4(a, b)));
+}
+
+TEST(quat, dot4_commutative)
+{
+	quat a = { 1, 2, 3, 4 };
+	quat b = { 5, 6, 7, 8 };
+	EXPECT_FLOAT_EQ(float(dot4(a, b)), float(dot4(b, a)));
+}
+
+TEST(quat, dot4_is_scalar_expr)
+{
+	quat a = { 1, 2, 3, 4 };
+	quat b = { 5, 6, 7, 8 };
+	EXPECT_TRUE((scalar_expr<decltype(dot4(a, b))>));
+	EXPECT_FALSE((quat_expr<decltype(dot4(a, b))>));
+}
+
+TEST(quat, dot4_rejects_mixed_category)
+{
+	// vec x quat is ill-formed by construction; the concept is the guard.
+	EXPECT_TRUE((same_packed_category<quat, quat>));
+	EXPECT_FALSE((same_packed_category<vec4, quat>));
+}
+
+// ---------------------------------------------------------------------------
+// magnitude4: the 4-lane length. Same node as vec4 via packed_expr.
+// ---------------------------------------------------------------------------
+
+TEST(quat, magnitude4_basic)
+{
+	quat q = { 1, 2, 2, 4 };
+	// sqrt(1 + 4 + 4 + 16) = 5
+	EXPECT_FLOAT_EQ(5.0f, float(magnitude4(q)));
+}
+
+TEST(quat, magnitude4_of_unit_is_one)
+{
+	quat q = { 0, 0, 0.70710678f, 0.70710678f };
+	EXPECT_NEAR(1.0f, float(magnitude4(q)), 1e-5f);
+}
+
+TEST(quat, magnitude4_is_scalar_expr)
+{
+	quat q = { 1, 2, 2, 4 };
+	EXPECT_TRUE((scalar_expr<decltype(magnitude4(q))>));
+	EXPECT_FALSE((quat_expr<decltype(magnitude4(q))>));
+}
+
+TEST(quat, magnitude4_sq_basic)
+{
+	quat q = { 1, 2, 2, 4 };
+	float check = 25.0f;
+	float result = magnitude4_sq(q);
+
+	EXPECT_FLOAT_EQ(check, result);
+}
+
+TEST(quat, magnitude4_sq_of_unit_is_one)
+{
+	quat q = { 0, 0, 0.70710678f, 0.70710678f };
+	float check = 1.0f;
+	float result = magnitude4_sq(q);
+
+	EXPECT_NEAR(check, result, 1e-5f);
+}
+
+TEST(quat, magnitude4_sq_is_scalar_expr)
+{
+	quat q = { 1, 2, 2, 4 };
+	EXPECT_TRUE((scalar_expr<decltype(magnitude4_sq(q))>));
+	EXPECT_FALSE((quat_expr<decltype(magnitude4_sq(q))>));
+}
+
+// ---------------------------------------------------------------------------
+// inverse: conj(q) / magnitude4_sq(q). For a unit quaternion this equals conj.
+// Quaternion-specific; stays a quat_expr.
+// ---------------------------------------------------------------------------
+
+TEST(quat, inverse_scalar_quat)
+{
+	quat q = { 0, 0, 0, 2 };
+	quat check = { 0, 0, 0, 0.5f }; // conj / |q|^2 = (0,0,0,2) / 4
+	quat result = inverse(q);
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(quat, inverse_of_unit_equals_conj)
+{
+	quat q = { 0, 0, 0.70710678f, 0.70710678f };     // unit
+	quat check = { 0, 0, -0.70710678f, 0.70710678f };
+	quat result = inverse(q);
+	EXPECT_TRUE(approx_eq(check, result, 1e-5f));
+}
+
+TEST(quat, inverse_times_self_is_identity)
+{
+	quat q = { 1, 2, 3, 4 };
+	quat check = { 0, 0, 0, 1 };
+	quat result = q * inverse(q);
+	EXPECT_TRUE(approx_eq(check, result, 1e-5f));
+}
+
+TEST(quat, inverse_is_quat_expr)
+{
+	quat q = { 1, 2, 3, 4 };
+	EXPECT_TRUE((quat_expr<decltype(inverse(q))>));
+	EXPECT_FALSE((scalar_expr<decltype(inverse(q))>));
+}
+
+TEST(quat, normalize_scalar_quat)
+{
+	quat q = { 0, 0, 0, 2 };
+	quat check = { 0, 0, 0, 1 };
+	quat result = normalize(q);
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(quat, normalize_uniform)
+{
+	quat q = { 1, 1, 1, 1 };
+	quat check = { 0.5f, 0.5f, 0.5f, 0.5f };
+	quat result = normalize(q);
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(quat, normalize_yields_unit_length)
+{
+	quat q = { 1, 2, 3, 4 };
+	float check = 1.0f;
+	float result = magnitude4(normalize(q));
+	EXPECT_NEAR(check, result, 1e-5f);
+}
+
+TEST(quat, normalize_is_quat_expr)
+{
+	quat q = { 1, 2, 3, 4 };
+	EXPECT_TRUE((quat_expr<decltype(normalize(q))>));
+	EXPECT_FALSE((scalar_expr<decltype(normalize(q))>));
+}
+
+TEST(quat, slerp_endpoint_start)
+{
+	quat a = { 1, 0, 0, 0 };
+	quat b = { 0, 1, 0, 0 };
+	quat check = { 1, 0, 0, 0 };
+	quat result = slerp(a, b, 0.0f);
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(quat, slerp_endpoint_end)
+{
+	quat a = { 1, 0, 0, 0 };
+	quat b = { 0, 1, 0, 0 };
+	quat check = { 0, 1, 0, 0 };
+	quat result = slerp(a, b, 1.0f);
+	EXPECT_TRUE(approx_eq(check, result, 1e-5f));
+}
+
+TEST(quat, slerp_midpoint_is_halfway_arc)
+{
+	quat a = { 1, 0, 0, 0 };
+	quat b = { 0, 1, 0, 0 };
+	quat check = { 0.70710678f, 0.70710678f, 0, 0 };
+	quat result = slerp(a, b, 0.5f);
+	EXPECT_TRUE(approx_eq(check, result, 1e-5f));
+}
+
+TEST(quat, slerp_takes_shortest_path)
+{
+	quat a = { 0, 0, 0, 1 };
+	quat b = { 0, 0, 0, -1 };
+	quat check = { 0, 0, 0, 1 };
+	quat result = slerp(a, b, 0.5f);
+	EXPECT_TRUE(approx_eq(check, result, 1e-5f));
+}
+
+TEST(quat, slerp_preserves_unit_length)
+{
+	quat a = { 1, 0, 0, 0 };
+	quat b = { 0, 0, 0, 1 };
+	float check = 1.0f;
+	float result = magnitude4(slerp(a, b, 0.3f));
+	EXPECT_NEAR(check, result, 1e-5f);
+}
+
+TEST(quat, nlerp_endpoint_start)
+{
+	quat a = { 1, 0, 0, 0 };
+	quat b = { 0, 1, 0, 0 };
+	quat check = { 1, 0, 0, 0 };
+	quat result = nlerp(a, b, 0.0f);
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(quat, nlerp_endpoint_end)
+{
+	quat a = { 1, 0, 0, 0 };
+	quat b = { 0, 1, 0, 0 };
+	quat check = { 0, 1, 0, 0 };
+	quat result = nlerp(a, b, 1.0f);
+	EXPECT_TRUE(approx_eq(check, result, 1e-5f));
+}
+
+TEST(quat, nlerp_midpoint_is_renormalized_chord)
+{
+	quat a = { 1, 0, 0, 0 };
+	quat b = { 0, 1, 0, 0 };
+	quat check = { 0.70710678f, 0.70710678f, 0, 0 };
+	quat result = nlerp(a, b, 0.5f);
+	EXPECT_TRUE(approx_eq(check, result, 1e-5f));
+}
+
+TEST(quat, nlerp_takes_shortest_path)
+{
+	quat a = { 0, 0, 0, 1 };
+	quat b = { 0, 0, 0, -1 };
+	quat check = { 0, 0, 0, 1 };
+	quat result = nlerp(a, b, 0.5f);
+	EXPECT_TRUE(approx_eq(check, result, 1e-5f));
+}
+
+TEST(quat, nlerp_preserves_unit_length)
+{
+	quat a = { 1, 0, 0, 0 };
+	quat b = { 0, 0, 0, 1 };
+	float check = 1.0f;
+	float result = magnitude4(nlerp(a, b, 0.3f));
+	EXPECT_NEAR(check, result, 1e-5f);
+}
+
 }

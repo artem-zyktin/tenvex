@@ -140,6 +140,18 @@ vf4 magnitude3_sq(vf4 v) noexcept
 }
 
 [[nodiscard]] TNVX_INLINE
+vf4 magnitude4(vf4 v) noexcept
+{
+	return _mm_sqrt_ps(dot4(v, v));
+}
+
+[[nodiscard]] TNVX_INLINE
+vf4 magnitude4_sq(vf4 v) noexcept
+{
+	return dot4(v, v);
+}
+
+[[nodiscard]] TNVX_INLINE
 vf4 norm3(vf4 v) noexcept
 {
 	return _mm_blend_ps(_mm_div_ps(v, magnitude3(v)), v, 0b1000);
@@ -253,6 +265,18 @@ vf4 rotate(vf4 v, vf4 q) noexcept
 	const vf4 t1 = mul(mul(two, wq), c1);
 	const vf4 t2 = mul(two, c2);
 	return add(v, add(t1, t2));
+}
+
+[[nodiscard]] TNVX_INLINE
+vf4 inverse(vf4 q) noexcept
+{
+	return _mm_div_ps(conjugate(q), magnitude4_sq(q));
+}
+
+[[nodiscard]] TNVX_INLINE
+vf4 normalize(vf4 q) noexcept
+{
+	return _mm_div_ps(q, magnitude4(q));
 }
 
 } // namespace tnvx::detail

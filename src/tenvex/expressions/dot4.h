@@ -8,7 +8,8 @@
 namespace tnvx
 {
 
-template<vec_expr L, vec_expr R>
+template<packed_expr L, packed_expr R>
+requires same_packed_category<L, R>
 struct Dot4 : Expr<Dot4<L, R>>
 {
 	TNVX_INLINE
@@ -25,9 +26,11 @@ private:
 	tnvx_ref_or_value_t<R> _r;
 };
 
-template<vec_expr L, vec_expr R> inline constexpr bool is_scalar_expr<Dot4<L, R>> = true;
+template<packed_expr L, packed_expr R>
+requires same_packed_category<L, R> inline constexpr bool is_scalar_expr<Dot4<L, R>> = true;
 
-template<vec_expr L, vec_expr R>
+template<packed_expr L, packed_expr R>
+requires same_packed_category<L, R>
 [[nodiscard]] TNVX_INLINE
 Dot4<L, R> dot4(const L& l, const R& r) noexcept;
 

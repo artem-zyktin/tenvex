@@ -85,4 +85,56 @@ inline bool approx_eq(quat a, quat b, float eps = 1e-6f) noexcept
 	return { r.x(), r.y(), r.z(), 0.0f };
 }
 
+[[nodiscard]] inline float dot4(quat a, quat b) noexcept
+{
+	return a.x() * b.x() + a.y() * b.y() + a.z() * b.z() + a.w() * b.w();
+}
+
+[[nodiscard]] inline float magnitude4(quat q) noexcept
+{
+	return std::sqrt(dot4(q, q));
+}
+
+[[nodiscard]] inline float magnitude4_sq(quat q) noexcept
+{
+	return dot4(q, q);
+}
+
+[[nodiscard]] inline quat inverse(quat q) noexcept
+{
+	float d = magnitude4_sq(q);
+	quat c = conj(q);
+	return { c.x() / d, c.y() / d, c.z() / d, c.w() / d };
+}
+
+[[nodiscard]] inline quat normalize(quat q) noexcept
+{
+	float len = magnitude4(q);
+	return { q.x() / len, q.y() / len, q.z() / len, q.w() / len };
+}
+
+[[nodiscard]] inline quat slerp(quat a, quat b, float t) noexcept
+{
+	float d = dot4(a, b);
+	float s = 1.0f;
+	if (d < 0.0f) { d = -d; s = -1.0f; }
+	if (d > 0.9995f)
+	{
+		quat r = { a.x() * (1 - t) + b.x() * s * t, a.y() * (1 - t) + b.y() * s * t, a.z() * (1 - t) + b.z() * s * t, a.w() * (1 - t) + b.w() * s * t };
+		return normalize(r);
+	}
+	float theta = std::acos(d);
+	float inv_sin = 1.0f / std::sin(theta);
+	float wa = std::sin((1.0f - t) * theta) * inv_sin;
+	float wb = std::sin(t * theta) * inv_sin * s;
+	return { a.x() * wa + b.x() * wb, a.y() * wa + b.y() * wb, a.z() * wa + b.z() * wb, a.w() * wa + b.w() * wb };
+}
+
+[[nodiscard]] inline quat nlerp(quat a, quat b, float t) noexcept
+{
+	float s = dot4(a, b) < 0.0f ? -1.0f : 1.0f;
+	quat r = { a.x() * (1 - t) + b.x() * s * t, a.y() * (1 - t) + b.y() * s * t, a.z() * (1 - t) + b.z() * s * t, a.w() * (1 - t) + b.w() * s * t };
+	return normalize(r);
+}
+
 }

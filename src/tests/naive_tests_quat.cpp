@@ -207,4 +207,102 @@ TEST(naive_quat, rotate_composition)
 	EXPECT_TRUE(approx_eq(once, twice, 1e-4f));
 }
 
+TEST(naive_quat, dot4_basic)
+{
+	quat a = { 1, 2, 3, 4 };
+	quat b = { 5, 6, 7, 8 };
+	EXPECT_FLOAT_EQ(70.0f, dot4(a, b));
+}
+
+TEST(naive_quat, dot4_uses_all_four_lanes)
+{
+	quat a = { 0, 0, 0, 2 };
+	quat b = { 1, 1, 1, 3 };
+	EXPECT_FLOAT_EQ(6.0f, dot4(a, b));
+
+}
+
+TEST(naive_quat, magnitude4_basic)
+{
+	quat q = { 1, 2, 2, 4 };
+	EXPECT_FLOAT_EQ(magnitude4(q), 5.0f);
+}
+
+TEST(naive_quat, magnitude4_sq_basic)
+{
+	quat q = { 1, 2, 2, 4 };
+	float check = 25.0f;
+	float result = magnitude4_sq(q);
+
+	EXPECT_FLOAT_EQ(check, result);
+}
+
+TEST(naive_quat, inverse_scalar_quat)
+{
+	quat q = { 0, 0, 0, 2 };
+	quat check = { 0, 0, 0, 0.5f };
+	quat result = inverse(q);
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(naive_quat, inverse_of_unit_equals_conj)
+{
+	quat q = { 0, 0, 0.70710678f, 0.70710678f };
+	quat check = { 0, 0, -0.70710678f, 0.70710678f };
+	quat result = inverse(q);
+	EXPECT_TRUE(approx_eq(check, result, 1e-5f));
+}
+
+TEST(naive_quat, normalize_scalar_quat)
+{
+	quat q = { 0, 0, 0, 2 };
+	quat check = { 0, 0, 0, 1 };
+	quat result = normalize(q);
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(naive_quat, normalize_uniform)
+{
+	quat q = { 1, 1, 1, 1 };
+	quat check = { 0.5f, 0.5f, 0.5f, 0.5f };
+	quat result = normalize(q);
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(naive_quat, slerp_midpoint_is_halfway_arc)
+{
+	quat a = { 1, 0, 0, 0 };
+	quat b = { 0, 1, 0, 0 };
+	quat check = { 0.70710678f, 0.70710678f, 0, 0 };
+	quat result = slerp(a, b, 0.5f);
+	EXPECT_TRUE(approx_eq(check, result, 1e-5f));
+}
+
+TEST(naive_quat, slerp_endpoint_end)
+{
+	quat a = { 1, 0, 0, 0 };
+	quat b = { 0, 1, 0, 0 };
+	quat check = { 0, 1, 0, 0 };
+	quat result = slerp(a, b, 1.0f);
+	EXPECT_TRUE(approx_eq(check, result, 1e-5f));
+}
+
+TEST(naive_quat, nlerp_midpoint_is_renormalized_chord)
+{
+	quat a = { 1, 0, 0, 0 };
+	quat b = { 0, 1, 0, 0 };
+	quat check = { 0.70710678f, 0.70710678f, 0, 0 };
+	quat result = nlerp(a, b, 0.5f);
+	EXPECT_TRUE(approx_eq(check, result, 1e-5f));
+}
+
+TEST(naive_quat, nlerp_endpoint_end)
+{
+	quat a = { 1, 0, 0, 0 };
+	quat b = { 0, 1, 0, 0 };
+	quat check = { 0, 1, 0, 0 };
+	quat result = nlerp(a, b, 1.0f);
+	EXPECT_TRUE(approx_eq(check, result, 1e-5f));
+}
+
 }
