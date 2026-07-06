@@ -271,6 +271,12 @@ vf4 rotate(vf4 v, vf4 q) noexcept
 	return add(v, add(t1, t2));
 }
 
+[[nodiscard]] TNVX_INLINE
+vf4 inverse(vf4 q) noexcept
+{
+	return vdivq_f32(conjugate(q), magnitude4_sq(q));
+}
+
 }
 
 #endif
