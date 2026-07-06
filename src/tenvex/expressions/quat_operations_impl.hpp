@@ -33,4 +33,12 @@ quat slerp(const A& a, const B& b, float t) noexcept
 	return a * wa + b * wb;
 }
 
+template<quat_expr A, quat_expr B>
+TNVX_INLINE
+quat nlerp(const A& a, const B& b, float t) noexcept
+{
+	float s = float(dot4(a, b)) < 0.0f ? -1.0f : 1.0f;
+	return normalize(a * (1.0f - t) + b * (s * t));
+}
+
 }
