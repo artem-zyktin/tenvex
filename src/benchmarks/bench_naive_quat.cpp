@@ -270,3 +270,36 @@ static void BM_Naive_QuatNormalize_Throughput(benchmark::State& state)
 	}
 }
 BENCHMARK(BM_Naive_QuatNormalize_Throughput);
+
+static void BM_Naive_QuatSlerp_Latency(benchmark::State& state)
+{
+	quat a = normalize(quat { 1.0f, 2.0f, 3.0f, 4.0f });
+	quat b = normalize(quat { 4.0f, 3.0f, 2.0f, 1.0f });
+	float acc = 0.0f;
+	for (auto _ : state)
+	{
+		quat aa = normalize(a + quat { acc, 0.0f, 0.0f, 0.0f });
+		quat r = slerp(aa, b, 0.5f);
+		acc = r.x() * 1e-7f;
+		benchmark::DoNotOptimize(acc);
+	}
+}
+BENCHMARK(BM_Naive_QuatSlerp_Latency);
+
+static void BM_Naive_QuatSlerp_Throughput(benchmark::State& state)
+{
+	auto a = make_quats(1024, 1);
+	auto b = make_quats(1024, 2);
+	for (auto& q : a) q = normalize(q);
+	for (auto& q : b) q = normalize(q);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		quat aa = a[i];
+		quat bb = b[i];
+		quat r = slerp(aa, bb, 0.5f);
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 1023;
+	}
+}
+BENCHMARK(BM_Naive_QuatSlerp_Throughput);

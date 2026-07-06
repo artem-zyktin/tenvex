@@ -460,4 +460,49 @@ TEST(quat, normalize_is_quat_expr)
 	EXPECT_FALSE((scalar_expr<decltype(normalize(q))>));
 }
 
+TEST(quat, slerp_endpoint_start)
+{
+	quat a = { 1, 0, 0, 0 };
+	quat b = { 0, 1, 0, 0 };
+	quat check = { 1, 0, 0, 0 };
+	quat result = slerp(a, b, 0.0f);
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(quat, slerp_endpoint_end)
+{
+	quat a = { 1, 0, 0, 0 };
+	quat b = { 0, 1, 0, 0 };
+	quat check = { 0, 1, 0, 0 };
+	quat result = slerp(a, b, 1.0f);
+	EXPECT_TRUE(approx_eq(check, result, 1e-5f));
+}
+
+TEST(quat, slerp_midpoint_is_halfway_arc)
+{
+	quat a = { 1, 0, 0, 0 };
+	quat b = { 0, 1, 0, 0 };
+	quat check = { 0.70710678f, 0.70710678f, 0, 0 };
+	quat result = slerp(a, b, 0.5f);
+	EXPECT_TRUE(approx_eq(check, result, 1e-5f));
+}
+
+TEST(quat, slerp_takes_shortest_path)
+{
+	quat a = { 0, 0, 0, 1 };
+	quat b = { 0, 0, 0, -1 };
+	quat check = { 0, 0, 0, 1 };
+	quat result = slerp(a, b, 0.5f);
+	EXPECT_TRUE(approx_eq(check, result, 1e-5f));
+}
+
+TEST(quat, slerp_preserves_unit_length)
+{
+	quat a = { 1, 0, 0, 0 };
+	quat b = { 0, 0, 0, 1 };
+	float check = 1.0f;
+	float result = magnitude4(slerp(a, b, 0.3f));
+	EXPECT_NEAR(check, result, 1e-5f);
+}
+
 }

@@ -269,4 +269,22 @@ TEST(naive_quat, normalize_uniform)
 	EXPECT_TRUE(approx_eq(check, result));
 }
 
+TEST(naive_quat, slerp_midpoint_is_halfway_arc)
+{
+	quat a = { 1, 0, 0, 0 };
+	quat b = { 0, 1, 0, 0 };
+	quat check = { 0.70710678f, 0.70710678f, 0, 0 };
+	quat result = slerp(a, b, 0.5f);
+	EXPECT_TRUE(approx_eq(check, result, 1e-5f));
+}
+
+TEST(naive_quat, slerp_endpoint_end)
+{
+	quat a = { 1, 0, 0, 0 };
+	quat b = { 0, 1, 0, 0 };
+	quat check = { 0, 1, 0, 0 };
+	quat result = slerp(a, b, 1.0f);
+	EXPECT_TRUE(approx_eq(check, result, 1e-5f));
+}
+
 }
