@@ -237,4 +237,20 @@ TEST(naive_quat, magnitude4_sq_basic)
 	EXPECT_FLOAT_EQ(check, result);
 }
 
+TEST(naive_quat, inverse_scalar_quat)
+{
+	quat q = { 0, 0, 0, 2 };
+	quat check = { 0, 0, 0, 0.5f };
+	quat result = inverse(q);
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(naive_quat, inverse_of_unit_equals_conj)
+{
+	quat q = { 0, 0, 0.70710678f, 0.70710678f };
+	quat check = { 0, 0, -0.70710678f, 0.70710678f };
+	quat result = inverse(q);
+	EXPECT_TRUE(approx_eq(check, result, 1e-5f));
+}
+
 }

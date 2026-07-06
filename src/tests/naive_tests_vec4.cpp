@@ -671,7 +671,7 @@ TEST(naive_vec4, hadamard_includes_w)
 	EXPECT_TRUE(approx_eq(check, result));
 }
 
-TEST(vec4, magnitude3_less_all_relations)
+TEST(naive_vec4, magnitude3_less_all_relations)
 {
 	vec4 a = { 1.0f, 2.0f, 2.0f, 0.0f };
 	vec4 b = { 3.0f, 0.0f, 4.0f, 0.0f };
@@ -692,7 +692,7 @@ TEST(vec4, magnitude3_less_all_relations)
 	EXPECT_EQ(check_ge, result_ge);
 }
 
-TEST(vec4, magnitude3_equal_relations)
+TEST(naive_vec4, magnitude3_equal_relations)
 {
 	vec4 a = { 1.0f, 2.0f, 2.0f, 0.0f };
 	vec4 b = { 2.0f, 2.0f, 1.0f, 0.0f };
@@ -719,7 +719,7 @@ TEST(vec4, magnitude3_equal_relations)
 	EXPECT_EQ(check_ne, result_ne);
 }
 
-TEST(vec4, magnitude3_less_scalar_both_positions)
+TEST(naive_vec4, magnitude3_less_scalar_both_positions)
 {
 	vec4 a = { 3.0f, 0.0f, 4.0f, 0.0f };
 
@@ -754,7 +754,7 @@ TEST(vec4, magnitude3_less_scalar_both_positions)
 	EXPECT_EQ(check_5ge, result_5ge);
 }
 
-TEST(vec4, magnitude3_scalar_threshold_types)
+TEST(naive_vec4, magnitude3_scalar_threshold_types)
 {
 	vec4 a = { 3.0f, 0.0f, 4.0f, 0.0f };
 
@@ -774,7 +774,7 @@ TEST(vec4, magnitude3_scalar_threshold_types)
 	EXPECT_EQ(check_float, result_float);
 }
 
-TEST(vec4, magnitude3_nan_is_unordered)
+TEST(naive_vec4, magnitude3_nan_is_unordered)
 {
 	vec4 n = { std::nanf(""), 0.0f, 0.0f, 0.0f };
 	vec4 b = { 1.0f, 0.0f, 0.0f, 0.0f };
@@ -799,7 +799,7 @@ TEST(vec4, magnitude3_nan_is_unordered)
 	EXPECT_EQ(check_ge, result_ge);
 }
 
-TEST(vec4, magnitude3_compare_is_eager)
+TEST(naive_vec4, magnitude3_compare_is_eager)
 {
 	vec4 a = { 1.0f, 0.0f, 0.0f, 0.0f };
 	vec4 b = { 2.0f, 0.0f, 0.0f, 0.0f };

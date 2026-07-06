@@ -393,4 +393,40 @@ TEST(quat, magnitude4_sq_is_scalar_expr)
 	EXPECT_FALSE((quat_expr<decltype(magnitude4_sq(q))>));
 }
 
+// ---------------------------------------------------------------------------
+// inverse: conj(q) / magnitude4_sq(q). For a unit quaternion this equals conj.
+// Quaternion-specific; stays a quat_expr.
+// ---------------------------------------------------------------------------
+
+TEST(quat, inverse_scalar_quat)
+{
+	quat q = { 0, 0, 0, 2 };
+	quat check = { 0, 0, 0, 0.5f }; // conj / |q|^2 = (0,0,0,2) / 4
+	quat result = inverse(q);
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(quat, inverse_of_unit_equals_conj)
+{
+	quat q = { 0, 0, 0.70710678f, 0.70710678f };     // unit
+	quat check = { 0, 0, -0.70710678f, 0.70710678f };
+	quat result = inverse(q);
+	EXPECT_TRUE(approx_eq(check, result, 1e-5f));
+}
+
+TEST(quat, inverse_times_self_is_identity)
+{
+	quat q = { 1, 2, 3, 4 };
+	quat check = { 0, 0, 0, 1 };
+	quat result = q * inverse(q);
+	EXPECT_TRUE(approx_eq(check, result, 1e-5f));
+}
+
+TEST(quat, inverse_is_quat_expr)
+{
+	quat q = { 1, 2, 3, 4 };
+	EXPECT_TRUE((quat_expr<decltype(inverse(q))>));
+	EXPECT_FALSE((scalar_expr<decltype(inverse(q))>));
+}
+
 }
