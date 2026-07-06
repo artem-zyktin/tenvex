@@ -17,6 +17,7 @@
 #include "expressions/magnitude4_sq.h"
 #include "expressions/norm3.h"
 #include "expressions/norm3_fast.h"
+#include "expressions/inverse.h"
 #include "expressions/cross3.h"
 #include "expressions/min.h"
 #include "expressions/max.h"
