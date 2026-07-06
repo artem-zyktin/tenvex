@@ -8,7 +8,7 @@ namespace tnvx
 template<quat_expr E>
 TNVX_INLINE
 Normalize<E>::Normalize(const E& TNVX_RESTRICT e) noexcept
-	: _e(expr)
+	: _e(e)
 {
 }
 
