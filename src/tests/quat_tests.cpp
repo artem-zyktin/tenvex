@@ -505,4 +505,49 @@ TEST(quat, slerp_preserves_unit_length)
 	EXPECT_NEAR(check, result, 1e-5f);
 }
 
+TEST(quat, nlerp_endpoint_start)
+{
+	quat a = { 1, 0, 0, 0 };
+	quat b = { 0, 1, 0, 0 };
+	quat check = { 1, 0, 0, 0 };
+	quat result = nlerp(a, b, 0.0f);
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(quat, nlerp_endpoint_end)
+{
+	quat a = { 1, 0, 0, 0 };
+	quat b = { 0, 1, 0, 0 };
+	quat check = { 0, 1, 0, 0 };
+	quat result = nlerp(a, b, 1.0f);
+	EXPECT_TRUE(approx_eq(check, result, 1e-5f));
+}
+
+TEST(quat, nlerp_midpoint_is_renormalized_chord)
+{
+	quat a = { 1, 0, 0, 0 };
+	quat b = { 0, 1, 0, 0 };
+	quat check = { 0.70710678f, 0.70710678f, 0, 0 };
+	quat result = nlerp(a, b, 0.5f);
+	EXPECT_TRUE(approx_eq(check, result, 1e-5f));
+}
+
+TEST(quat, nlerp_takes_shortest_path)
+{
+	quat a = { 0, 0, 0, 1 };
+	quat b = { 0, 0, 0, -1 };
+	quat check = { 0, 0, 0, 1 };
+	quat result = nlerp(a, b, 0.5f);
+	EXPECT_TRUE(approx_eq(check, result, 1e-5f));
+}
+
+TEST(quat, nlerp_preserves_unit_length)
+{
+	quat a = { 1, 0, 0, 0 };
+	quat b = { 0, 0, 0, 1 };
+	float check = 1.0f;
+	float result = magnitude4(nlerp(a, b, 0.3f));
+	EXPECT_NEAR(check, result, 1e-5f);
+}
+
 }

@@ -287,4 +287,22 @@ TEST(naive_quat, slerp_endpoint_end)
 	EXPECT_TRUE(approx_eq(check, result, 1e-5f));
 }
 
+TEST(naive_quat, nlerp_midpoint_is_renormalized_chord)
+{
+	quat a = { 1, 0, 0, 0 };
+	quat b = { 0, 1, 0, 0 };
+	quat check = { 0.70710678f, 0.70710678f, 0, 0 };
+	quat result = nlerp(a, b, 0.5f);
+	EXPECT_TRUE(approx_eq(check, result, 1e-5f));
+}
+
+TEST(naive_quat, nlerp_endpoint_end)
+{
+	quat a = { 1, 0, 0, 0 };
+	quat b = { 0, 1, 0, 0 };
+	quat check = { 0, 1, 0, 0 };
+	quat result = nlerp(a, b, 1.0f);
+	EXPECT_TRUE(approx_eq(check, result, 1e-5f));
+}
+
 }

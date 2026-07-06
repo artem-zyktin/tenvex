@@ -312,3 +312,34 @@ static void BM_QuatSlerp_Throughput(benchmark::State& state)
 	}
 }
 BENCHMARK(BM_QuatSlerp_Throughput);
+
+static void BM_QuatNlerp_Latency(benchmark::State& state)
+{
+	quat a { 1.0f, 2.0f, 3.0f, 4.0f };
+	quat b { 4.0f, 3.0f, 2.0f, 1.0f };
+	float acc = 0.0f;
+	for (auto _ : state)
+	{
+		quat aa = a + quat { acc, 0.0f, 0.0f, 0.0f };
+		quat r = nlerp(aa, b, 0.5f);
+		acc = r.x() * 1e-7f;
+		benchmark::DoNotOptimize(acc);
+	}
+}
+BENCHMARK(BM_QuatNlerp_Latency);
+
+static void BM_QuatNlerp_Throughput(benchmark::State& state)
+{
+	const auto a = make_quats(1024, 1);
+	const auto b = make_quats(1024, 2);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		quat aa = a[i];
+		quat bb = b[i];
+		quat r = nlerp(aa, bb, 0.5f);
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 1023;
+	}
+}
+BENCHMARK(BM_QuatNlerp_Throughput);
