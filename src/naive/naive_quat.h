@@ -113,4 +113,21 @@ inline bool approx_eq(quat a, quat b, float eps = 1e-6f) noexcept
 	return { q.x() / len, q.y() / len, q.z() / len, q.w() / len };
 }
 
+[[nodiscard]] inline quat slerp(quat a, quat b, float t) noexcept
+{
+	float d = dot4(a, b);
+	float s = 1.0f;
+	if (d < 0.0f) { d = -d; s = -1.0f; }
+	if (d > 0.9995f)
+	{
+		quat r = { a.x() * (1 - t) + b.x() * s * t, a.y() * (1 - t) + b.y() * s * t, a.z() * (1 - t) + b.z() * s * t, a.w() * (1 - t) + b.w() * s * t };
+		return normalize(r);
+	}
+	float theta = std::acos(d);
+	float inv_sin = 1.0f / std::sin(theta);
+	float wa = std::sin((1.0f - t) * theta) * inv_sin;
+	float wb = std::sin(t * theta) * inv_sin * s;
+	return { a.x() * wa + b.x() * wb, a.y() * wa + b.y() * wb, a.z() * wa + b.z() * wb, a.w() * wa + b.w() * wb };
+}
+
 }
