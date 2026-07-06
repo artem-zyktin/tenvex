@@ -100,4 +100,11 @@ inline bool approx_eq(quat a, quat b, float eps = 1e-6f) noexcept
 	return dot4(q, q);
 }
 
+[[nodiscard]] inline quat inverse(quat q) noexcept
+{
+	float d = magnitude4_sq(q);
+	quat c = conj(q);
+	return { c.x() / d, c.y() / d, c.z() / d, c.w() / d };
+}
+
 }
