@@ -130,4 +130,11 @@ inline bool approx_eq(quat a, quat b, float eps = 1e-6f) noexcept
 	return { a.x() * wa + b.x() * wb, a.y() * wa + b.y() * wb, a.z() * wa + b.z() * wb, a.w() * wa + b.w() * wb };
 }
 
+[[nodiscard]] inline quat nlerp(quat a, quat b, float t) noexcept
+{
+	float s = dot4(a, b) < 0.0f ? -1.0f : 1.0f;
+	quat r = { a.x() * (1 - t) + b.x() * s * t, a.y() * (1 - t) + b.y() * s * t, a.z() * (1 - t) + b.z() * s * t, a.w() * (1 - t) + b.w() * s * t };
+	return normalize(r);
+}
+
 }
