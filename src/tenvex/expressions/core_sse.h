@@ -273,6 +273,12 @@ vf4 inverse(vf4 q) noexcept
 	return _mm_div_ps(conjugate(q), magnitude4_sq(q));
 }
 
+[[nodiscard]] TNVX_INLINE
+vf4 normalize(vf4 q) noexcept
+{
+	return _mm_div_ps(q, magnitude4(q));
+}
+
 } // namespace tnvx::detail
 
 #endif
