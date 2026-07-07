@@ -1,6 +1,9 @@
 #pragma once
 
 #include "quat.h"
+#include "normalize.h"
+
+#include <cmath>
 
 namespace tnvx
 {
@@ -44,6 +47,57 @@ TNVX_INLINE
 float quat::w() const noexcept
 {
 	return detail::get_lane<3>(_data);
+}
+
+TNVX_INLINE quat quat::identity() noexcept
+{
+	return { 0.0f, 0.0f, 0.0f, 1.0f };
+}
+
+TNVX_INLINE quat quat::from_axis_angle(float ax, float ay, float az, float angle) noexcept
+{
+	const float half = angle * 0.5f;
+	const float c = std::cos(half);
+	float s = std::sin(half);
+
+	const float len = std::sqrt(ax * ax + ay * ay + az * az);
+	float inv = len > 0.f ? 1.f / len : 0.f;
+	s *= inv;
+
+	return { ax * s, ay * s, az * s, c };
+}
+
+TNVX_INLINE quat quat::from_axis_angle(vec4 asix, float angle) noexcept
+{
+	return from_axis_angle(asix.x(), asix.y(), asix.z(), angle);
+}
+
+static vec4 orthogonal(const vec4& v)
+{
+	float vx = v.x();
+	float vy = v.y();
+	float vz = v.z();
+
+	return std::fabs(vx) > std::fabs(vz) ? vec4 { -vy, vx, 0.f, 0.f} : vec4 { 0.f, -vz, vy, 0.f};
+}
+
+inline TNVX_INLINE quat quat::from_to_rotation(vec4 from, vec4 to) noexcept
+{
+	vec4 f = from / magnitude3(from);
+	vec4 t = to / magnitude3(to);
+
+	float d = dot3(f, t);
+
+	if (d < -0.999999f)
+	{
+		vec4 orth = orthogonal(f);
+		vec4 axis = orth / magnitude3(orth);
+		return { axis.x(), axis.y(), axis.z(), 0.f};
+	}
+
+	vec4 c = cross3(f, t);
+	float w = 1.f + d;
+	return normalize(quat { c.x(), c.y(), c.z(), w});
 }
 
 TNVX_INLINE

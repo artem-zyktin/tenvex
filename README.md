@@ -27,8 +27,8 @@ Both backends cover the full API.
 - Expression-template engine: nodes are lazy and evaluated on assignment.
 - C++20 concepts (`expression`, `vec_expr`, `scalar_expr`, `quat_expr`, `packed_expr`) enforce type safety at compile time.
 - Storage policy: leaves (trivially-copyable, 16 bytes or less) are stored by value; larger composite nodes by `const&`. Because that reference can outlive a temporary sub-expression, assign compound expressions to a `vec4` / `float` rather than `auto` (see [Performance and best practices](#performance-and-best-practices)).
-- Operations: `+`, `-` (binary), `-` (unary negation), `*` (scalar), `/` (by scalar), `dot3`, `dot4`, `cross3`, `norm3`, `norm3_fast` (approximate, see below), `magnitude3`, `magnitude3_sq`, `magnitude4`, `magnitude4_sq`, `min`, `max`, `abs`, `hadamard` (component-wise), `floor`, `ceil`, `round`, `frac` (rounding), `clamp`, `saturate`, `lerp`, `dist3`, `dist3_sq`, `reflect` (composed), `==`, `approx_eq`, ordered magnitude comparisons (`<`, `<=`, `>`, `>=` on `magnitude3`, see [Comparison](#comparison)), and component accessors `x()`, `y()`, `z()`, `w()`. The 4-lane reductions `dot4`, `magnitude4`, and `magnitude4_sq` accept a `quat` as well as a `vec4`.
-- A `quat` type with Hamilton product (`*`), `conj`, `normalize`, `inverse`, `rotate`, `slerp`, `nlerp`, and the usual `+`, `-`, scalar `*`, `==`, `approx_eq` (see [Quaternions](#quaternions)).
+- Operations: `+`, `-` (binary), `-` (unary negation), `*` (scalar), `/` (by scalar), `dot3`, `dot4`, `cross3`, `norm3`, `norm3_fast` (approximate, see below), `magnitude3`, `magnitude3_sq`, `magnitude4`, `magnitude4_sq`, `min`, `max`, `abs`, `hadamard` (component-wise), `floor`, `ceil`, `round`, `frac` (rounding), `clamp`, `saturate`, `lerp`, `dist3`, `dist3_sq`, `reflect` (composed), `==`, `approx_eq`, ordered magnitude comparisons (`<`, `<=`, `>`, `>=` on `magnitude3`, see [Comparison](#comparison)), and component accessors `x()`, `y()`, `z()`, `w()`, and named constants (`zero`, `one`, `unit_x`, `unit_y`, `unit_z`, `unit_w`, `splat`). The 4-lane reductions `dot4`, `magnitude4`, and `magnitude4_sq` accept a `quat` as well as a `vec4`.
+- A `quat` type with Hamilton product (`*`), `conj`, `normalize`, `inverse`, `rotate`, `slerp`, `nlerp`, the constructors `identity`, `from_axis_angle`, `from_to_rotation`, and the usual `+`, `-`, scalar `*`, `==`, `approx_eq` (see [Quaternions](#quaternions)).
 
 ## Requirements
 
@@ -101,8 +101,11 @@ float neg_d  = -dot3(a, b);        // Neg<Dot3<...>>       - still scalar_expr
 // Compound expression - evaluated lazily, no temporaries, fused on assignment
 vec4 result = norm3(a + b * 2.0f) * dot3(b, c) + c * 3.0f;
 
-// Quaternions (w is the scalar / real part; there is no identity() - use { 0, 0, 0, 1 })
+// Quaternions (w is the scalar / real part)
+quat id = quat::identity();                         // { 0, 0, 0, 1 }
 quat q  = { 0.0f, 0.0f, 0.70710678f, 0.70710678f }; // 90 deg about +Z
+quat qa = quat::from_axis_angle(0.0f, 0.0f, 1.0f, 1.5707963f); // axis + angle (radians)
+quat qb = quat::from_to_rotation(a, b);             // shortest rotation a -> b
 quat qc = conj(q);        // conjugate: negate xyz, keep w (inverse of a unit quaternion)
 quat qh = q * q;          // Hamilton product - composes rotations (non-commutative)
 vec4 vr = rotate(a, q);   // rotate a vec4 by a unit quaternion
@@ -132,6 +135,15 @@ float cx = v.x();   // lane 0
 float cy = v.y();   // lane 1
 float cz = v.z();   // lane 2
 float cw = v.w();   // lane 3
+```
+
+Named constants are static factory functions:
+
+```cpp
+vec4 z  = vec4::zero();     // { 0, 0, 0, 0 }
+vec4 o  = vec4::one();      // { 1, 1, 1, 1 }
+vec4 ex = vec4::unit_x();   // { 1, 0, 0, 0 } (also unit_y / unit_z / unit_w)
+vec4 s  = vec4::splat(2.5f);// { 2.5, 2.5, 2.5, 2.5 } - broadcast one float to all lanes
 ```
 
 ### Comparison
@@ -164,16 +176,26 @@ This is the only place in the library where the result is **not** bit-identical 
 
 ## Quaternions
 
-`quat` is a 16-byte, `alignas(16)` value type laid out as `(x, y, z, w)` with **`w` the scalar (real) part** and `xyz` the vector part. Like `vec4`, it can be default-constructed, built from four components, or constructed from any quaternion expression (which triggers evaluation). There is deliberately no `identity()` helper - the identity is the literal `{ 0, 0, 0, 1 }`.
+`quat` is a 16-byte, `alignas(16)` value type laid out as `(x, y, z, w)` with **`w` the scalar (real) part** and `xyz` the vector part. Like `vec4`, it can be default-constructed, built from four components, or constructed from any quaternion expression (which triggers evaluation).
 
 ```cpp
-quat id = { 0.0f, 0.0f, 0.0f, 1.0f };               // identity
-quat q  = { 0.0f, 0.0f, 0.70710678f, 0.70710678f }; // 90 deg about +Z
-quat r  = q * q;                                     // built from an expression (evaluates here)
+quat id = quat::identity();                          // { 0, 0, 0, 1 }
+quat q  = { 0.0f, 0.0f, 0.70710678f, 0.70710678f };  // 90 deg about +Z
+quat r  = q * q;                                      // built from an expression (evaluates here)
 
 float qw = q.w();                                    // lane 3 = scalar part
 vf4  raw = q.eval();                                 // underlying __m128
 ```
+
+Rotation constructors (static factory functions, eager, return a concrete unit `quat`; angles are in **radians**):
+
+```cpp
+quat qa = quat::from_axis_angle(0.0f, 0.0f, 1.0f, angle); // rotation of `angle` about the given axis
+quat qb = quat::from_axis_angle(axis, angle);             // same, axis packed in a vec4 (xyz)
+quat qc = quat::from_to_rotation(from, to);               // shortest rotation carrying `from` onto `to`
+```
+
+`from_axis_angle` normalizes the axis internally (a zero axis yields the identity), so the axis need not be unit length. `from_to_rotation` normalizes both inputs and picks the shortest arc; when `from` and `to` are antiparallel it returns a 180-degree rotation about an arbitrary perpendicular axis. Both use only the `xyz` lanes of their `vec4` arguments.
 
 Operations (all lazy nodes, evaluated on assignment, same as vectors):
 
@@ -392,7 +414,7 @@ A stale object from another toolchain surfaces at link time as `bytecode stream 
 
 ## Running Tests
 
-The test suite uses Google Test (vendored in `thirdparty/gtest/`) and covers 321 cases - 227 vector / expression and 94 quaternion. The table below groups the suite by area (representative names):
+The test suite uses Google Test (vendored in `thirdparty/gtest/`) and covers 341 cases - 234 vector / expression and 107 quaternion. The table below groups the suite by area (representative names):
 
 | Category             | Tests                                                                                                      |
 | -------------------- | ---------------------------------------------------------------------------------------------------------- |
@@ -412,6 +434,7 @@ The test suite uses Google Test (vendored in `thirdparty/gtest/`) and covers 321
 | w-lane blend         | `with_w_basic`, `with_w_takes_w_from_source_not_value`, `with_w_source_xyz_does_not_leak`, `with_w_negative_w`, `with_w_forces_zero_w`, `with_w_value_expression`, `with_w_source_expression`, `with_w_shared_operand`, `with_w_is_vec_expr`, `with_w_composes_in_expression` |
 | Rounding             | `floor_basic`, `floor_already_integer`, `floor_expression`, `ceil_basic`, `ceil_already_integer`, `ceil_expression`, `round_basic`, `round_half_to_even`, `round_expression`, `frac_basic`, `frac_expression` |
 | Cross product        | `cross`, `cross_anticommutative`, `cross_parallel`, `cross_expression` |
+| Named constants      | `factory_zero`, `factory_one`, `factory_unit_x`, `factory_unit_y`, `factory_unit_z`, `factory_unit_w`, `factory_splat` |
 | Quaternion type      | `construct_and_accessors`, `equality_equal`, `equality_differs`, `approx_eq_respects_epsilon`, `converting_ctor_from_expression` |
 | Quaternion conjugate | `conjugate_flips_xyz_keeps_w`, `conjugate_is_quat_expr`, `conjugate_involutive` |
 | Quaternion add / mul | `add_quat_quat`, `sub_quat_quat`, `add_composes_with_conjugate`, `mul_quat_float_scales_all_lanes`, `mul_float_quat`, `mul_quat_scalar_expr`, `mul_quat_scalar_disjoint_category` |
@@ -419,6 +442,7 @@ The test suite uses Google Test (vendored in `thirdparty/gtest/`) and covers 321
 | Quaternion rotate    | `rotate_z90_axes`, `rotate_identity_is_noop`, `rotate_perpendicular_equals_cross3`, `rotate_leaves_axis_fixed`, `rotate_preserves_length`, `rotate_preserves_dot`, `rotate_composition_matches_hamilton`, `rotate_is_vec_expr` |
 | Quaternion reductions | `dot4_basic`, `dot4_uses_all_four_lanes`, `dot4_commutative`, `dot4_is_scalar_expr`, `dot4_rejects_mixed_category`, `magnitude4_basic`, `magnitude4_of_unit_is_one`, `magnitude4_sq_basic` (the shared `dot4` / `magnitude4` nodes on a `quat`) |
 | Quaternion normalize / inverse | `normalize_scalar_quat`, `normalize_uniform`, `normalize_yields_unit_length`, `normalize_is_quat_expr`, `inverse_scalar_quat`, `inverse_of_unit_equals_conj`, `inverse_times_self_is_identity`, `inverse_is_quat_expr` |
+| Quaternion constructors | `identity_is_zero_rotation`, `from_axis_angle_z90`, `from_axis_angle_zero_angle_is_identity`, `from_axis_angle_is_unit_length`, `from_axis_angle_normalizes_axis_internally`, `from_axis_angle_rotates_vector`, `from_axis_angle_vec_overload_matches_scalar`, `from_to_rotation_maps_from_onto_to`, `from_to_rotation_same_direction_is_identity`, `from_to_rotation_normalizes_inputs`, `from_to_rotation_is_unit_length`, `from_to_rotation_antipodal_flips_direction`, `from_to_rotation_antipodal_is_unit_length` |
 | Quaternion interpolation | `slerp_endpoint_start`, `slerp_endpoint_end`, `slerp_midpoint_is_halfway_arc`, `slerp_takes_shortest_path`, `slerp_preserves_unit_length`, `nlerp_midpoint_is_renormalized_chord`, `nlerp_takes_shortest_path`, `nlerp_preserves_unit_length` |
 
 Build and run `tenvex_tests` from the generated project or makefile.

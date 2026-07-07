@@ -550,4 +550,103 @@ TEST(quat, nlerp_preserves_unit_length)
 	EXPECT_NEAR(check, result, 1e-5f);
 }
 
+TEST(quat, identity_is_zero_rotation)
+{
+	quat check = { 0.0f, 0.0f, 0.0f, 1.0f };
+	quat result = quat::identity();
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(quat, from_axis_angle_z90)
+{
+	constexpr float pi = 3.14159265f;
+	quat check = { 0.0f, 0.0f, 0.70710678f, 0.70710678f };
+	quat result = quat::from_axis_angle(0.0f, 0.0f, 1.0f, pi * 0.5f);
+	EXPECT_TRUE(approx_eq(check, result, 1e-5f));
+}
+
+TEST(quat, from_axis_angle_zero_angle_is_identity)
+{
+	quat check = { 0.0f, 0.0f, 0.0f, 1.0f };
+	quat result = quat::from_axis_angle(0.0f, 0.0f, 1.0f, 0.0f);
+	EXPECT_TRUE(approx_eq(check, result, 1e-6f));
+}
+
+TEST(quat, from_axis_angle_is_unit_length)
+{
+	constexpr float pi = 3.14159265f;
+	float check = 1.0f;
+	float result = magnitude4(quat::from_axis_angle(1.0f, 2.0f, 3.0f, pi * 0.3f));
+	EXPECT_NEAR(check, result, 1e-5f);
+}
+
+TEST(quat, from_axis_angle_normalizes_axis_internally)
+{
+	constexpr float pi = 3.14159265f;
+	quat check = quat::from_axis_angle(0.0f, 0.0f, 1.0f, pi * 0.5f);
+	quat result = quat::from_axis_angle(0.0f, 0.0f, 5.0f, pi * 0.5f);
+	EXPECT_TRUE(approx_eq(check, result, 1e-5f));
+}
+
+TEST(quat, from_axis_angle_rotates_vector)
+{
+	constexpr float pi = 3.14159265f;
+	quat q = quat::from_axis_angle(0.0f, 0.0f, 1.0f, pi * 0.5f);
+	vec4 check = { 0.0f, 1.0f, 0.0f, 0.0f };
+	vec4 result = rotate(vec4 { 1.0f, 0.0f, 0.0f, 0.0f }, q);
+	EXPECT_TRUE(approx_eq(check, result, 1e-5f));
+}
+
+TEST(quat, from_axis_angle_vec_overload_matches_scalar)
+{
+	constexpr float pi = 3.14159265f;
+	quat check = quat::from_axis_angle(0.0f, 0.0f, 1.0f, pi * 0.5f);
+	quat result = quat::from_axis_angle(vec4 { 0.0f, 0.0f, 1.0f, 0.0f }, pi * 0.5f);
+	EXPECT_TRUE(approx_eq(check, result, 1e-6f));
+}
+
+TEST(quat, from_to_rotation_maps_from_onto_to)
+{
+	quat q = quat::from_to_rotation(vec4 { 1.0f, 0.0f, 0.0f, 0.0f }, vec4 { 0.0f, 1.0f, 0.0f, 0.0f });
+	vec4 check = { 0.0f, 1.0f, 0.0f, 0.0f };
+	vec4 result = rotate(vec4 { 1.0f, 0.0f, 0.0f, 0.0f }, q);
+	EXPECT_TRUE(approx_eq(check, result, 1e-5f));
+}
+
+TEST(quat, from_to_rotation_same_direction_is_identity)
+{
+	quat check = { 0.0f, 0.0f, 0.0f, 1.0f };
+	quat result = quat::from_to_rotation(vec4 { 1.0f, 2.0f, 3.0f, 0.0f }, vec4 { 1.0f, 2.0f, 3.0f, 0.0f });
+	EXPECT_TRUE(approx_eq(check, result, 1e-5f));
+}
+
+TEST(quat, from_to_rotation_normalizes_inputs)
+{
+	quat check = quat::from_to_rotation(vec4 { 1.0f, 0.0f, 0.0f, 0.0f }, vec4 { 0.0f, 1.0f, 0.0f, 0.0f });
+	quat result = quat::from_to_rotation(vec4 { 4.0f, 0.0f, 0.0f, 0.0f }, vec4 { 0.0f, 7.0f, 0.0f, 0.0f });
+	EXPECT_TRUE(approx_eq(check, result, 1e-5f));
+}
+
+TEST(quat, from_to_rotation_is_unit_length)
+{
+	float check = 1.0f;
+	float result = magnitude4(quat::from_to_rotation(vec4 { 1.0f, 2.0f, 3.0f, 0.0f }, vec4 { -2.0f, 1.0f, 4.0f, 0.0f }));
+	EXPECT_NEAR(check, result, 1e-5f);
+}
+
+TEST(quat, from_to_rotation_antipodal_flips_direction)
+{
+	quat q = quat::from_to_rotation(vec4 { 1.0f, 0.0f, 0.0f, 0.0f }, vec4 { -1.0f, 0.0f, 0.0f, 0.0f });
+	vec4 check = { -1.0f, 0.0f, 0.0f, 0.0f };
+	vec4 result = rotate(vec4 { 1.0f, 0.0f, 0.0f, 0.0f }, q);
+	EXPECT_TRUE(approx_eq(check, result, 1e-5f));
+}
+
+TEST(quat, from_to_rotation_antipodal_is_unit_length)
+{
+	float check = 1.0f;
+	float result = magnitude4(quat::from_to_rotation(vec4 { 1.0f, 0.0f, 0.0f, 0.0f }, vec4 { -1.0f, 0.0f, 0.0f, 0.0f }));
+	EXPECT_NEAR(check, result, 1e-5f);
+}
+
 }
