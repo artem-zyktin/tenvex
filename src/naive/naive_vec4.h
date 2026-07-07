@@ -98,7 +98,7 @@ private:
 	return dot3(v, v);
 }
 
-[[nodiscard]] inline vec4 norm3(vec4 v) noexcept
+[[nodiscard]] inline vec4 normalize3(vec4 v) noexcept
 {
 	const float inv = 1.0f / magnitude3(v);   // normalize xyz, keep w
 	return { v.x() * inv, v.y() * inv, v.z() * inv, v.w() };

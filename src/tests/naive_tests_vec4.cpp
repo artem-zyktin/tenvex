@@ -91,7 +91,7 @@ TEST(naive_vec4, norm_a)
 {
 	vec4 a = { 1.0f, 0.0f, 0.0f, 1.0f };
 	vec4 check = { 1.0f, 0.0f, 0.0f, 1.0f };
-	vec4 result = norm3(a);
+	vec4 result = normalize3(a);
 
 	EXPECT_TRUE(approx_eq(check, result));
 }
@@ -100,7 +100,7 @@ TEST(naive_vec4, norm_b)
 {
 	vec4 a = { 1.0f, 0.0f, 1.0f, 1.0f };
 	vec4 check = { 0.707106f, 0.0f, 0.707106f, 1.0f };
-	vec4 result = norm3(a);
+	vec4 result = normalize3(a);
 
 	EXPECT_TRUE(approx_eq(check, result, 1e-3f));
 }
@@ -175,7 +175,7 @@ TEST(naive_vec4, expression_c)
 
 	vec4 check = { 7.24264050f, 5.65685463f, 10.0710678f, 0.0f };
 
-	vec4 tmp1 = norm3(a + b * 2.0f) * dot3(b, c);
+	vec4 tmp1 = normalize3(a + b * 2.0f) * dot3(b, c);
 	vec4 tmp2 = c * 3.0f;
 
 	vec4 result = tmp1 + tmp2;
@@ -225,7 +225,7 @@ TEST(naive_vec4, w_is_zero_with_nonzero_input_w)
 TEST(naive_vec4, preserves_nontrivial_w)
 {
 	vec4 a = { 0.0f, 3.0f, 0.0f, 9.0f };
-	vec4 r = norm3(a);
+	vec4 r = normalize3(a);
 
 	EXPECT_FLOAT_EQ(r.y(), 1.0f);
 	EXPECT_FLOAT_EQ(r.w(), 9.0f);
@@ -243,13 +243,13 @@ TEST(naive_vec4, norm_magnitude)
 {
 	vec4 a = { 3.0f, 1.0f, 4.0f, 0.0f };
 
-	EXPECT_NEAR(magnitude3(norm3(a)), 1.0f, 1e-6f);
+	EXPECT_NEAR(magnitude3(normalize3(a)), 1.0f, 1e-6f);
 }
 
 TEST(naive_vec4, zero_vector_is_nan)
 {
 	vec4 z = { 0.0f, 0.0f, 0.0f, 0.0f };
-	vec4 r = norm3(z);
+	vec4 r = normalize3(z);
 
 	EXPECT_TRUE(std::isnan(r.x()));
 }

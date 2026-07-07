@@ -145,7 +145,7 @@ vf4 magnitude4_sq(vf4 v) noexcept
 }
 
 [[nodiscard]] TNVX_INLINE
-vf4 norm3(vf4 v) noexcept
+vf4 normalize3(vf4 v) noexcept
 {
 	const float32x4_t n = vdivq_f32(v, magnitude3(v));
 	return vsetq_lane_f32(vgetq_lane_f32(v, 3), n, 3);
@@ -221,7 +221,7 @@ vf4 rsqrt(vf4 x) noexcept
 }
 
 [[nodiscard]] TNVX_INLINE
-vf4 norm3_fast(vf4 v) noexcept
+vf4 normalize3_fast(vf4 v) noexcept
 {
 	const float32x4_t inv_len = rsqrt(dot3(v, v));
 	const float32x4_t n = vmulq_f32(v, inv_len);
@@ -278,7 +278,7 @@ vf4 inverse(vf4 q) noexcept
 }
 
 [[nodiscard]] TNVX_INLINE
-vf4 normalize(vf4 q) noexcept
+vf4 normalize4(vf4 q) noexcept
 {
 	return vdivq_f32(q, magnitude4(q));
 }

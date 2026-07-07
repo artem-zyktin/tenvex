@@ -55,7 +55,7 @@ static void BM_Norm3_Latency(benchmark::State& state)
 	vec4 v { 1.0f, 2.0f, 3.0f, 1.0f };
 	for (auto _ : state)
 	{
-		v = norm3(v) + vec4 { 1e-3f, 2e-3f, 3e-3f, 0.0f }; // chain through v
+		v = normalize3(v) + vec4 { 1e-3f, 2e-3f, 3e-3f, 0.0f }; // chain through v
 		benchmark::DoNotOptimize(v);
 	}
 }
@@ -93,7 +93,7 @@ static void BM_Compound_tenvex(benchmark::State& state)
 	for (auto _ : state)
 	{
 		vec4 a = va[i], b = vb[i], c = vc[i];
-		vec4 r = norm3(a + b * 2.0f) * dot3(b, c) + c * 3.0f;
+		vec4 r = normalize3(a + b * 2.0f) * dot3(b, c) + c * 3.0f;
 		benchmark::DoNotOptimize(r);
 		i = (i + 1) & 1023;
 	}
@@ -172,7 +172,7 @@ static void BM_Compound_manual_kernels(benchmark::State& state)
 	{
 		using namespace tnvx::detail;
 		vf4 a = va[i].eval(), b = vb[i].eval(), c = vc[i].eval();
-		vf4 t = norm3(add(a, mul(b, set_all(2.0f))));
+		vf4 t = normalize3(add(a, mul(b, set_all(2.0f))));
 		vf4 d = dot3(b, c);
 		vf4 r = add(mul(t, d), mul(c, set_all(3.0f)));
 		benchmark::DoNotOptimize(r);
@@ -190,7 +190,7 @@ static void BM_Compound_tenvex_vf4(benchmark::State& state)
 	for (auto _ : state)
 	{
 		vec4 a = va[i], b = vb[i], c = vc[i];
-		vf4 r = (norm3(a + b * 2.0f) * dot3(b, c) + c * 3.0f).eval();
+		vf4 r = (normalize3(a + b * 2.0f) * dot3(b, c) + c * 3.0f).eval();
 		benchmark::DoNotOptimize(r);
 		i = (i + 1) & 1023;
 	}
@@ -203,12 +203,12 @@ BENCHMARK(BM_Compound_tenvex_vf4);
 // =====================================================================
 static void BM_FacingSameWay(benchmark::State& state)
 {
-	vec4 fa = norm3(vec4 { 1.0f, 0.0f, 0.2f, 0.0f });
+	vec4 fa = normalize3(vec4 { 1.0f, 0.0f, 0.2f, 0.0f });
 	vec4 fb = vec4 { 0.9f, 0.1f, 0.1f, 0.0f };
 	float jitter = 0.0f;
 	for (auto _ : state)
 	{
-		vec4 f = norm3(fb + vec4 { jitter, 0.0f, 0.0f, 0.0f });
+		vec4 f = normalize3(fb + vec4 { jitter, 0.0f, 0.0f, 0.0f });
 		float c = dot3(fa, f);
 		bool same = c > 0.95f;
 		jitter = c * 1e-6f;
@@ -590,7 +590,7 @@ static void BM_MagLess_Latency(benchmark::State& state)
 BENCHMARK(BM_MagLess_Latency);
 
 // =====================================================================
-// Exact norm3 (sqrt + div) vs norm3_fast (rsqrt estimate + one Newton
+// Exact normalize3 (sqrt + div) vs normalize3_fast (rsqrt estimate + one Newton
 // step). The "rsqrt is faster" folklore predates cheap hardware sqrt/div;
 // on Zen3 and especially Cortex-A76 the Newton chain may not pay. Decide
 // by these numbers, per ISA, per mode - do not cross-compare modes.
@@ -602,7 +602,7 @@ static void BM_Norm3_Throughput(benchmark::State& state)
 	for (auto _ : state)
 	{
 		vec4 aa = a[i];
-		vec4 r = norm3(aa);
+		vec4 r = normalize3(aa);
 		benchmark::DoNotOptimize(r);
 		i = (i + 1) & 1023;
 	}
@@ -616,7 +616,7 @@ static void BM_Norm3Fast_Throughput(benchmark::State& state)
 	for (auto _ : state)
 	{
 		vec4 aa = a[i];
-		vec4 r = norm3_fast(aa);
+		vec4 r = normalize3_fast(aa);
 		benchmark::DoNotOptimize(r);
 		i = (i + 1) & 1023;
 	}
@@ -628,7 +628,7 @@ static void BM_Norm3Fast_Latency(benchmark::State& state)
 	vec4 v { 1.0f, 2.0f, 3.0f, 1.0f };
 	for (auto _ : state)
 	{
-		v = norm3_fast(v) + vec4 { 1e-3f, 2e-3f, 3e-3f, 0.0f };
+		v = normalize3_fast(v) + vec4 { 1e-3f, 2e-3f, 3e-3f, 0.0f };
 		benchmark::DoNotOptimize(v);
 	}
 }

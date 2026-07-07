@@ -22,7 +22,7 @@ quat slerp(const A& a, const B& b, float t) noexcept
 
 	if (d > 0.9995f)
 	{
-		return normalize(a * (1.0f - t) + b * (s * t));
+		return normalize4(a * (1.0f - t) + b * (s * t));
 	}
 
 	const float theta = std::acos(d);
@@ -38,7 +38,7 @@ TNVX_INLINE
 quat nlerp(const A& a, const B& b, float t) noexcept
 {
 	float s = float(dot4(a, b)) < 0.0f ? -1.0f : 1.0f;
-	return normalize(a * (1.0f - t) + b * (s * t));
+	return normalize4(a * (1.0f - t) + b * (s * t));
 }
 
 }

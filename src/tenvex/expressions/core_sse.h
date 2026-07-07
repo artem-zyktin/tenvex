@@ -152,7 +152,7 @@ vf4 magnitude4_sq(vf4 v) noexcept
 }
 
 [[nodiscard]] TNVX_INLINE
-vf4 norm3(vf4 v) noexcept
+vf4 normalize3(vf4 v) noexcept
 {
 	return _mm_blend_ps(_mm_div_ps(v, magnitude3(v)), v, 0b1000);
 }
@@ -218,7 +218,7 @@ vf4 rsqrt(vf4 x) noexcept
 }
 
 [[nodiscard]] TNVX_INLINE
-vf4 norm3_fast(vf4 v) noexcept
+vf4 normalize3_fast(vf4 v) noexcept
 {
 	const vf4 inv_len = rsqrt(dot3(v, v));
 	return _mm_blend_ps(_mm_mul_ps(v, inv_len), v, 0b1000);
@@ -274,7 +274,7 @@ vf4 inverse(vf4 q) noexcept
 }
 
 [[nodiscard]] TNVX_INLINE
-vf4 normalize(vf4 q) noexcept
+vf4 normalize4(vf4 q) noexcept
 {
 	return _mm_div_ps(q, magnitude4(q));
 }

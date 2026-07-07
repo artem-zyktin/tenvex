@@ -9,7 +9,7 @@ namespace naive
 
 struct quat;
 
-quat normalize(quat q) noexcept;
+quat normalize4(quat q) noexcept;
 
 struct quat
 {
@@ -50,8 +50,8 @@ struct quat
 
 	[[nodiscard]] static quat from_to_rotation(vec4 from, vec4 to) noexcept
 	{
-		const vec4 f = norm3(from);
-		const vec4 t = norm3(to);
+		const vec4 f = normalize3(from);
+		const vec4 t = normalize3(to);
 
 		const float d = dot3(f, t);
 
@@ -67,7 +67,7 @@ struct quat
 
 		const vec4 c = cross3(f, t);
 		const float w = 1.0f + d;
-		return normalize(quat { c.x(), c.y(), c.z(), w });
+		return normalize4(quat { c.x(), c.y(), c.z(), w });
 	}
 
 private:
@@ -156,7 +156,7 @@ inline bool approx_eq(quat a, quat b, float eps = 1e-6f) noexcept
 	return { c.x() / d, c.y() / d, c.z() / d, c.w() / d };
 }
 
-[[nodiscard]] inline quat normalize(quat q) noexcept
+[[nodiscard]] inline quat normalize4(quat q) noexcept
 {
 	float len = magnitude4(q);
 	return { q.x() / len, q.y() / len, q.z() / len, q.w() / len };
@@ -170,7 +170,7 @@ inline bool approx_eq(quat a, quat b, float eps = 1e-6f) noexcept
 	if (d > 0.9995f)
 	{
 		quat r = { a.x() * (1 - t) + b.x() * s * t, a.y() * (1 - t) + b.y() * s * t, a.z() * (1 - t) + b.z() * s * t, a.w() * (1 - t) + b.w() * s * t };
-		return normalize(r);
+		return normalize4(r);
 	}
 	float theta = std::acos(d);
 	float inv_sin = 1.0f / std::sin(theta);
@@ -183,7 +183,7 @@ inline bool approx_eq(quat a, quat b, float eps = 1e-6f) noexcept
 {
 	float s = dot4(a, b) < 0.0f ? -1.0f : 1.0f;
 	quat r = { a.x() * (1 - t) + b.x() * s * t, a.y() * (1 - t) + b.y() * s * t, a.z() * (1 - t) + b.z() * s * t, a.w() * (1 - t) + b.w() * s * t };
-	return normalize(r);
+	return normalize4(r);
 }
 
 }

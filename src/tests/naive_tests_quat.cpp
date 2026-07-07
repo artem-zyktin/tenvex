@@ -257,7 +257,7 @@ TEST(naive_quat, normalize_scalar_quat)
 {
 	quat q = { 0, 0, 0, 2 };
 	quat check = { 0, 0, 0, 1 };
-	quat result = normalize(q);
+	quat result = normalize4(q);
 	EXPECT_TRUE(approx_eq(check, result));
 }
 
@@ -265,7 +265,7 @@ TEST(naive_quat, normalize_uniform)
 {
 	quat q = { 1, 1, 1, 1 };
 	quat check = { 0.5f, 0.5f, 0.5f, 0.5f };
-	quat result = normalize(q);
+	quat result = normalize4(q);
 	EXPECT_TRUE(approx_eq(check, result));
 }
 

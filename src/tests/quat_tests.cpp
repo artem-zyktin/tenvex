@@ -433,7 +433,7 @@ TEST(quat, normalize_scalar_quat)
 {
 	quat q = { 0, 0, 0, 2 };
 	quat check = { 0, 0, 0, 1 };
-	quat result = normalize(q);
+	quat result = normalize4(q);
 	EXPECT_TRUE(approx_eq(check, result));
 }
 
@@ -441,7 +441,7 @@ TEST(quat, normalize_uniform)
 {
 	quat q = { 1, 1, 1, 1 };
 	quat check = { 0.5f, 0.5f, 0.5f, 0.5f };
-	quat result = normalize(q);
+	quat result = normalize4(q);
 	EXPECT_TRUE(approx_eq(check, result));
 }
 
@@ -449,15 +449,15 @@ TEST(quat, normalize_yields_unit_length)
 {
 	quat q = { 1, 2, 3, 4 };
 	float check = 1.0f;
-	float result = magnitude4(normalize(q));
+	float result = magnitude4(normalize4(q));
 	EXPECT_NEAR(check, result, 1e-5f);
 }
 
 TEST(quat, normalize_is_quat_expr)
 {
 	quat q = { 1, 2, 3, 4 };
-	EXPECT_TRUE((quat_expr<decltype(normalize(q))>));
-	EXPECT_FALSE((scalar_expr<decltype(normalize(q))>));
+	EXPECT_TRUE((quat_expr<decltype(normalize4(q))>));
+	EXPECT_FALSE((scalar_expr<decltype(normalize4(q))>));
 }
 
 TEST(quat, slerp_endpoint_start)

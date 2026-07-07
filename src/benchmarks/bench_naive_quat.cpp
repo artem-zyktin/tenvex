@@ -250,7 +250,7 @@ static void BM_Naive_QuatNormalize_Latency(benchmark::State& state)
 	for (auto _ : state)
 	{
 		quat aa = a + quat { acc, 0.0f, 0.0f, 0.0f };
-		quat r = normalize(aa);
+		quat r = normalize4(aa);
 		acc = r.x() * 1e-7f;
 		benchmark::DoNotOptimize(acc);
 	}
@@ -264,7 +264,7 @@ static void BM_Naive_QuatNormalize_Throughput(benchmark::State& state)
 	for (auto _ : state)
 	{
 		quat qq = a[i];
-		quat r = normalize(qq);
+		quat r = normalize4(qq);
 		benchmark::DoNotOptimize(r);
 		i = (i + 1) & 1023;
 	}
@@ -273,12 +273,12 @@ BENCHMARK(BM_Naive_QuatNormalize_Throughput);
 
 static void BM_Naive_QuatSlerp_Latency(benchmark::State& state)
 {
-	quat a = normalize(quat { 1.0f, 2.0f, 3.0f, 4.0f });
-	quat b = normalize(quat { 4.0f, 3.0f, 2.0f, 1.0f });
+	quat a = normalize4(quat { 1.0f, 2.0f, 3.0f, 4.0f });
+	quat b = normalize4(quat { 4.0f, 3.0f, 2.0f, 1.0f });
 	float acc = 0.0f;
 	for (auto _ : state)
 	{
-		quat aa = normalize(a + quat { acc, 0.0f, 0.0f, 0.0f });
+		quat aa = normalize4(a + quat { acc, 0.0f, 0.0f, 0.0f });
 		quat r = slerp(aa, b, 0.5f);
 		acc = r.x() * 1e-7f;
 		benchmark::DoNotOptimize(acc);
@@ -290,8 +290,8 @@ static void BM_Naive_QuatSlerp_Throughput(benchmark::State& state)
 {
 	auto a = make_quats(1024, 1);
 	auto b = make_quats(1024, 2);
-	for (auto& q : a) q = normalize(q);
-	for (auto& q : b) q = normalize(q);
+	for (auto& q : a) q = normalize4(q);
+	for (auto& q : b) q = normalize4(q);
 	std::size_t i = 0;
 	for (auto _ : state)
 	{

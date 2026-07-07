@@ -2,8 +2,8 @@
 
 #include "quat.h"
 
-#include "normalize.h"
-#include "norm3.h"
+#include "normalize3.h"
+#include "normalize4.h"
 #include "vec_operations.h"
 
 #include <cmath>
@@ -77,8 +77,8 @@ TNVX_INLINE quat quat::from_axis_angle(vec4 asix, float angle) noexcept
 
 inline TNVX_INLINE quat quat::from_to_rotation(vec4 from, vec4 to) noexcept
 {
-	vec4 f = norm3(from);
-	vec4 t = norm3(to);
+	vec4 f = normalize3(from);
+	vec4 t = normalize3(to);
 
 	float d = dot3(f, t);
 
@@ -91,7 +91,7 @@ inline TNVX_INLINE quat quat::from_to_rotation(vec4 from, vec4 to) noexcept
 
 	vec4 c = cross3(f, t);
 	float w = 1.f + d;
-	return normalize(quat { c.x(), c.y(), c.z(), w});
+	return normalize4(quat { c.x(), c.y(), c.z(), w});
 }
 
 TNVX_INLINE

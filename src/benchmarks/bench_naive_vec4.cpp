@@ -51,7 +51,7 @@ static void BM_Naive_Norm3_Latency(benchmark::State& state)
 	vec4 v { 1.0f, 2.0f, 3.0f, 1.0f };
 	for (auto _ : state)
 	{
-		v = norm3(v) + vec4 { 1e-3f, 2e-3f, 3e-3f, 0.0f };
+		v = normalize3(v) + vec4 { 1e-3f, 2e-3f, 3e-3f, 0.0f };
 		benchmark::DoNotOptimize(v);
 	}
 }
@@ -81,7 +81,7 @@ static void BM_Naive_Compound(benchmark::State& state)
 	for (auto _ : state)
 	{
 		vec4 a = va[i], b = vb[i], c = vc[i];
-		vec4 r = norm3(a + b * 2.0f) * dot3(b, c) + c * 3.0f;
+		vec4 r = normalize3(a + b * 2.0f) * dot3(b, c) + c * 3.0f;
 		benchmark::DoNotOptimize(r);
 		i = (i + 1) & 1023;
 	}
@@ -90,12 +90,12 @@ BENCHMARK(BM_Naive_Compound);
 
 static void BM_Naive_FacingSameWay(benchmark::State& state)
 {
-	vec4 fa = norm3(vec4 { 1.0f, 0.0f, 0.2f, 0.0f });
+	vec4 fa = normalize3(vec4 { 1.0f, 0.0f, 0.2f, 0.0f });
 	vec4 fb = vec4 { 0.9f, 0.1f, 0.1f, 0.0f };
 	float jitter = 0.0f;
 	for (auto _ : state)
 	{
-		vec4 f = norm3(fb + vec4 { jitter, 0.0f, 0.0f, 0.0f });
+		vec4 f = normalize3(fb + vec4 { jitter, 0.0f, 0.0f, 0.0f });
 		float c = dot3(fa, f);
 		bool same = c > 0.95f;
 		jitter = c * 1e-6f;
@@ -496,7 +496,7 @@ static void BM_Naive_Norm3_Throughput(benchmark::State& state)
 	for (auto _ : state)
 	{
 		vec4 aa = a[i];
-		vec4 r = norm3(aa);
+		vec4 r = normalize3(aa);
 		benchmark::DoNotOptimize(r);
 		i = (i + 1) & 1023;
 	}
