@@ -665,7 +665,7 @@ TEST(vec4, dist3_basic)
 	vec4 l = { 0.0f, 0.0f, 0.0f, 0.0f };
 	vec4 r = { 3.0f, 4.0f, 0.0f, 0.0f };
 	float check = 5.0f;
-	float result = dist3(l, r);
+	float result = distance3(l, r);
 	EXPECT_FLOAT_EQ(check, result);
 }
 
@@ -674,7 +674,7 @@ TEST(vec4, dist3_zero)
 	vec4 l = { 1.0f, 2.0f, 3.0f, 0.0f };
 	vec4 r = { 1.0f, 2.0f, 3.0f, 0.0f };
 	float check = 0.0f;
-	float result = dist3(l, r);
+	float result = distance3(l, r);
 	EXPECT_FLOAT_EQ(check, result);
 }
 
@@ -683,7 +683,7 @@ TEST(vec4, dist3_ignores_w)
 	vec4 l = { 0.0f, 0.0f, 0.0f, 100.0f };
 	vec4 r = { 3.0f, 4.0f, 0.0f, -100.0f };
 	float check = 5.0f;
-	float result = dist3(l, r);
+	float result = distance3(l, r);
 	EXPECT_FLOAT_EQ(check, result);
 }
 
@@ -692,7 +692,7 @@ TEST(vec4, dist3_sq_basic)
 	vec4 l = { 0.0f, 0.0f, 0.0f, 0.0f };
 	vec4 r = { 3.0f, 4.0f, 0.0f, 0.0f };
 	float check = 25.0f;
-	float result = dist3_sq(l, r);
+	float result = distance3_sq(l, r);
 	EXPECT_FLOAT_EQ(check, result);
 }
 
@@ -701,7 +701,7 @@ TEST(vec4, dist3_sq_zero)
 	vec4 l = { 1.0f, 2.0f, 3.0f, 0.0f };
 	vec4 r = { 1.0f, 2.0f, 3.0f, 0.0f };
 	float check = 0.0f;
-	float result = dist3_sq(l, r);
+	float result = distance3_sq(l, r);
 	EXPECT_FLOAT_EQ(check, result);
 }
 
@@ -1242,8 +1242,8 @@ TEST(vec4, scalar_add_in_expression_2)
 	vec4 d = { 3.0f, 0.0f, 0.0f, 0.0f };
 	vec4 e = { 1.0f, 2.0f, 3.0f, 0.0f };
 	vec4 check = { 11.0f, 22.0f, 33.0f, 0.0f };
-	vec4 result = (dot3(a, b) + dist3(c, d)) * e;
-	EXPECT_TRUE((vec_expr<decltype((dot3(a, b) + dist3(c, d)) * e)>));
+	vec4 result = (dot3(a, b) + distance3(c, d)) * e;
+	EXPECT_TRUE((vec_expr<decltype((dot3(a, b) + distance3(c, d)) * e)>));
 	EXPECT_TRUE(approx_eq(check, result));
 }
 
@@ -1350,9 +1350,9 @@ TEST(vec4, scalar_sub_in_expression_2)
 	vec4 e = { 1.0f, 2.0f, 3.0f, 0.0f };
 
 	vec4 check = { 9.0f, 18.0f, 27.0f, 0.0f };
-	vec4 result = (dot3(a, b) - dist3(c, d)) * e;
+	vec4 result = (dot3(a, b) - distance3(c, d)) * e;
 
-	EXPECT_TRUE((vec_expr<decltype((dot3(a, b) - dist3(c, d)) * e)>));
+	EXPECT_TRUE((vec_expr<decltype((dot3(a, b) - distance3(c, d)) * e)>));
 	EXPECT_TRUE(approx_eq(check, result));
 }
 

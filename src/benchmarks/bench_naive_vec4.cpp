@@ -285,7 +285,7 @@ static void BM_Naive_Dist3_Throughput(benchmark::State& state)
 	for (auto _ : state)
 	{
 		vec4 aa = a[i], bb = b[i];
-		float r = dist3(aa, bb);
+		float r = distance3(aa, bb);
 		benchmark::DoNotOptimize(r);
 		i = (i + 1) & 1023;
 	}
@@ -300,7 +300,7 @@ static void BM_Naive_Dist3Sq_Throughput(benchmark::State& state)
 	for (auto _ : state)
 	{
 		vec4 aa = a[i], bb = b[i];
-		float r = dist3_sq(aa, bb);
+		float r = distance3_sq(aa, bb);
 		benchmark::DoNotOptimize(r);
 		i = (i + 1) & 1023;
 	}

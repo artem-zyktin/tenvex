@@ -545,7 +545,7 @@ TEST(naive_vec4, dist3_basic)
 	vec4 l = { 0.0f, 0.0f, 0.0f, 0.0f };
 	vec4 r = { 3.0f, 4.0f, 0.0f, 0.0f };
 	float check = 5.0f;
-	float result = dist3(l, r);
+	float result = distance3(l, r);
 	EXPECT_FLOAT_EQ(check, result);
 }
 
@@ -554,7 +554,7 @@ TEST(naive_vec4, dist3_zero)
 	vec4 l = { 1.0f, 2.0f, 3.0f, 0.0f };
 	vec4 r = { 1.0f, 2.0f, 3.0f, 0.0f };
 	float check = 0.0f;
-	float result = dist3(l, r);
+	float result = distance3(l, r);
 	EXPECT_FLOAT_EQ(check, result);
 }
 
@@ -563,7 +563,7 @@ TEST(naive_vec4, dist3_ignores_w)
 	vec4 l = { 0.0f, 0.0f, 0.0f, 100.0f };
 	vec4 r = { 3.0f, 4.0f, 0.0f, -100.0f };
 	float check = 5.0f;
-	float result = dist3(l, r);
+	float result = distance3(l, r);
 	EXPECT_FLOAT_EQ(check, result);
 }
 
@@ -572,7 +572,7 @@ TEST(naive_vec4, dist3_sq_basic)
 	vec4 l = { 0.0f, 0.0f, 0.0f, 0.0f };
 	vec4 r = { 3.0f, 4.0f, 0.0f, 0.0f };
 	float check = 25.0f;
-	float result = dist3_sq(l, r);
+	float result = distance3_sq(l, r);
 	EXPECT_FLOAT_EQ(check, result);
 }
 
@@ -581,7 +581,7 @@ TEST(naive_vec4, dist3_sq_zero)
 	vec4 l = { 1.0f, 2.0f, 3.0f, 0.0f };
 	vec4 r = { 1.0f, 2.0f, 3.0f, 0.0f };
 	float check = 0.0f;
-	float result = dist3_sq(l, r);
+	float result = distance3_sq(l, r);
 	EXPECT_FLOAT_EQ(check, result);
 }
 

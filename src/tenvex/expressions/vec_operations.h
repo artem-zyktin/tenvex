@@ -32,11 +32,11 @@ vec4 lerp(const A& a, const B& b, float t) noexcept;
 
 template<vec_expr L, vec_expr R>
 [[nodiscard]] TNVX_INLINE
-float dist3(const L& l, const R& r) noexcept;
+float distance3(const L& l, const R& r) noexcept;
 
 template<vec_expr L, vec_expr R>
 [[nodiscard]] TNVX_INLINE
-float dist3_sq(const L& l, const R& r) noexcept;
+float distance3_sq(const L& l, const R& r) noexcept;
 
 template<vec_expr V, vec_expr N>
 [[nodiscard]] TNVX_INLINE

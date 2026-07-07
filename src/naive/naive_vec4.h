@@ -158,12 +158,12 @@ inline bool approx_eq(vec4 a, vec4 b, float eps = 1e-6f) noexcept
 	return a + (b - a) * t;
 }
 
-[[nodiscard]] inline float dist3(vec4 l, vec4 r) noexcept
+[[nodiscard]] inline float distance3(vec4 l, vec4 r) noexcept
 {
 	return magnitude3(l - r);
 }
 
-[[nodiscard]] inline float dist3_sq(vec4 l, vec4 r) noexcept
+[[nodiscard]] inline float distance3_sq(vec4 l, vec4 r) noexcept
 {
 	return magnitude3_sq(l - r);
 }

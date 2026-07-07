@@ -37,14 +37,14 @@ vec4 lerp(const A& a, const B& b, float t) noexcept
 
 template<vec_expr L, vec_expr R>
 TNVX_INLINE
-float dist3(const L& l, const R& r) noexcept
+float distance3(const L& l, const R& r) noexcept
 {
 	return magnitude3(l - r);
 }
 
 template<vec_expr L, vec_expr R>
 TNVX_INLINE
-float dist3_sq(const L& l, const R& r) noexcept
+float distance3_sq(const L& l, const R& r) noexcept
 {
 	return magnitude3_sq(l - r);
 }
