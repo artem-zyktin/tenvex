@@ -1512,9 +1512,58 @@ TEST(vec4, magnitude4_sq_counts_w)
 
 TEST(vec4, magnitude4_sq_is_scalar_expr)
 {
-	vec4 v = { 1, 2, 2, 4 };
+	vec4 v = { 1.0f, 2.0f, 2.0f, 4.0f };
 	EXPECT_TRUE((scalar_expr<decltype(magnitude4_sq(v))>));
 	EXPECT_FALSE((vec_expr<decltype(magnitude4_sq(v))>));
+}
+
+TEST(vec4, factory_zero)
+{
+	vec4 check = { 0.0f, 0.0f, 0.0f, 0.0f };
+	vec4 result = vec4::zero();
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, factory_one)
+{
+	vec4 check = { 1.0f, 1.0f, 1.0f, 1.0f };
+	vec4 result = vec4::one();
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, factory_unit_x)
+{
+	vec4 check = { 1.0f, 0.0f, 0.0f, 0.0f };
+	vec4 result = vec4::unit_x();
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, factory_unit_y)
+{
+	vec4 check = { 0.0f, 1.0f, 0.0f, 0.0f };
+	vec4 result = vec4::unit_y();
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, factory_unit_z)
+{
+	vec4 check = { 0.0f, 0.0f, 1.0f, 0.0f };
+	vec4 result = vec4::unit_z();
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, factory_unit_w)
+{
+	vec4 check = { 0.0f, 0.0f, 0.0f, 1.0f };
+	vec4 result = vec4::unit_w();
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, factory_splat)
+{
+	vec4 check = { 3.5f, 3.5f, 3.5f, 3.5f };
+	vec4 result = vec4::splat(3.5f);
+	EXPECT_TRUE(approx_eq(check, result));
 }
 
 }
