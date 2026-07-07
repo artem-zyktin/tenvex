@@ -2,6 +2,8 @@
 
 #include "vec_operations.h"
 
+#include <cmath>
+
 namespace tnvx
 {
 
@@ -52,6 +54,16 @@ TNVX_INLINE
 vec4 reflect(const V& v, const N& n) noexcept
 {
 	return v - n * (dot3(v, n) * 2.0f);
+}
+
+TNVX_INLINE
+vec4 orthogonal(const vec4& v)
+{
+	float vx = v.x();
+	float vy = v.y();
+	float vz = v.z();
+
+	return std::fabs(vx) > std::fabs(vz) ? vec4 { -vy, vx, 0.f, 0.f } : vec4 { 0.f, -vz, vy, 0.f };
 }
 
 }

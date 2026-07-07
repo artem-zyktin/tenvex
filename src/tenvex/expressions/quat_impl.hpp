@@ -1,7 +1,10 @@
 #pragma once
 
 #include "quat.h"
+
 #include "normalize.h"
+#include "norm3.h"
+#include "vec_operations.h"
 
 #include <cmath>
 
@@ -72,19 +75,10 @@ TNVX_INLINE quat quat::from_axis_angle(vec4 asix, float angle) noexcept
 	return from_axis_angle(asix.x(), asix.y(), asix.z(), angle);
 }
 
-static vec4 orthogonal(const vec4& v)
-{
-	float vx = v.x();
-	float vy = v.y();
-	float vz = v.z();
-
-	return std::fabs(vx) > std::fabs(vz) ? vec4 { -vy, vx, 0.f, 0.f} : vec4 { 0.f, -vz, vy, 0.f};
-}
-
 inline TNVX_INLINE quat quat::from_to_rotation(vec4 from, vec4 to) noexcept
 {
-	vec4 f = from / magnitude3(from);
-	vec4 t = to / magnitude3(to);
+	vec4 f = norm3(from);
+	vec4 t = norm3(to);
 
 	float d = dot3(f, t);
 

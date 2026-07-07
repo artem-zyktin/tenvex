@@ -42,6 +42,9 @@ template<vec_expr V, vec_expr N>
 [[nodiscard]] TNVX_INLINE
 vec4 reflect(const V& v, const N& n) noexcept;
 
+[[nodiscard]] TNVX_INLINE
+vec4 orthogonal(const vec4& v);
+
 }
 
 #include "vec_operations_impl.hpp"
