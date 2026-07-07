@@ -17,6 +17,41 @@ vf4 vec4::eval() const noexcept
 	return _data;
 }
 
+TNVX_INLINE vec4 vec4::zero() noexcept
+{
+	return { 0.0f, 0.0f, 0.0f, 0.0f };
+}
+
+TNVX_INLINE vec4 vec4::one() noexcept
+{
+	return { 1.0f, 1.0f, 1.0f, 1.0f };
+}
+
+TNVX_INLINE vec4 vec4::unit_x() noexcept
+{
+	return { 1.0f, 0.0f, 0.0f, 0.0f };
+}
+
+TNVX_INLINE vec4 vec4::unit_y() noexcept
+{
+	return { 0.0f, 1.0f, 0.0f, 0.0f };
+}
+
+TNVX_INLINE vec4 vec4::unit_z() noexcept
+{
+	return { 0.0f, 0.0f, 1.0f, 0.0f };
+}
+
+TNVX_INLINE vec4 vec4::unit_w() noexcept
+{
+	return { 0.0f, 0.0f, 0.0f, 1.0f };
+}
+
+TNVX_INLINE vec4 vec4::splat(float s) noexcept
+{
+	return { s, s, s, s };
+}
+
 template<vec_expr E>
 TNVX_INLINE
 vec4::vec4(const E& e) noexcept

@@ -35,9 +35,17 @@ struct alignas(16) vec4 : Expr<vec4>
 	[[nodiscard]] TNVX_INLINE
 	vf4 eval() const noexcept;
 
-private:
+	[[nodiscard]] TNVX_INLINE static vec4 zero() noexcept;
+	[[nodiscard]] TNVX_INLINE static vec4 one() noexcept;
+	[[nodiscard]] TNVX_INLINE static vec4 unit_x() noexcept;
+	[[nodiscard]] TNVX_INLINE static vec4 unit_y() noexcept;
+	[[nodiscard]] TNVX_INLINE static vec4 unit_z() noexcept;
+	[[nodiscard]] TNVX_INLINE static vec4 unit_w() noexcept;
+	[[nodiscard]] TNVX_INLINE static vec4 splat(float s) noexcept;
 
+private:
 	vf4 _data;
+
 };
 
 template<> inline constexpr bool is_vec_expr<vec4> = true;

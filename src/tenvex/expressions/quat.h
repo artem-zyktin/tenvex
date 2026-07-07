@@ -5,6 +5,8 @@
 #include "traits.h"
 #include "concepts.h"
 
+#include "vec4.h"
+
 namespace tnvx
 {
 
@@ -34,6 +36,11 @@ struct alignas(16) quat : Expr<quat>
 
 	[[nodiscard]] TNVX_INLINE
 	float w() const noexcept;
+
+	[[nodiscard]] TNVX_INLINE static quat identity() noexcept;
+	[[nodiscard]] TNVX_INLINE static quat from_axis_angle(float ax, float ay, float az, float angle) noexcept;
+	[[nodiscard]] TNVX_INLINE static quat from_axis_angle(vec4 asix, float angle) noexcept;
+	[[nodiscard]] TNVX_INLINE static quat from_to_rotation(vec4 from, vec4 to) noexcept;
 
 private:
 	vf4 _data;
