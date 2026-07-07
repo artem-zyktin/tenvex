@@ -845,4 +845,53 @@ TEST(naive_vec4, magnitude4_sq_counts_w)
 	EXPECT_FLOAT_EQ(check4, result4);
 }
 
+TEST(naive_vec4, factory_zero)
+{
+	vec4 check = { 0.0f, 0.0f, 0.0f, 0.0f };
+	vec4 result = vec4::zero();
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(naive_vec4, factory_one)
+{
+	vec4 check = { 1.0f, 1.0f, 1.0f, 1.0f };
+	vec4 result = vec4::one();
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(naive_vec4, factory_unit_x)
+{
+	vec4 check = { 1.0f, 0.0f, 0.0f, 0.0f };
+	vec4 result = vec4::unit_x();
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(naive_vec4, factory_unit_y)
+{
+	vec4 check = { 0.0f, 1.0f, 0.0f, 0.0f };
+	vec4 result = vec4::unit_y();
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(naive_vec4, factory_unit_z)
+{
+	vec4 check = { 0.0f, 0.0f, 1.0f, 0.0f };
+	vec4 result = vec4::unit_z();
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(naive_vec4, factory_unit_w)
+{
+	vec4 check = { 0.0f, 0.0f, 0.0f, 1.0f };
+	vec4 result = vec4::unit_w();
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(naive_vec4, factory_splat)
+{
+	vec4 check = { 3.5f, 3.5f, 3.5f, 3.5f };
+	vec4 result = vec4::splat(3.5f);
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
 }

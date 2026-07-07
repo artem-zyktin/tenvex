@@ -7,6 +7,10 @@
 namespace naive
 {
 
+struct quat;
+
+quat normalize(quat q) noexcept;
+
 struct quat
 {
 	quat() noexcept = default;
@@ -20,6 +24,51 @@ struct quat
 	[[nodiscard]] float y() const noexcept { return _y; }
 	[[nodiscard]] float z() const noexcept { return _z; }
 	[[nodiscard]] float w() const noexcept { return _w; }
+
+	[[nodiscard]] static quat identity() noexcept
+	{
+		return { 0.0f, 0.0f, 0.0f, 1.0f };
+	}
+
+	[[nodiscard]] static quat from_axis_angle(float ax, float ay, float az, float angle) noexcept
+	{
+		const float half = angle * 0.5f;
+		const float c = std::cos(half);
+		float s = std::sin(half);
+
+		const float len = std::sqrt(ax * ax + ay * ay + az * az);
+		const float inv = len > 0.0f ? 1.0f / len : 0.0f;
+		s *= inv;
+
+		return { ax * s, ay * s, az * s, c };
+	}
+
+	[[nodiscard]] static quat from_axis_angle(vec4 axis, float angle) noexcept
+	{
+		return from_axis_angle(axis.x(), axis.y(), axis.z(), angle);
+	}
+
+	[[nodiscard]] static quat from_to_rotation(vec4 from, vec4 to) noexcept
+	{
+		const vec4 f = norm3(from);
+		const vec4 t = norm3(to);
+
+		const float d = dot3(f, t);
+
+		if (d < -0.999999f)
+		{
+			const float ox = std::fabs(f.x()) > std::fabs(f.z()) ? -f.y() : 0.0f;
+			const float oy = std::fabs(f.x()) > std::fabs(f.z()) ? f.x() : -f.z();
+			const float oz = std::fabs(f.x()) > std::fabs(f.z()) ? 0.0f : f.y();
+			const float ol = std::sqrt(ox * ox + oy * oy + oz * oz);
+			const float oi = ol > 0.0f ? 1.0f / ol : 0.0f;
+			return { ox * oi, oy * oi, oz * oi, 0.0f };
+		}
+
+		const vec4 c = cross3(f, t);
+		const float w = 1.0f + d;
+		return normalize(quat { c.x(), c.y(), c.z(), w });
+	}
 
 private:
 	float _x, _y, _z, _w;

@@ -20,6 +20,14 @@ struct vec4
 	[[nodiscard]] float z() const noexcept { return _z; }
 	[[nodiscard]] float w() const noexcept { return _w; }
 
+	[[nodiscard]] static vec4 zero() noexcept { return { 0.0f, 0.0f, 0.0f, 0.0f }; }
+	[[nodiscard]] static vec4 one() noexcept { return { 1.0f, 1.0f, 1.0f, 1.0f }; }
+	[[nodiscard]] static vec4 unit_x() noexcept { return { 1.0f, 0.0f, 0.0f, 0.0f }; }
+	[[nodiscard]] static vec4 unit_y() noexcept { return { 0.0f, 1.0f, 0.0f, 0.0f }; }
+	[[nodiscard]] static vec4 unit_z() noexcept { return { 0.0f, 0.0f, 1.0f, 0.0f }; }
+	[[nodiscard]] static vec4 unit_w() noexcept { return { 0.0f, 0.0f, 0.0f, 1.0f }; }
+	[[nodiscard]] static vec4 splat(float s) noexcept { return { s, s, s, s }; }
+
 private:
 	float _x, _y, _z, _w;
 };
