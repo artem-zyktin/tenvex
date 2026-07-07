@@ -128,7 +128,7 @@ TEST(naive_quat, conj_flips_xyz_keeps_w)
 {
 	quat q = { 1, 2, 3, 4 };
 	quat check = { -1, -2, -3, 4 };
-	quat result = conj(q);
+	quat result = conjugate(q);
 	EXPECT_TRUE(approx_eq(check, result));
 }
 
@@ -136,31 +136,31 @@ TEST(naive_quat, conj_of_pure_negates_xyz)
 {
 	quat v = { 1, 2, 3, 0 };
 	quat check = { -1, -2, -3, 0 };
-	quat result = conj(v);
+	quat result = conjugate(v);
 	EXPECT_TRUE(approx_eq(check, result));
 }
 
 TEST(naive_quat, conj_involutive)
 {
 	quat q = { 1, 2, 3, 4 };
-	quat result = conj(conj(q));
+	quat result = conjugate(conjugate(q));
 	EXPECT_TRUE(approx_eq(q, result));
 }
 
 TEST(naive_quat, conj_anti_homomorphism)
 {
-	// conj(a * b) == conj(b) * conj(a)
+	// conjugate(a * b) == conjugate(b) * conjugate(a)
 	quat a = { 1, 2, 3, 4 };
 	quat b = { 5, 6, 7, 8 };
 	quat check = { -24, -48, -48, -6 };
-	quat result1 = conj(a * b);
-	quat result2 = conj(b) * conj(a);
+	quat result1 = conjugate(a * b);
+	quat result2 = conjugate(b) * conjugate(a);
 	EXPECT_TRUE(approx_eq(check, result1));
 	EXPECT_TRUE(approx_eq(check, result2));
 }
 
 // ---------------------------------------------------------------------------
-// Rotation (sandwich q * v * conj(q)); vector v is a pure quaternion (w = 0).
+// Rotation (sandwich q * v * conjugate(q)); vector v is a pure quaternion (w = 0).
 // qz = 90 deg about Z: sin45 = cos45 = 0.70710678.
 // ---------------------------------------------------------------------------
 

@@ -59,20 +59,20 @@ TEST(quat, conjugate_flips_xyz_keeps_w)
 {
 	quat q = { 1, 2, 3, 4 };
 	quat check = { -1, -2, -3, 4 };
-	quat result = conj(q);
+	quat result = conjugate(q);
 	EXPECT_TRUE(approx_eq(check, result));
 }
 
 TEST(quat, conjugate_is_quat_expr)
 {
 	quat q = { 1, 2, 3, 4 };
-	EXPECT_TRUE((quat_expr<decltype(conj(q))>));
+	EXPECT_TRUE((quat_expr<decltype(conjugate(q))>));
 }
 
 TEST(quat, conjugate_involutive)
 {
 	quat q = { 1, 2, 3, 4 };
-	quat result = conj(conj(q));
+	quat result = conjugate(conjugate(q));
 	EXPECT_TRUE(approx_eq(q, result));
 }
 
@@ -105,7 +105,7 @@ TEST(quat, add_composes_with_conjugate)
 	quat a = { 1, 2, 3, 4 };
 	quat b = { 5, 6, 7, 8 };
 	quat check = { 4, 4, 4, 12 };
-	quat result = conj(a) + b;
+	quat result = conjugate(a) + b;
 	EXPECT_TRUE(approx_eq(check, result));
 }
 
@@ -216,7 +216,7 @@ TEST(quat, hamilton_times_conjugate_is_pure_real)
 {
 	quat a = { 1, 2, 3, 4 };
 	quat check = { 0, 0, 0, 30 };
-	quat result = a * conj(a);
+	quat result = a * conjugate(a);
 	EXPECT_TRUE(approx_eq(check, result));
 }
 
@@ -394,14 +394,14 @@ TEST(quat, magnitude4_sq_is_scalar_expr)
 }
 
 // ---------------------------------------------------------------------------
-// inverse: conj(q) / magnitude4_sq(q). For a unit quaternion this equals conj.
+// inverse: conjugate(q) / magnitude4_sq(q). For a unit quaternion this equals conjugate.
 // Quaternion-specific; stays a quat_expr.
 // ---------------------------------------------------------------------------
 
 TEST(quat, inverse_scalar_quat)
 {
 	quat q = { 0, 0, 0, 2 };
-	quat check = { 0, 0, 0, 0.5f }; // conj / |q|^2 = (0,0,0,2) / 4
+	quat check = { 0, 0, 0, 0.5f }; // conjugate / |q|^2 = (0,0,0,2) / 4
 	quat result = inverse(q);
 	EXPECT_TRUE(approx_eq(check, result));
 }

@@ -99,7 +99,7 @@ static std::vector<vec4> make_vecs(int n, unsigned seed)
 	return v;
 }
 
-// conj is a single xorps - like the add/sub/mul quat benches this is a
+// conjugate is a single xorps - like the add/sub/mul quat benches this is a
 // zero-cost confirmation, not an advantage benchmark.
 static void BM_QuatConj_Throughput(benchmark::State& state)
 {
@@ -108,14 +108,14 @@ static void BM_QuatConj_Throughput(benchmark::State& state)
 	for (auto _ : state)
 	{
 		quat qq = a[i];
-		quat r = conj(qq);
+		quat r = conjugate(qq);
 		benchmark::DoNotOptimize(r);
 		i = (i + 1) & 1023;
 	}
 }
 BENCHMARK(BM_QuatConj_Throughput);
 
-// rotate(v, q) = the sandwich q * v * conj(q). tenvex fuses it into one node;
+// rotate(v, q) = the sandwich q * v * conjugate(q). tenvex fuses it into one node;
 // rotate() is a vec_expr, so bind the result to a concrete vec4.
 static void BM_QuatRotate_Throughput(benchmark::State& state)
 {
@@ -222,7 +222,7 @@ static void BM_QuatMagnitude4Sq_Throughput(benchmark::State& state)
 }
 BENCHMARK(BM_QuatMagnitude4Sq_Throughput);
 
-// inverse = conj(q) / magnitude4_sq(q): a reduction + div, no sqrt.
+// inverse = conjugate(q) / magnitude4_sq(q): a reduction + div, no sqrt.
 static void BM_QuatInverse_Latency(benchmark::State& state)
 {
 	quat a { 1.0f, 2.0f, 3.0f, 4.0f };

@@ -105,7 +105,7 @@ static void BM_Naive_QuatConj_Throughput(benchmark::State& state)
 	for (auto _ : state)
 	{
 		quat qq = a[i];
-		quat r = conj(qq);
+		quat r = conjugate(qq);
 		benchmark::DoNotOptimize(r);
 		i = (i + 1) & 1023;
 	}
@@ -122,7 +122,7 @@ static void BM_Naive_QuatRotate_Throughput(benchmark::State& state)
 		quat qq = qs[i];
 		vec4 vv = vs[i];
 		quat pv = { vv.x(), vv.y(), vv.z(), 0.0f };
-		quat r = (qq * pv) * conj(qq);
+		quat r = (qq * pv) * conjugate(qq);
 		benchmark::DoNotOptimize(r);
 		i = (i + 1) & 1023;
 	}

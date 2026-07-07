@@ -94,7 +94,7 @@ private:
 	return q * s;
 }
 
-[[nodiscard]] inline quat conj(quat q) noexcept
+[[nodiscard]] inline quat conjugate(quat q) noexcept
 {
 	return { -q.x(), -q.y(), -q.z(), q.w() };
 }
@@ -130,7 +130,7 @@ inline bool approx_eq(quat a, quat b, float eps = 1e-6f) noexcept
 
 [[nodiscard]] inline vec4 rotate(vec4 v, quat q) noexcept
 {
-	const quat r = (q * v) * conj(q);
+	const quat r = (q * v) * conjugate(q);
 	return { r.x(), r.y(), r.z(), 0.0f };
 }
 
@@ -152,7 +152,7 @@ inline bool approx_eq(quat a, quat b, float eps = 1e-6f) noexcept
 [[nodiscard]] inline quat inverse(quat q) noexcept
 {
 	float d = magnitude4_sq(q);
-	quat c = conj(q);
+	quat c = conjugate(q);
 	return { c.x() / d, c.y() / d, c.z() / d, c.w() / d };
 }
 
