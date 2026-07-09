@@ -96,5 +96,48 @@ cg_normalize4:
 	.cfi_endproc
 .LFE5350:
 	.size	cg_normalize4, .-cg_normalize4
+	.align	2
+	.p2align 5,,15
+	.global	cg_normalize3_value
+	.type	cg_normalize3_value, %function
+cg_normalize3_value:
+.LFB5351:
+	.cfi_startproc
+	ldr	q31, [x0]
+	fmul	v0.4s, v31.4s, v31.4s
+	ins	v0.s[3], wzr
+	faddp	v0.4s, v0.4s, v0.4s
+	faddp	v0.4s, v0.4s, v0.4s
+	dup	v0.4s, v0.s[0]
+	fsqrt	v0.4s, v0.4s
+	fdiv	v0.4s, v31.4s, v0.4s
+	ins	v0.s[3], v31.s[3]
+	ret
+	.cfi_endproc
+.LFE5351:
+	.size	cg_normalize3_value, .-cg_normalize3_value
+	.align	2
+	.p2align 5,,15
+	.global	cg_normalize3_fast_value
+	.type	cg_normalize3_fast_value, %function
+cg_normalize3_fast_value:
+.LFB5352:
+	.cfi_startproc
+	ldr	q30, [x0]
+	fmul	v31.4s, v30.4s, v30.4s
+	ins	v31.s[3], wzr
+	faddp	v31.4s, v31.4s, v31.4s
+	faddp	v31.4s, v31.4s, v31.4s
+	dup	v31.4s, v31.s[0]
+	frsqrte	v0.4s, v31.4s
+	fmul	v31.4s, v31.4s, v0.4s
+	frsqrts	v31.4s, v31.4s, v0.4s
+	fmul	v0.4s, v0.4s, v31.4s
+	fmul	v0.4s, v0.4s, v30.4s
+	ins	v0.s[3], v30.s[3]
+	ret
+	.cfi_endproc
+.LFE5352:
+	.size	cg_normalize3_fast_value, .-cg_normalize3_fast_value
 	.ident	"GCC: (Debian 14.2.0-19) 14.2.0"
 	.section	.note.GNU-stack,"",@progbits
