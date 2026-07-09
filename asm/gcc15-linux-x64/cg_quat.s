@@ -161,6 +161,129 @@ cg_quat_inverse:
 	.cfi_endproc
 .LFE2083:
 	.size	cg_quat_inverse, .-cg_quat_inverse
+	.p2align 4
+	.globl	cg_rotate_fused
+	.type	cg_rotate_fused, @function
+cg_rotate_fused:
+.LFB2084:
+	.cfi_startproc
+	endbr64
+	test	r8, r8
+	je	.L30
+	sal	r8, 4
+	xor	eax, eax
+	.p2align 4
+	.p2align 3
+.L32:
+	movaps	xmm0, XMMWORD PTR [rdx+rax]
+	movaps	xmm3, XMMWORD PTR [rdi+rax]
+	movaps	xmm1, xmm0
+	movaps	xmm2, xmm3
+	shufps	xmm1, xmm0, 201
+	shufps	xmm2, xmm3, 201
+	mulps	xmm1, xmm3
+	mulps	xmm2, xmm0
+	subps	xmm2, xmm1
+	movaps	xmm4, xmm2
+	movaps	xmm1, xmm2
+	mulps	xmm4, xmm0
+	shufps	xmm1, xmm2, 210
+	shufps	xmm2, xmm2, 201
+	mulps	xmm1, xmm0
+	shufps	xmm0, xmm0, 255
+	addps	xmm0, xmm0
+	mulps	xmm0, xmm2
+	shufps	xmm4, xmm4, 201
+	subps	xmm1, xmm4
+	shufps	xmm1, xmm1, 201
+	addps	xmm1, xmm1
+	addps	xmm0, xmm1
+	movaps	xmm1, XMMWORD PTR [rsi+rax]
+	addps	xmm1, xmm1
+	addps	xmm0, xmm3
+	addps	xmm0, xmm1
+	movaps	XMMWORD PTR [rcx+rax], xmm0
+	add	rax, 16
+	cmp	r8, rax
+	jne	.L32
+.L30:
+	ret
+	.cfi_endproc
+.LFE2084:
+	.size	cg_rotate_fused, .-cg_rotate_fused
+	.p2align 4
+	.globl	cg_hamilton_value
+	.type	cg_hamilton_value, @function
+cg_hamilton_value:
+.LFB2085:
+	.cfi_startproc
+	endbr64
+	movaps	xmm1, XMMWORD PTR [rdi]
+	movaps	xmm3, XMMWORD PTR [rsi]
+	movaps	xmm5, xmm1
+	movaps	xmm0, xmm3
+	movaps	xmm2, xmm1
+	shufps	xmm0, xmm3, 27
+	shufps	xmm5, xmm1, 0
+	mulps	xmm5, xmm0
+	movaps	xmm0, xmm3
+	palignr	xmm0, xmm0, 8
+	movaps	xmm4, xmm1
+	shufps	xmm2, xmm1, 85
+	xorps	xmm5, XMMWORD PTR .LC0[rip]
+	mulps	xmm2, xmm0
+	movaps	xmm0, xmm3
+	shufps	xmm4, xmm1, 170
+	shufps	xmm1, xmm1, 255
+	shufps	xmm0, xmm3, 177
+	mulps	xmm4, xmm0
+	movaps	xmm0, xmm1
+	xorps	xmm2, XMMWORD PTR .LC1[rip]
+	mulps	xmm0, xmm3
+	xorps	xmm4, XMMWORD PTR .LC2[rip]
+	addps	xmm2, xmm4
+	addps	xmm0, xmm5
+	addps	xmm0, xmm2
+	ret
+	.cfi_endproc
+.LFE2085:
+	.size	cg_hamilton_value, .-cg_hamilton_value
+	.p2align 4
+	.globl	cg_rotate_value
+	.type	cg_rotate_value, @function
+cg_rotate_value:
+.LFB2086:
+	.cfi_startproc
+	endbr64
+	movaps	xmm1, XMMWORD PTR [rsi]
+	movaps	xmm3, XMMWORD PTR [rdi]
+	movaps	xmm2, xmm1
+	movaps	xmm0, xmm3
+	movaps	xmm4, xmm1
+	shufps	xmm0, xmm3, 201
+	shufps	xmm2, xmm1, 201
+	mulps	xmm0, xmm1
+	mulps	xmm2, xmm3
+	subps	xmm0, xmm2
+	mulps	xmm4, xmm0
+	movaps	xmm2, xmm0
+	shufps	xmm2, xmm0, 210
+	mulps	xmm2, xmm1
+	shufps	xmm1, xmm1, 255
+	addps	xmm1, xmm1
+	shufps	xmm0, xmm0, 201
+	mulps	xmm0, xmm1
+	shufps	xmm4, xmm4, 201
+	subps	xmm2, xmm4
+	movaps	xmm1, xmm2
+	shufps	xmm1, xmm2, 201
+	addps	xmm1, xmm1
+	addps	xmm0, xmm1
+	addps	xmm0, xmm3
+	ret
+	.cfi_endproc
+.LFE2086:
+	.size	cg_rotate_value, .-cg_rotate_value
 	.section	.rodata.cst16,"aM",@progbits,16
 	.align 16
 .LC0:

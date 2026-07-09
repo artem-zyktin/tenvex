@@ -99,6 +99,59 @@ cg_with_w_expr:
 	.cfi_endproc
 .LFE2082:
 	.size	cg_with_w_expr, .-cg_with_w_expr
+	.p2align 4
+	.globl	cg_cross3
+	.type	cg_cross3, @function
+cg_cross3:
+.LFB2083:
+	.cfi_startproc
+	endbr64
+	test	rcx, rcx
+	je	.L21
+	sal	rcx, 4
+	xor	eax, eax
+	.p2align 6
+	.p2align 4
+	.p2align 3
+.L23:
+	movaps	xmm2, XMMWORD PTR [rsi+rax]
+	movaps	xmm1, XMMWORD PTR [rdi+rax]
+	movaps	xmm0, xmm2
+	shufps	xmm0, xmm2, 201
+	mulps	xmm0, xmm1
+	shufps	xmm1, xmm1, 201
+	mulps	xmm1, xmm2
+	subps	xmm0, xmm1
+	shufps	xmm0, xmm0, 201
+	movaps	XMMWORD PTR [rdx+rax], xmm0
+	add	rax, 16
+	cmp	rcx, rax
+	jne	.L23
+.L21:
+	ret
+	.cfi_endproc
+.LFE2083:
+	.size	cg_cross3, .-cg_cross3
+	.p2align 4
+	.globl	cg_cross3_value
+	.type	cg_cross3_value, @function
+cg_cross3_value:
+.LFB2084:
+	.cfi_startproc
+	endbr64
+	movaps	xmm2, XMMWORD PTR [rsi]
+	movaps	xmm1, XMMWORD PTR [rdi]
+	movaps	xmm0, xmm2
+	shufps	xmm0, xmm2, 201
+	mulps	xmm0, xmm1
+	shufps	xmm1, xmm1, 201
+	mulps	xmm1, xmm2
+	subps	xmm0, xmm1
+	shufps	xmm0, xmm0, 201
+	ret
+	.cfi_endproc
+.LFE2084:
+	.size	cg_cross3_value, .-cg_cross3_value
 	.section	.rodata.cst4,"aM",@progbits,4
 	.align 4
 .LC1:

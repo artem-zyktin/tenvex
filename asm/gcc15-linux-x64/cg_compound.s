@@ -58,21 +58,64 @@ cg_compound_et:
 .LFE2080:
 	.size	cg_compound_et, .-cg_compound_et
 	.p2align 4
-	.globl	cg_compound_manual
-	.type	cg_compound_manual, @function
-cg_compound_manual:
+	.globl	cg_compound_value
+	.type	cg_compound_value, @function
+cg_compound_value:
 .LFB2081:
 	.cfi_startproc
 	endbr64
+	movaps	xmm4, XMMWORD PTR [rdx]
+	movaps	xmm0, XMMWORD PTR [rsi]
+	movaps	xmm2, xmm4
+	mulps	xmm2, xmm0
+	addps	xmm0, xmm0
+	addps	xmm0, XMMWORD PTR [rdi]
+	movaps	xmm3, xmm2
+	movaps	xmm1, xmm2
+	shufps	xmm3, xmm2, 85
+	addss	xmm1, xmm3
+	movaps	xmm3, xmm0
+	movhlps	xmm2, xmm2
+	mulps	xmm3, xmm0
+	addss	xmm1, xmm2
+	movaps	xmm5, xmm3
+	movaps	xmm2, xmm3
+	shufps	xmm1, xmm1, 0
+	shufps	xmm5, xmm3, 85
+	addss	xmm2, xmm5
+	movhlps	xmm3, xmm3
+	addss	xmm2, xmm3
+	movaps	xmm3, xmm0
+	shufps	xmm2, xmm2, 0
+	sqrtps	xmm2, xmm2
+	divps	xmm3, xmm2
+	blendps	xmm3, xmm0, 8
+	movaps	xmm0, xmm1
+	movss	xmm1, DWORD PTR .LC1[rip]
+	mulps	xmm0, xmm3
+	shufps	xmm1, xmm1, 0
+	mulps	xmm4, xmm1
+	addps	xmm0, xmm4
+	ret
+	.cfi_endproc
+.LFE2081:
+	.size	cg_compound_value, .-cg_compound_value
+	.p2align 4
+	.globl	cg_compound_manual
+	.type	cg_compound_manual, @function
+cg_compound_manual:
+.LFB2082:
+	.cfi_startproc
+	endbr64
 	test	r8, r8
-	je	.L9
+	je	.L10
 	movss	xmm4, DWORD PTR .LC1[rip]
 	sal	r8, 4
 	xor	eax, eax
 	shufps	xmm4, xmm4, 0
 	.p2align 4
 	.p2align 3
-.L11:
+.L12:
 	movaps	xmm0, XMMWORD PTR [rsi+rax]
 	movaps	xmm5, XMMWORD PTR [rdx+rax]
 	movaps	xmm3, xmm0
@@ -105,28 +148,28 @@ cg_compound_manual:
 	movaps	XMMWORD PTR [rcx+rax], xmm1
 	add	rax, 16
 	cmp	r8, rax
-	jne	.L11
-.L9:
+	jne	.L12
+.L10:
 	ret
 	.cfi_endproc
-.LFE2081:
+.LFE2082:
 	.size	cg_compound_manual, .-cg_compound_manual
 	.p2align 4
 	.globl	cg_compound_intrin
 	.type	cg_compound_intrin, @function
 cg_compound_intrin:
-.LFB2084:
+.LFB2085:
 	.cfi_startproc
 	endbr64
 	test	r8, r8
-	je	.L16
+	je	.L17
 	movss	xmm5, DWORD PTR .LC1[rip]
 	sal	r8, 4
 	xor	eax, eax
 	shufps	xmm5, xmm5, 0
 	.p2align 4
 	.p2align 3
-.L18:
+.L19:
 	movaps	xmm3, XMMWORD PTR [rsi+rax]
 	movaps	xmm0, XMMWORD PTR [rdx+rax]
 	movaps	xmm1, xmm3
@@ -145,11 +188,11 @@ cg_compound_intrin:
 	movaps	XMMWORD PTR [rcx+rax], xmm0
 	add	rax, 16
 	cmp	r8, rax
-	jne	.L18
-.L16:
+	jne	.L19
+.L17:
 	ret
 	.cfi_endproc
-.LFE2084:
+.LFE2085:
 	.size	cg_compound_intrin, .-cg_compound_intrin
 	.section	.rodata.cst4,"aM",@progbits,4
 	.align 4

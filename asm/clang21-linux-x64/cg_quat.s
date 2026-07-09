@@ -240,6 +240,141 @@ cg_quat_inverse:                        # @cg_quat_inverse
 	.size	cg_quat_inverse, .Lfunc_end3-cg_quat_inverse
 	.cfi_endproc
                                         # -- End function
+	.globl	cg_rotate_fused                 # -- Begin function cg_rotate_fused
+	.p2align	4
+	.type	cg_rotate_fused,@function
+cg_rotate_fused:                        # @cg_rotate_fused
+	.cfi_startproc
+# %bb.0:
+	test	r8, r8
+	je	.LBB4_3
+# %bb.1:
+	xor	eax, eax
+	.p2align	4
+.LBB4_2:                                # =>This Inner Loop Header: Depth=1
+	movaps	xmm1, xmmword ptr [rdi + rax]
+	movaps	xmm3, xmmword ptr [rdx + rax]
+	movaps	xmm0, xmmword ptr [rsi + rax]
+	movaps	xmm4, xmm3
+	shufps	xmm4, xmm3, 201                 # xmm4 = xmm4[1,2],xmm3[0,3]
+	movaps	xmm2, xmm1
+	shufps	xmm2, xmm1, 201                 # xmm2 = xmm2[1,2],xmm1[0,3]
+	mulps	xmm2, xmm3
+	movaps	xmm5, xmm1
+	mulps	xmm5, xmm4
+	subps	xmm2, xmm5
+	movaps	xmm5, xmm2
+	shufps	xmm5, xmm2, 201                 # xmm5 = xmm5[1,2],xmm2[0,3]
+	shufps	xmm2, xmm2, 210                 # xmm2 = xmm2[2,0,1,3]
+	mulps	xmm2, xmm3
+	mulps	xmm4, xmm5
+	subps	xmm2, xmm4
+	addps	xmm3, xmm3
+	shufps	xmm3, xmm3, 255                 # xmm3 = xmm3[3,3,3,3]
+	mulps	xmm3, xmm5
+	addps	xmm2, xmm2
+	shufps	xmm2, xmm2, 201                 # xmm2 = xmm2[1,2,0,3]
+	addps	xmm2, xmm3
+	addps	xmm2, xmm1
+	addps	xmm0, xmm0
+	addps	xmm0, xmm2
+	movaps	xmmword ptr [rcx + rax], xmm0
+	add	rax, 16
+	dec	r8
+	jne	.LBB4_2
+.LBB4_3:
+	ret
+.Lfunc_end4:
+	.size	cg_rotate_fused, .Lfunc_end4-cg_rotate_fused
+	.cfi_endproc
+                                        # -- End function
+	.section	.rodata.cst16,"aM",@progbits,16
+	.p2align	4, 0x0                          # -- Begin function cg_hamilton_value
+.LCPI5_0:
+	.long	0                               # 0x0
+	.long	2147483648                      # 0x80000000
+	.long	0                               # 0x0
+	.long	2147483648                      # 0x80000000
+.LCPI5_1:
+	.long	0                               # 0x0
+	.long	0                               # 0x0
+	.long	2147483648                      # 0x80000000
+	.long	2147483648                      # 0x80000000
+.LCPI5_2:
+	.long	2147483648                      # 0x80000000
+	.long	0                               # 0x0
+	.long	0                               # 0x0
+	.long	2147483648                      # 0x80000000
+	.text
+	.globl	cg_hamilton_value
+	.p2align	4
+	.type	cg_hamilton_value,@function
+cg_hamilton_value:                      # @cg_hamilton_value
+	.cfi_startproc
+# %bb.0:
+	movaps	xmm1, xmmword ptr [rdi]
+	movaps	xmm0, xmmword ptr [rsi]
+	movaps	xmm2, xmm1
+	shufps	xmm2, xmm1, 255                 # xmm2 = xmm2[3,3],xmm1[3,3]
+	movaps	xmm3, xmm1
+	shufps	xmm3, xmm1, 0                   # xmm3 = xmm3[0,0],xmm1[0,0]
+	movaps	xmm4, xmm1
+	shufps	xmm4, xmm1, 85                  # xmm4 = xmm4[1,1],xmm1[1,1]
+	shufps	xmm1, xmm1, 170                 # xmm1 = xmm1[2,2,2,2]
+	movaps	xmm5, xmm0
+	shufps	xmm5, xmm0, 27                  # xmm5 = xmm5[3,2],xmm0[1,0]
+	mulps	xmm5, xmm3
+	movaps	xmm3, xmm0
+	shufps	xmm3, xmm0, 78                  # xmm3 = xmm3[2,3],xmm0[0,1]
+	mulps	xmm3, xmm4
+	mulps	xmm2, xmm0
+	shufps	xmm0, xmm0, 177                 # xmm0 = xmm0[1,0,3,2]
+	mulps	xmm0, xmm1
+	xorps	xmm5, xmmword ptr [rip + .LCPI5_0]
+	xorps	xmm3, xmmword ptr [rip + .LCPI5_1]
+	xorps	xmm0, xmmword ptr [rip + .LCPI5_2]
+	addps	xmm5, xmm2
+	addps	xmm0, xmm3
+	addps	xmm0, xmm5
+	ret
+.Lfunc_end5:
+	.size	cg_hamilton_value, .Lfunc_end5-cg_hamilton_value
+	.cfi_endproc
+                                        # -- End function
+	.globl	cg_rotate_value                 # -- Begin function cg_rotate_value
+	.p2align	4
+	.type	cg_rotate_value,@function
+cg_rotate_value:                        # @cg_rotate_value
+	.cfi_startproc
+# %bb.0:
+	movaps	xmm1, xmmword ptr [rdi]
+	movaps	xmm2, xmmword ptr [rsi]
+	movaps	xmm3, xmm2
+	shufps	xmm3, xmm2, 201                 # xmm3 = xmm3[1,2],xmm2[0,3]
+	movaps	xmm0, xmm1
+	shufps	xmm0, xmm1, 201                 # xmm0 = xmm0[1,2],xmm1[0,3]
+	mulps	xmm0, xmm2
+	movaps	xmm4, xmm1
+	mulps	xmm4, xmm3
+	subps	xmm0, xmm4
+	movaps	xmm4, xmm0
+	shufps	xmm4, xmm0, 201                 # xmm4 = xmm4[1,2],xmm0[0,3]
+	shufps	xmm0, xmm0, 210                 # xmm0 = xmm0[2,0,1,3]
+	mulps	xmm0, xmm2
+	mulps	xmm3, xmm4
+	subps	xmm0, xmm3
+	addps	xmm2, xmm2
+	shufps	xmm2, xmm2, 255                 # xmm2 = xmm2[3,3,3,3]
+	mulps	xmm2, xmm4
+	addps	xmm0, xmm0
+	shufps	xmm0, xmm0, 201                 # xmm0 = xmm0[1,2,0,3]
+	addps	xmm0, xmm2
+	addps	xmm0, xmm1
+	ret
+.Lfunc_end6:
+	.size	cg_rotate_value, .Lfunc_end6-cg_rotate_value
+	.cfi_endproc
+                                        # -- End function
 	.ident	"Ubuntu clang version 21.1.8 (6ubuntu1)"
 	.section	".note.GNU-stack","",@progbits
 	.addrsig
@@ -247,4 +382,7 @@ cg_quat_inverse:                        # @cg_quat_inverse
 	.addrsig_sym cg_rotate
 	.addrsig_sym cg_conj_scale
 	.addrsig_sym cg_quat_inverse
+	.addrsig_sym cg_rotate_fused
+	.addrsig_sym cg_hamilton_value
+	.addrsig_sym cg_rotate_value
 	.addrsig_sym __gxx_personality_v0
