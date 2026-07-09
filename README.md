@@ -467,6 +467,21 @@ The test suite uses Google Test (vendored in `thirdparty/gtest/`) and covers 361
 
 Build and run `tenvex_tests` from the generated project or makefile.
 
+### Protocol boundary tests
+
+Alongside the runtime suite, `src/tests/protocol_tests.cpp` pins the type
+system at compile time: the full operand matrix of every public operation
+over `vec4` / `quat` / `Scalar` (and `float` for the operators), one
+`static_assert` per combination - both what must compile and what must not.
+Runtime tests cannot catch an overload set that silently widens (invalid
+code simply isn't in them), so the negative space is only testable here: if
+a constraint moves, the exact combination fails by name. Negative checks go
+through one-line `can_*` concepts because GCC treats an invalid
+non-dependent expression outside a template as a hard error rather than a
+`false` requires-clause. The file compiles as part of `tenvex_tests`; a new
+operation adds its `can_*` concept and its block, a new type adds its
+row/column to the existing blocks.
+
 ## Benchmarks
 
 A [Google Benchmark](https://github.com/google/benchmark) suite (vendored in `thirdparty/benchmark/`) lives in `src/benchmarks/` and is built as the `tenvex_bench` project. Build in **release** and run the resulting executable (on GCC/Clang, `-msse4.1` is applied on the x64 platform; NEON needs no flag on AArch64). A subset can be selected at runtime, e.g. `tenvex_bench --benchmark_filter=Compound`.
