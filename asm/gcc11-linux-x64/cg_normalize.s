@@ -119,6 +119,64 @@ cg_normalize4:
 	.cfi_endproc
 .LFE2013:
 	.size	cg_normalize4, .-cg_normalize4
+	.p2align 4
+	.globl	cg_normalize3_value
+	.type	cg_normalize3_value, @function
+cg_normalize3_value:
+.LFB2014:
+	.cfi_startproc
+	.cfi_personality 0x9b,DW.ref.__gxx_personality_v0
+	endbr64
+	movaps	xmm2, XMMWORD PTR [rdi]
+	movaps	xmm1, xmm2
+	mulps	xmm1, xmm2
+	movaps	xmm3, xmm1
+	movaps	xmm0, xmm1
+	shufps	xmm3, xmm1, 85
+	addss	xmm0, xmm3
+	movhlps	xmm1, xmm1
+	addss	xmm0, xmm1
+	shufps	xmm0, xmm0, 0
+	sqrtps	xmm1, xmm0
+	movaps	xmm0, xmm2
+	divps	xmm0, xmm1
+	blendps	xmm0, xmm2, 8
+	ret
+	.cfi_endproc
+.LFE2014:
+	.size	cg_normalize3_value, .-cg_normalize3_value
+	.p2align 4
+	.globl	cg_normalize3_fast_value
+	.type	cg_normalize3_fast_value, @function
+cg_normalize3_fast_value:
+.LFB2015:
+	.cfi_startproc
+	.cfi_personality 0x9b,DW.ref.__gxx_personality_v0
+	endbr64
+	movaps	xmm2, XMMWORD PTR [rdi]
+	movaps	xmm0, xmm2
+	mulps	xmm0, xmm2
+	movaps	xmm3, xmm0
+	movaps	xmm1, xmm0
+	shufps	xmm3, xmm0, 85
+	addss	xmm1, xmm3
+	movhlps	xmm0, xmm0
+	addss	xmm1, xmm0
+	shufps	xmm1, xmm1, 0
+	rsqrtps	xmm3, xmm1
+	mulps	xmm1, XMMWORD PTR .LC0[rip]
+	movaps	xmm0, xmm3
+	mulps	xmm0, xmm3
+	mulps	xmm1, xmm0
+	movaps	xmm0, XMMWORD PTR .LC1[rip]
+	subps	xmm0, xmm1
+	mulps	xmm0, xmm3
+	mulps	xmm0, xmm2
+	blendps	xmm0, xmm2, 8
+	ret
+	.cfi_endproc
+.LFE2015:
+	.size	cg_normalize3_fast_value, .-cg_normalize3_fast_value
 	.section	.rodata.cst16,"aM",@progbits,16
 	.align 16
 .LC0:

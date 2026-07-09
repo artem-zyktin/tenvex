@@ -162,6 +162,128 @@ cg_quat_inverse:
 	.cfi_endproc
 .LFE2015:
 	.size	cg_quat_inverse, .-cg_quat_inverse
+	.p2align 4
+	.globl	cg_rotate_fused
+	.type	cg_rotate_fused, @function
+cg_rotate_fused:
+.LFB2016:
+	.cfi_startproc
+	.cfi_personality 0x9b,DW.ref.__gxx_personality_v0
+	endbr64
+	test	r8, r8
+	je	.L30
+	sal	r8, 4
+	xor	eax, eax
+	.p2align 4,,10
+	.p2align 3
+.L32:
+	movaps	xmm0, XMMWORD PTR [rdx+rax]
+	movaps	xmm3, XMMWORD PTR [rdi+rax]
+	movaps	xmm4, xmm0
+	movaps	xmm2, xmm3
+	movaps	xmm1, xmm3
+	shufps	xmm4, xmm0, 201
+	shufps	xmm2, xmm3, 201
+	mulps	xmm1, xmm4
+	mulps	xmm2, xmm0
+	subps	xmm2, xmm1
+	shufps	xmm2, xmm2, 201
+	mulps	xmm4, xmm2
+	movaps	xmm1, xmm2
+	shufps	xmm1, xmm2, 201
+	mulps	xmm1, xmm0
+	shufps	xmm0, xmm0, 255
+	addps	xmm0, xmm0
+	mulps	xmm0, xmm2
+	subps	xmm1, xmm4
+	shufps	xmm1, xmm1, 201
+	addps	xmm1, xmm1
+	addps	xmm0, xmm1
+	movaps	xmm1, XMMWORD PTR [rsi+rax]
+	addps	xmm1, xmm1
+	addps	xmm0, xmm3
+	addps	xmm0, xmm1
+	movaps	XMMWORD PTR [rcx+rax], xmm0
+	add	rax, 16
+	cmp	r8, rax
+	jne	.L32
+.L30:
+	ret
+	.cfi_endproc
+.LFE2016:
+	.size	cg_rotate_fused, .-cg_rotate_fused
+	.p2align 4
+	.globl	cg_hamilton_value
+	.type	cg_hamilton_value, @function
+cg_hamilton_value:
+.LFB2019:
+	.cfi_startproc
+	.cfi_personality 0x9b,DW.ref.__gxx_personality_v0
+	endbr64
+	movaps	xmm1, XMMWORD PTR [rdi]
+	movaps	xmm2, XMMWORD PTR [rsi]
+	movaps	xmm0, xmm1
+	movaps	xmm4, xmm1
+	movaps	xmm3, xmm1
+	shufps	xmm0, xmm1, 255
+	mulps	xmm0, xmm2
+	movaps	xmm7, xmm2
+	movaps	xmm6, xmm2
+	movaps	xmm5, xmm2
+	shufps	xmm4, xmm1, 0
+	shufps	xmm3, xmm1, 85
+	shufps	xmm7, xmm2, 27
+	shufps	xmm6, xmm2, 78
+	mulps	xmm4, xmm7
+	shufps	xmm5, xmm2, 177
+	shufps	xmm1, xmm1, 170
+	mulps	xmm3, xmm6
+	xorps	xmm4, XMMWORD PTR .LC0[rip]
+	mulps	xmm1, xmm5
+	xorps	xmm3, XMMWORD PTR .LC1[rip]
+	xorps	xmm1, XMMWORD PTR .LC2[rip]
+	addps	xmm0, xmm4
+	addps	xmm1, xmm3
+	addps	xmm0, xmm1
+	ret
+	.cfi_endproc
+.LFE2019:
+	.size	cg_hamilton_value, .-cg_hamilton_value
+	.p2align 4
+	.globl	cg_rotate_value
+	.type	cg_rotate_value, @function
+cg_rotate_value:
+.LFB2020:
+	.cfi_startproc
+	.cfi_personality 0x9b,DW.ref.__gxx_personality_v0
+	endbr64
+	movaps	xmm1, XMMWORD PTR [rsi]
+	movaps	xmm3, XMMWORD PTR [rdi]
+	movaps	xmm4, xmm1
+	movaps	xmm0, xmm3
+	shufps	xmm4, xmm1, 201
+	movaps	xmm2, xmm4
+	shufps	xmm0, xmm3, 201
+	mulps	xmm2, xmm3
+	mulps	xmm0, xmm1
+	subps	xmm0, xmm2
+	shufps	xmm0, xmm0, 201
+	mulps	xmm4, xmm0
+	movaps	xmm2, xmm0
+	shufps	xmm2, xmm0, 201
+	mulps	xmm2, xmm1
+	shufps	xmm1, xmm1, 255
+	addps	xmm1, xmm1
+	mulps	xmm0, xmm1
+	subps	xmm2, xmm4
+	shufps	xmm2, xmm2, 201
+	addps	xmm2, xmm2
+	addps	xmm0, xmm2
+	addps	xmm0, xmm3
+	ret
+	.cfi_endproc
+.LFE2020:
+	.size	cg_rotate_value, .-cg_rotate_value
 	.section	.rodata.cst16,"aM",@progbits,16
 	.align 16
 .LC0:

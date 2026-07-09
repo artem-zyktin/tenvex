@@ -9,6 +9,9 @@
 // - cg_saturate: representative single-op pass (min+max against constants
 //   hoisted out of the loop) - the shape README calls memory-bandwidth
 //   bound.
+// - cg_cross3: 3 shuffles + mul + sub (the shuffle-optimized form; a naive
+//   translation costs 4 shuffles), result w = 0. _value = the bare kernel
+//   without loop scaffolding.
 // - cg_with_w_expr: the blend fuses into the expression - no extra moves
 //   for the w lane.
 
@@ -36,4 +39,16 @@ TNVX_CODEGEN void cg_with_w_expr(const vec4* va, const vec4* vb,
 {
 	for (std::size_t i = 0; i < n; ++i)
 		out[i] = with_w(va[i] + vb[i], va[i]).eval();
+}
+
+TNVX_CODEGEN void cg_cross3(const vec4* va, const vec4* vb,
+                            vf4* out, std::size_t n)
+{
+	for (std::size_t i = 0; i < n; ++i)
+		out[i] = cross3(va[i], vb[i]).eval();
+}
+
+TNVX_CODEGEN vf4 cg_cross3_value(const vec4& a, const vec4& b)
+{
+	return cross3(a, b).eval();
 }

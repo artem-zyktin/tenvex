@@ -20,6 +20,13 @@ TNVX_CODEGEN void cg_compound_et(const vec4* va, const vec4* vb, const vec4* vc,
 		          + vc[i] * 3.0f).eval();
 }
 
+// value shape: everything arrives in registers - the cleanest view of the
+// fused expression (loads/stores belong to the loop shapes, not here)
+TNVX_CODEGEN vf4 cg_compound_value(const vec4& a, const vec4& b, const vec4& c)
+{
+	return (normalize3(a + b * 2.0f) * dot3(b, c) + c * 3.0f).eval();
+}
+
 TNVX_CODEGEN void cg_compound_manual(const vec4* va, const vec4* vb, const vec4* vc,
                                      vf4* out, std::size_t n)
 {

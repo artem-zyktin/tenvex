@@ -95,6 +95,62 @@ cg_with_w_expr:
 	.cfi_endproc
 .LFE2013:
 	.size	cg_with_w_expr, .-cg_with_w_expr
+	.p2align 4
+	.globl	cg_cross3
+	.type	cg_cross3, @function
+cg_cross3:
+.LFB2015:
+	.cfi_startproc
+	.cfi_personality 0x9b,DW.ref.__gxx_personality_v0
+	endbr64
+	test	rcx, rcx
+	je	.L21
+	sal	rcx, 4
+	xor	eax, eax
+	.p2align 4,,10
+	.p2align 3
+.L23:
+	movaps	xmm0, XMMWORD PTR [rdi+rax]
+	movaps	xmm2, XMMWORD PTR [rsi+rax]
+	movaps	xmm1, xmm0
+	movaps	xmm3, xmm2
+	shufps	xmm1, xmm0, 201
+	shufps	xmm3, xmm2, 201
+	mulps	xmm1, xmm2
+	mulps	xmm0, xmm3
+	subps	xmm0, xmm1
+	shufps	xmm0, xmm0, 201
+	movaps	XMMWORD PTR [rdx+rax], xmm0
+	add	rax, 16
+	cmp	rcx, rax
+	jne	.L23
+.L21:
+	ret
+	.cfi_endproc
+.LFE2015:
+	.size	cg_cross3, .-cg_cross3
+	.p2align 4
+	.globl	cg_cross3_value
+	.type	cg_cross3_value, @function
+cg_cross3_value:
+.LFB2016:
+	.cfi_startproc
+	.cfi_personality 0x9b,DW.ref.__gxx_personality_v0
+	endbr64
+	movaps	xmm2, XMMWORD PTR [rdi]
+	movaps	xmm1, XMMWORD PTR [rsi]
+	movaps	xmm3, xmm2
+	movaps	xmm0, xmm1
+	shufps	xmm3, xmm2, 201
+	shufps	xmm0, xmm1, 201
+	mulps	xmm1, xmm3
+	mulps	xmm0, xmm2
+	subps	xmm0, xmm1
+	shufps	xmm0, xmm0, 201
+	ret
+	.cfi_endproc
+.LFE2016:
+	.size	cg_cross3_value, .-cg_cross3_value
 	.section	.rodata.cst16,"aM",@progbits,16
 	.align 16
 .LC0:
