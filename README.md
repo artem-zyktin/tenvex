@@ -27,8 +27,8 @@ Both backends cover the full API.
 - Expression-template engine: nodes are lazy and evaluated on assignment.
 - C++20 concepts (`expression`, `vec_expr`, `scalar_expr`, `quat_expr`, `packed_expr`) enforce type safety at compile time.
 - Storage policy: leaves (trivially-copyable, 16 bytes or less) are stored by value; larger composite nodes by `const&`. Because that reference can outlive a temporary sub-expression, assign compound expressions to a `vec4` / `float` rather than `auto` (see [Performance and best practices](#performance-and-best-practices)).
-- Operations: `+`, `-` (binary), `-` (unary negation), `*` (scalar), `/` (by scalar), `dot3`, `dot4`, `cross3`, `normalize3`, `normalize3_fast` (approximate, see below), `magnitude3`, `magnitude3_sq`, `magnitude4`, `magnitude4_sq`, `min`, `max`, `abs`, `hadamard` (component-wise), `floor`, `ceil`, `round`, `frac` (rounding), `clamp`, `saturate`, `lerp`, `dist3`, `dist3_sq`, `reflect` (composed), `==`, `approx_eq`, ordered magnitude comparisons (`<`, `<=`, `>`, `>=` on `magnitude3`, see [Comparison](#comparison)), and component accessors `x()`, `y()`, `z()`, `w()`, and named constants (`zero`, `one`, `unit_x`, `unit_y`, `unit_z`, `unit_w`, `splat`). The 4-lane reductions `dot4`, `magnitude4`, and `magnitude4_sq` accept a `quat` as well as a `vec4`.
-- A `quat` type with Hamilton product (`*`), `conj`, `normalize4`, `inverse`, `rotate`, `slerp`, `nlerp`, the constructors `identity`, `from_axis_angle`, `from_to_rotation`, and the usual `+`, `-`, scalar `*`, `==`, `approx_eq` (see [Quaternions](#quaternions)).
+- Operations: `+`, `-` (binary), `-` (unary negation), `*` (scalar), `/` (by scalar), `dot3`, `dot4`, `cross3`, `normalize3`, `normalize3_fast` (approximate, see below), `magnitude3`, `magnitude3_sq`, `magnitude4`, `magnitude4_sq`, `min`, `max`, `abs`, `hadamard` (component-wise), `floor`, `ceil`, `round`, `frac` (rounding), `clamp`, `saturate`, `lerp`, `distance3`, `distance3_sq`, `reflect`, `orthogonal` (composed), `==`, `approx_eq`, ordered magnitude comparisons (`<`, `<=`, `>`, `>=` on `magnitude3`, see [Comparison](#comparison)), and component accessors `x()`, `y()`, `z()`, `w()`, and named constants (`zero`, `one`, `unit_x`, `unit_y`, `unit_z`, `unit_w`, `splat`). The 4-lane reductions `dot4`, `magnitude4`, and `magnitude4_sq` accept a `quat` as well as a `vec4`.
+- A `quat` type with Hamilton product (`*`), `conjugate`, `normalize4`, `inverse`, `rotate`, `slerp`, `nlerp`, the constructors `identity`, `from_axis_angle`, `from_to_rotation`, and the usual `+`, `-`, scalar `*`, `==`, `approx_eq` (see [Quaternions](#quaternions)).
 
 ## Requirements
 
@@ -89,8 +89,9 @@ vec4 fr = frac(a);             // fractional part in [0,1); wraps negatives (tex
 vec4  cl = clamp(a, lo, hi);   // per-lane clamp to [lo, hi]
 vec4  sa = saturate(a);        // clamp to [0, 1]
 vec4  mi = lerp(a, b, 0.5f);   // linear interpolation; t is float or scalar_expr
-float di = dist3(a, b);        // 3D distance
-float d2 = dist3_sq(a, b);     // 3D distance squared, no sqrt
+float di = distance3(a, b);    // 3D distance
+float d2 = distance3_sq(a, b); // 3D distance squared, no sqrt
+vec4  ov = orthogonal(a);      // some vector perpendicular to a.xyz, w = 0
 vec4  rf = reflect(a, b);      // reflect a about (unit) normal b
 
 // Negation (unary minus) - works on any expression node, stays lazy
@@ -106,7 +107,7 @@ quat id = quat::identity();                         // { 0, 0, 0, 1 }
 quat q  = { 0.0f, 0.0f, 0.70710678f, 0.70710678f }; // 90 deg about +Z
 quat qa = quat::from_axis_angle(0.0f, 0.0f, 1.0f, 1.5707963f); // axis + angle (radians)
 quat qb = quat::from_to_rotation(a, b);             // shortest rotation a -> b
-quat qc = conj(q);        // conjugate: negate xyz, keep w (inverse of a unit quaternion)
+quat qc = conjugate(q);   // negate xyz, keep w (inverse of a unit quaternion)
 quat qh = q * q;          // Hamilton product - composes rotations (non-commutative)
 vec4 vr = rotate(a, q);   // rotate a vec4 by a unit quaternion
 ```
@@ -200,9 +201,9 @@ quat qc = quat::from_to_rotation(from, to);               // shortest rotation c
 Operations (all lazy nodes, evaluated on assignment, same as vectors):
 
 ```cpp
-quat c = conj(q);          // Conjugate - negate xyz, keep w; for a unit quaternion this is its inverse
+quat c = conjugate(q);     // Conjugate - negate xyz, keep w; for a unit quaternion this is its inverse
 quat n = normalize4(q);    // Normalize4 - scale to unit length (q / magnitude4(q)); stays a quat node
-quat iv = inverse(q);      // Inverse   - conj(q) / magnitude4_sq(q); equals conj for a unit quaternion
+quat iv = inverse(q);      // Inverse   - conjugate(q) / magnitude4_sq(q); equals conjugate for a unit quaternion
 quat h = q1 * q2;          // QuatMul   - Hamilton product; non-commutative; composes rotations
 quat a = q1 + q2;          // Add / Sub - component-wise, stay quaternion-typed
 quat s = q * 2.0f;         // scalar *  - scales all four lanes (float or scalar_expr)
@@ -217,7 +218,7 @@ bool same = (q1 == q2);        // exact, all-lane equality
 bool near = approx_eq(q1, q2); // default epsilon = 1e-6f
 ```
 
-`rotate(v, q)` returns the rotated **vector** (a `vec_expr`, so it stays lazy and can feed a larger expression); the `w` lane of `v` is carried through unchanged. It uses the cross-product form `v + 2w(n x v) + 2(n x (n x v))` (with `n = q.xyz`, `w = q.w`), which is the sandwich `q * v * conj(q)` for a **unit** `q` - the unit precondition is assumed, not checked. `conj`, `normalize4`, `inverse`, `*`, `+`, `-`, and `rotate` are lazy nodes: the same "assign to a concrete type, don't hold a compound expression in `auto`" rule from [Performance and best practices](#performance-and-best-practices) applies to quaternion expressions too. `slerp` and `nlerp` are composed convenience functions - like `lerp` / `reflect` on vectors they evaluate eagerly and return a concrete `quat`. Both assume unit-length inputs, take the shortest arc (via the sign of `dot4`), and fall back to a normalized lerp when the inputs are nearly parallel; `nlerp` skips the `acos` / `sin` entirely, trading constant angular velocity for speed.
+`rotate(v, q)` returns the rotated **vector** (a `vec_expr`, so it stays lazy and can feed a larger expression); the `w` lane of `v` is carried through unchanged. It uses the cross-product form `v + 2w(n x v) + 2(n x (n x v))` (with `n = q.xyz`, `w = q.w`), which is the sandwich `q * v * conjugate(q)` for a **unit** `q` - the unit precondition is assumed, not checked. `conjugate`, `normalize4`, `inverse`, `*`, `+`, `-`, and `rotate` are lazy nodes: the same "assign to a concrete type, don't hold a compound expression in `auto`" rule from [Performance and best practices](#performance-and-best-practices) applies to quaternion expressions too. `slerp` and `nlerp` are composed convenience functions - like `lerp` / `reflect` on vectors they evaluate eagerly and return a concrete `quat`. Both assume unit-length inputs, take the shortest arc (via the sign of `dot4`), and fall back to a normalized lerp when the inputs are nearly parallel; `nlerp` skips the `acos` / `sin` entirely, trading constant angular velocity for speed.
 
 ## Performance and best practices
 
@@ -246,7 +247,7 @@ vec4 r2 = normalize3(t) * dot3(t, c);
 
 This is the right "cache". A mutable caching node would defeat the compiler's common-subexpression elimination and is a pessimization for small SIMD expressions; an explicit `vec4` binding has zero overhead and lets the compiler fuse freely.
 
-**Prefer the squared forms for comparisons.** `magnitude3_sq` and `dist3_sq` skip the `sqrt`. Use them whenever you only compare or threshold a distance (`dist3_sq(a, b) < r * r`) rather than needing the metric value. The ordered `magnitude3` comparisons (`magnitude3(a) < magnitude3(b)`, `magnitude3(a) < r`) apply the same trick automatically — see [Comparison](#comparison).
+**Prefer the squared forms for comparisons.** `magnitude3_sq` and `distance3_sq` skip the `sqrt`. Use them whenever you only compare or threshold a distance (`distance3_sq(a, b) < r * r`) rather than needing the metric value. The ordered `magnitude3` comparisons (`magnitude3(a) < magnitude3(b)`, `magnitude3(a) < r`) apply the same trick automatically — see [Comparison](#comparison).
 
 **`normalize3_fast` is not universally faster — measure before reaching for it.** `normalize3_fast` replaces the exact `sqrt` + `div` of `normalize3` with a hardware reciprocal-sqrt estimate refined by one Newton-Raphson step. Its result is approximate (near full `float` precision after the Newton step) and its speed is *backend- and mode-dependent*:
 
@@ -357,7 +358,7 @@ The **Intrinsics** column lists the SSE4.1 (x86-64) backend; the NEON (AArch64) 
 | `Frac<E>`     | `vec_expr`    | `_mm_sub_ps(v, floor(v))`                                  | Per-lane fractional part in [0,1); floor-based, wraps negatives correctly   |
 | `Conjugate<E>` | `quat_expr`  | `_mm_xor_ps` (sign mask on xyz)                            | Quaternion conjugate: negates xyz, keeps w; involutive; inverse of a unit quaternion |
 | `Normalize4<E>` | `quat_expr`  | `dot4(q,q)` + `_mm_sqrt_ps` + `_mm_div_ps`                | Scales to unit 4D length (`q / magnitude4(q)`); accepts any `packed_expr` operand, node is quaternion-typed (3-lane vector normalization is `normalize3`) |
-| `Inverse<E>`  | `quat_expr`   | `conjugate` + `dot4(q,q)` + `_mm_div_ps`                   | Quaternion inverse `conj(q) / magnitude4_sq(q)`; equals `conj` for a unit quaternion |
+| `Inverse<E>`  | `quat_expr`   | `conjugate` + `dot4(q,q)` + `_mm_div_ps`                   | Quaternion inverse `conjugate(q) / magnitude4_sq(q)`; equals `conjugate` for a unit quaternion |
 | `QuatMul<L,R>` | `quat_expr`  | shuffles + `_mm_mul_ps` + `_mm_xor_ps` + `_mm_add_ps`      | Hamilton product (`operator*` on two `quat_expr`); non-commutative; composes rotations |
 | `Rotate<V,Q>` | `vec_expr`    | `cross3` x2 + `_mm_mul_ps` + `_mm_add_ps`                  | Rotates vector V by unit quaternion Q via `v + 2w(n x v) + 2(n x (n x v))`; result is a `vec_expr`, w carried from V |
 
@@ -377,8 +378,9 @@ Free functions in `tnvx` that compose the operators above. **They evaluate eager
 | `clamp(v, lo, hi)` | `vec4`  | `min(max(v, lo), hi)`      | Per-lane clamp                                                            |
 | `saturate(v)`      | `vec4`  | `clamp(v, 0, 1)`           | Clamp to [0, 1]                                                          |
 | `lerp(a, b, t)`    | `vec4`  | `a + (b - a) * t`          | Two overloads: `float t` (by value) and `scalar_expr t` (folds in lazily) |
-| `dist3(l, r)`      | `float` | `magnitude3(l - r)`        | 3D distance                                                               |
-| `dist3_sq(l, r)`   | `float` | `magnitude3_sq(l - r)`     | No sqrt - use for distance compares                                       |
+| `distance3(l, r)`  | `float` | `magnitude3(l - r)`        | 3D distance                                                               |
+| `distance3_sq(l, r)` | `float` | `magnitude3_sq(l - r)`   | No sqrt - use for distance compares                                       |
+| `orthogonal(v)`    | `vec4`  | lane select on xyz         | Some vector perpendicular to `v.xyz` (not normalized); `w = 0`            |
 | `reflect(v, n)`    | `vec4`  | `v - n * (dot3(v, n) * 2)` | Reflect `v` about unit normal `n`                                         |
 | `slerp(a, b, t)`   | `quat`  | shortest-path + `acos` / `sin` arc | Spherical linear interpolation of unit quaternions; constant angular velocity; falls back to `nlerp` when near-parallel. In `quat_operations.h` |
 | `nlerp(a, b, t)`   | `quat`  | shortest-path + `normalize4(lerp)` | Normalized lerp; cheaper than `slerp` (no `acos` / `sin`), approximate for large arcs. In `quat_operations.h` |
@@ -499,4 +501,32 @@ A note on method: a standalone function taking `const vec4&` arguments does **no
 - Arithmetic-heavy compound expressions beat the scalar baseline; isolated `dot3` / `normalize3` do not - a 3-component horizontal reduction gains little from SIMD. This holds on both SSE and NEON; NEON's native `vaddvq` reduction does not rescue it.
 - Single-input element-wise ops (`abs`, `floor`, `saturate`, ...) collapse to the same time for tenvex and the scalar baseline - they are memory-bandwidth bound, so SIMD width is irrelevant.
 - Compare ratios **within one compiler**: the scalar baseline itself shifts between compilers (e.g. the naive compound differs by roughly 20% between GCC and Clang on the same CPU), so "Nx vs naive" is only meaningful when both sides use the same toolchain.
-- These are per-vec4 figures. Bulk / SoA throughput is a separate track.
+- These are per-vec4 figures. Bulk / SoA throughput is a separate track.
+
+## Codegen listings
+
+The zero-cost claim is ultimately verified by reading assembly, so the
+repository carries the apparatus for that. `src/codegen/` holds compile-only
+probe TUs (never linked): every probe is `extern "C"` + `noinline` with a
+`cg_` prefix, so symbol names are stable across toolchains. Probes are
+loop-shaped over arrays - the access pattern that actually exposes the
+GCC/AArch64 dead stores - with `_value` shapes alongside where a bare kernel
+listing is easier to read, and the `_et` / `_manual` / `_intrin` triple for
+the compound expression where the zero-cost invariant is stated explicitly.
+A `cg_clean` / `cg_spilled` reference pair against an opaque kernel shows
+what a spill looks like in a listing.
+
+`scripts/disasm.sh` (Linux/macOS; cross-compiles the aarch64 cells when a
+cross toolchain is installed) and `scripts/disasm.bat` (run from a VS x64
+Native Tools prompt) write raw `-S` / `/FA` output into
+`asm/<compiler><version>-<os>-<arch>/`, one listing per probe TU, with the
+exact compiler version and command recorded in the first lines.
+
+`asm/` is committed. The listings are the last *reviewed* snapshot per
+toolchain cell (`asm/TOOLCHAINS.md`), not ideal code: the known GCC/AArch64
+expression-object materialization is captured as-is - under GCC 14
+`cg_compound_et` carries a 128-byte frame and dead stores while `_manual` /
+`_intrin` are frameless and equal, and under Clang 19 all three bodies are
+identical. Workflow rule: regenerate on any change that can affect codegen;
+the diff must be empty or explained in the commit message (rationale in
+docs/decisions.md).

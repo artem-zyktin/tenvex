@@ -14,8 +14,9 @@ and may be updated independently.
 
 | Cell | Compiler | Generated on | How |
 | ---- | -------- | ------------ | --- |
-| `gcc11-linux-x64` | g++ 11.4.0 (Ubuntu) | x86-64 Linux | `scripts/disasm.sh` |
-| `clang<N>-linux-x64` | TBD | x86-64 Linux | `scripts/disasm.sh` |
-| `gcc<N>-linux-aarch64` | TBD | x86-64 Linux (cross) or Raspberry Pi 5 | `scripts/disasm.sh` |
-| `clang<N>-linux-aarch64` | TBD | x86-64 Linux (cross) or Raspberry Pi 5 | `scripts/disasm.sh` |
-| `msvc<_MSC_VER>-windows-x64` | TBD | Windows, VS x64 Native Tools prompt | `scripts/disasm.bat` |
+| `gcc11-linux-x64`       | g++ 11.4.0 (Ubuntu)  | x86-64 Linux | `scripts/disasm.sh` |
+| `gcc15-linux-x64`       | g++ 15.2.0 (Ubuntu)  | x86-64 Linux | `scripts/disasm.sh` |
+| `clang21-linux-x64`     | clang 21.1.8 (Ubuntu) | x86-64 Linux | `scripts/disasm.sh` |
+| `gcc14-linux-aarch64`   | g++ 14.2.0 (Debian)  | Raspberry Pi 5 | `scripts/disasm.sh` |
+| `clang19-linux-aarch64` | clang 19.1.7 (Debian) | Raspberry Pi 5 | `scripts/disasm.sh` |
+| `msvc1951-windows-x64`  | cl 19.51.36248       | Windows, VS x64 Native Tools prompt | `scripts/disasm.bat` |
