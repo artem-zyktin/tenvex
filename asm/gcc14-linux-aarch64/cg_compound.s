@@ -65,18 +65,53 @@ cg_compound_et:
 	.size	cg_compound_et, .-cg_compound_et
 	.align	2
 	.p2align 5,,15
+	.global	cg_compound_value
+	.type	cg_compound_value, %function
+cg_compound_value:
+.LFB5349:
+	.cfi_startproc
+	ldr	q30, [x1]
+	sub	sp, sp, #128
+	.cfi_def_cfa_offset 128
+	ldr	q29, [x0]
+	fmov	v28.4s, 2.0e+0
+	ldr	q0, [x2]
+	add	sp, sp, 128
+	.cfi_def_cfa_offset 0
+	fmov	v31.4s, 3.0e+0
+	fmla	v29.4s, v30.4s, v28.4s
+	fmul	v30.4s, v30.4s, v0.4s
+	fmul	v0.4s, v0.4s, v31.4s
+	fmul	v31.4s, v29.4s, v29.4s
+	ins	v30.s[3], wzr
+	faddp	v30.4s, v30.4s, v30.4s
+	ins	v31.s[3], wzr
+	faddp	v31.4s, v31.4s, v31.4s
+	faddp	v30.4s, v30.4s, v30.4s
+	faddp	v31.4s, v31.4s, v31.4s
+	dup	v31.4s, v31.s[0]
+	fsqrt	v31.4s, v31.4s
+	fdiv	v31.4s, v29.4s, v31.4s
+	ins	v31.s[3], v29.s[3]
+	fmla	v0.4s, v31.4s, v30.s[0]
+	ret
+	.cfi_endproc
+.LFE5349:
+	.size	cg_compound_value, .-cg_compound_value
+	.align	2
+	.p2align 5,,15
 	.global	cg_compound_manual
 	.type	cg_compound_manual, %function
 cg_compound_manual:
-.LFB5349:
+.LFB5350:
 	.cfi_startproc
-	cbz	x4, .L11
+	cbz	x4, .L13
 	fmov	v31.4s, 2.0e+0
 	mov	x5, 0
 	fmov	v30.4s, 3.0e+0
 	mov	x6, 0
 	.p2align 5,,15
-.L13:
+.L15:
 	ldr	q29, [x1, x5]
 	add	x6, x6, 1
 	ldr	q27, [x0, x5]
@@ -99,26 +134,26 @@ cg_compound_manual:
 	str	q28, [x3, x5]
 	add	x5, x5, 16
 	cmp	x4, x6
-	bne	.L13
-.L11:
+	bne	.L15
+.L13:
 	ret
 	.cfi_endproc
-.LFE5349:
+.LFE5350:
 	.size	cg_compound_manual, .-cg_compound_manual
 	.align	2
 	.p2align 5,,15
 	.global	cg_compound_intrin
 	.type	cg_compound_intrin, %function
 cg_compound_intrin:
-.LFB5352:
+.LFB5353:
 	.cfi_startproc
-	cbz	x4, .L18
+	cbz	x4, .L20
 	fmov	v31.4s, 2.0e+0
 	mov	x5, 0
 	fmov	v30.4s, 3.0e+0
 	mov	x6, 0
 	.p2align 5,,15
-.L20:
+.L22:
 	ldr	q29, [x1, x5]
 	add	x6, x6, 1
 	ldr	q27, [x0, x5]
@@ -141,11 +176,11 @@ cg_compound_intrin:
 	str	q28, [x3, x5]
 	add	x5, x5, 16
 	cmp	x4, x6
-	bne	.L20
-.L18:
+	bne	.L22
+.L20:
 	ret
 	.cfi_endproc
-.LFE5352:
+.LFE5353:
 	.size	cg_compound_intrin, .-cg_compound_intrin
 	.section	.rodata.cst16,"aM",@progbits,16
 	.align	4

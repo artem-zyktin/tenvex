@@ -151,10 +151,77 @@ cg_normalize4:                          # @cg_normalize4
 	.size	cg_normalize4, .Lfunc_end2-cg_normalize4
 	.cfi_endproc
                                         # -- End function
+	.globl	cg_normalize3_value             # -- Begin function cg_normalize3_value
+	.p2align	4
+	.type	cg_normalize3_value,@function
+cg_normalize3_value:                    # @cg_normalize3_value
+	.cfi_startproc
+# %bb.0:
+	movaps	xmm1, xmmword ptr [rdi]
+	movaps	xmm0, xmm1
+	mulps	xmm0, xmm1
+	movshdup	xmm2, xmm0                      # xmm2 = xmm0[1,1,3,3]
+	addss	xmm2, xmm0
+	movhlps	xmm0, xmm0                      # xmm0 = xmm0[1,1]
+	addss	xmm0, xmm2
+	xorps	xmm2, xmm2
+	sqrtss	xmm2, xmm0
+	shufps	xmm2, xmm2, 0                   # xmm2 = xmm2[0,0,0,0]
+	movaps	xmm0, xmm1
+	divps	xmm0, xmm2
+	blendps	xmm0, xmm1, 8                   # xmm0 = xmm0[0,1,2],xmm1[3]
+	ret
+.Lfunc_end3:
+	.size	cg_normalize3_value, .Lfunc_end3-cg_normalize3_value
+	.cfi_endproc
+                                        # -- End function
+	.section	.rodata.cst16,"aM",@progbits,16
+	.p2align	4, 0x0                          # -- Begin function cg_normalize3_fast_value
+.LCPI4_0:
+	.long	0xbf000000                      # float -0.5
+	.long	0xbf000000                      # float -0.5
+	.long	0xbf000000                      # float -0.5
+	.zero	4
+.LCPI4_1:
+	.long	0x3fc00000                      # float 1.5
+	.long	0x3fc00000                      # float 1.5
+	.long	0x3fc00000                      # float 1.5
+	.zero	4
+	.text
+	.globl	cg_normalize3_fast_value
+	.p2align	4
+	.type	cg_normalize3_fast_value,@function
+cg_normalize3_fast_value:               # @cg_normalize3_fast_value
+	.cfi_startproc
+# %bb.0:
+	movaps	xmm1, xmmword ptr [rdi]
+	movaps	xmm2, xmm1
+	mulps	xmm2, xmm1
+	movshdup	xmm0, xmm2                      # xmm0 = xmm2[1,1,3,3]
+	addss	xmm0, xmm2
+	shufps	xmm2, xmm2, 170                 # xmm2 = xmm2[2,2,2,2]
+	shufps	xmm0, xmm0, 0                   # xmm0 = xmm0[0,0,0,0]
+	addps	xmm0, xmm2
+	rsqrtps	xmm2, xmm0
+	movaps	xmm3, xmm2
+	mulps	xmm0, xmmword ptr [rip + .LCPI4_0]
+	mulps	xmm3, xmm2
+	mulps	xmm0, xmm3
+	addps	xmm0, xmmword ptr [rip + .LCPI4_1]
+	mulps	xmm0, xmm2
+	mulps	xmm0, xmm1
+	blendps	xmm0, xmm1, 8                   # xmm0 = xmm0[0,1,2],xmm1[3]
+	ret
+.Lfunc_end4:
+	.size	cg_normalize3_fast_value, .Lfunc_end4-cg_normalize3_fast_value
+	.cfi_endproc
+                                        # -- End function
 	.ident	"Ubuntu clang version 21.1.8 (6ubuntu1)"
 	.section	".note.GNU-stack","",@progbits
 	.addrsig
 	.addrsig_sym cg_normalize3
 	.addrsig_sym cg_normalize3_fast
 	.addrsig_sym cg_normalize4
+	.addrsig_sym cg_normalize3_value
+	.addrsig_sym cg_normalize3_fast_value
 	.addrsig_sym __gxx_personality_v0

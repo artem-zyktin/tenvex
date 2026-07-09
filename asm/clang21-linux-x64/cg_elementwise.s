@@ -188,10 +188,63 @@ cg_with_w_expr:                         # @cg_with_w_expr
 	.size	cg_with_w_expr, .Lfunc_end2-cg_with_w_expr
 	.cfi_endproc
                                         # -- End function
+	.globl	cg_cross3                       # -- Begin function cg_cross3
+	.p2align	4
+	.type	cg_cross3,@function
+cg_cross3:                              # @cg_cross3
+	.cfi_startproc
+# %bb.0:
+	test	rcx, rcx
+	je	.LBB3_3
+# %bb.1:
+	xor	eax, eax
+	.p2align	4
+.LBB3_2:                                # =>This Inner Loop Header: Depth=1
+	movaps	xmm0, xmmword ptr [rdi + rax]
+	movaps	xmm1, xmmword ptr [rsi + rax]
+	movaps	xmm2, xmm0
+	shufps	xmm2, xmm0, 201                 # xmm2 = xmm2[1,2],xmm0[0,3]
+	mulps	xmm2, xmm1
+	shufps	xmm1, xmm1, 201                 # xmm1 = xmm1[1,2,0,3]
+	mulps	xmm1, xmm0
+	subps	xmm1, xmm2
+	shufps	xmm1, xmm1, 201                 # xmm1 = xmm1[1,2,0,3]
+	movaps	xmmword ptr [rdx + rax], xmm1
+	add	rax, 16
+	dec	rcx
+	jne	.LBB3_2
+.LBB3_3:
+	ret
+.Lfunc_end3:
+	.size	cg_cross3, .Lfunc_end3-cg_cross3
+	.cfi_endproc
+                                        # -- End function
+	.globl	cg_cross3_value                 # -- Begin function cg_cross3_value
+	.p2align	4
+	.type	cg_cross3_value,@function
+cg_cross3_value:                        # @cg_cross3_value
+	.cfi_startproc
+# %bb.0:
+	movaps	xmm1, xmmword ptr [rdi]
+	movaps	xmm0, xmmword ptr [rsi]
+	movaps	xmm2, xmm1
+	shufps	xmm2, xmm1, 201                 # xmm2 = xmm2[1,2],xmm1[0,3]
+	mulps	xmm2, xmm0
+	shufps	xmm0, xmm0, 201                 # xmm0 = xmm0[1,2,0,3]
+	mulps	xmm0, xmm1
+	subps	xmm0, xmm2
+	shufps	xmm0, xmm0, 201                 # xmm0 = xmm0[1,2,0,3]
+	ret
+.Lfunc_end4:
+	.size	cg_cross3_value, .Lfunc_end4-cg_cross3_value
+	.cfi_endproc
+                                        # -- End function
 	.ident	"Ubuntu clang version 21.1.8 (6ubuntu1)"
 	.section	".note.GNU-stack","",@progbits
 	.addrsig
 	.addrsig_sym cg_aabb
 	.addrsig_sym cg_saturate
 	.addrsig_sym cg_with_w_expr
+	.addrsig_sym cg_cross3
+	.addrsig_sym cg_cross3_value
 	.addrsig_sym __gxx_personality_v0
