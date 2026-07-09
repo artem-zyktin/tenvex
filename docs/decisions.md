@@ -4,6 +4,28 @@ Short records of decisions with non-obvious trade-offs: the problem (with
 rejected alternatives), the decision, the price. Newest first. A reversal is
 a new entry, not an edit.
 
+## 2026-07 — Storage policy and matrices: no global threshold raise; per-type override only
+
+Raising the 16-byte by-value threshold for mat4 (64 B) was considered and
+rejected: the threshold also governs composite nodes, so raising it re-runs a
+measured failure - all-by-value storage makes every node copy its subtree,
+the expression object bloats, and GCC/AArch64 overhead grew from +39% to
++147-170% in the earlier experiment. Composite nodes stay by-`const&`
+structurally; this is not a tunable.
+
+Decision: the sanctioned per-type knob is explicit specialization of
+`is_stored_by_value_v<T>` (already a variable template in
+`protocol/traits.h`) - for concrete leaf value types (vec4, quat, mat4)
+only, never for nodes. For mat4 the prior is by-`const&` (an 8-byte pointer
+in the node versus a 64-byte copy; the risk is aliasing, mitigated by
+`TNVX_RESTRICT`); the final value/ref choice is made per compiler x backend
+cell by running both variants through the codegen probes (`src/codegen/`,
+`asm/` listings) when matrices land, and recorded here.
+
+Price: the storage decision for new leaf types is manual and
+measurement-driven rather than automatic; the formula in `traits.h` is a
+default, not the whole truth.
+
 ## 2026-07 — Committed codegen listings as reviewed baseline
 
 The zero-cost claim is verified by reading disassembly; for the article this
