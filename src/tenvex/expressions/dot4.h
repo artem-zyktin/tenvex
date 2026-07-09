@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 #include "core.h"
-#include "expression.h"
 #include "traits.h"
 #include "concepts.h"
 
@@ -10,7 +9,7 @@ namespace tnvx
 
 template<packed_expr L, packed_expr R>
 requires same_packed_category<L, R>
-struct Dot4 : Expr<Dot4<L, R>>
+struct Dot4
 {
 	using result_t = vf4;
 

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "core.h"
-#include "expression.h"
 #include "traits.h"
 #include "concepts.h"
 
@@ -10,7 +9,7 @@
 namespace tnvx
 {
 
-struct alignas(16) quat : Expr<quat>
+struct alignas(16) quat
 {
 	using result_t = vf4;
 

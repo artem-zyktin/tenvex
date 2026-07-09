@@ -1,7 +1,6 @@
 #pragma once
 
 #include "core.h"
-#include "expression.h"
 #include "traits.h"
 #include "concepts.h"
 
@@ -9,7 +8,7 @@ namespace tnvx
 {
 
 template<quat_expr L, quat_expr R>
-struct QuatMul : Expr<QuatMul<L, R>>
+struct QuatMul
 {
 	using result_t = vf4;
 

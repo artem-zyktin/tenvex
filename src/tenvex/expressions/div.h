@@ -1,7 +1,6 @@
 #pragma once
 
 #include "core.h"
-#include "expression.h"
 #include "traits.h"
 #include "concepts.h"
 
@@ -11,7 +10,7 @@ namespace tnvx
 {
 
 template<vec_expr L, scalar_expr R>
-struct Div : Expr<Div<L, R>>
+struct Div
 {
 	using result_t = vf4;
 

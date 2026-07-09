@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 #include "core.h"
-#include "expression.h"
 #include "traits.h"
 #include "concepts.h"
 
@@ -12,7 +11,7 @@ namespace tnvx
 
 template<expression L, expression R>
 requires scalable<L, R>
-struct Mul : Expr<Mul<L, R>>
+struct Mul
 {
 	using result_t = vf4;
 

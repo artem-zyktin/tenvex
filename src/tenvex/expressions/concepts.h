@@ -1,6 +1,5 @@
 ﻿#pragma once
 
-#include "expression.h"
 #include "traits.h"
 
 #include <concepts>
@@ -13,9 +12,7 @@ concept expression = requires (T t)
 {
 	typename T::result_t;
 	{ t.eval() } -> std::same_as<typename T::result_t>;
-	{ t.self() } -> std::same_as<const T&>;
-}
-&& std::is_base_of_v<Expr<T>, T>;
+};
 
 template<typename T>
 concept vec_expr = expression<T>
