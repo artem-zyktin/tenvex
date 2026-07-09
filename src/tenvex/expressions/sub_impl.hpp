@@ -17,7 +17,7 @@ Sub<L, R>::Sub(const L& TNVX_RESTRICT l, const R& TNVX_RESTRICT r) noexcept
 template<expression L, expression R>
 requires same_category<L, R>
 TNVX_INLINE
-vf4 Sub<L, R>::eval() const noexcept
+Sub<L, R>::result_t Sub<L, R>::eval() const noexcept
 {
 	return detail::sub(_l.eval(), _r.eval());
 }

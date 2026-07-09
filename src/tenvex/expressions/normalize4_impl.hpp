@@ -14,7 +14,7 @@ Normalize4<E>::Normalize4(const E& TNVX_RESTRICT e) noexcept
 
 template<packed_expr E>
 TNVX_INLINE
-vf4 Normalize4<E>::eval() const noexcept
+Normalize4<E>::result_t Normalize4<E>::eval() const noexcept
 {
 	return detail::normalize4(_e.eval());
 }

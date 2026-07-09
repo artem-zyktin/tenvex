@@ -14,7 +14,7 @@ Magn4<E>::Magn4(const E& TNVX_RESTRICT e) noexcept
 
 template<packed_expr E>
 TNVX_INLINE
-vf4 Magn4<E>::eval() const noexcept
+Magn4<E>::result_t Magn4<E>::eval() const noexcept
 {
 	return detail::magnitude4(_e.eval());
 }

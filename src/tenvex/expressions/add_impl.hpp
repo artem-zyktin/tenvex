@@ -17,7 +17,7 @@ Add<L, R>::Add(const L& TNVX_RESTRICT l, const R& TNVX_RESTRICT r) noexcept
 template<expression L, expression R>
 requires same_category<L, R>
 TNVX_INLINE
-vf4 Add<L, R>::eval() const noexcept
+Add<L, R>::result_t Add<L, R>::eval() const noexcept
 {
 	return detail::add(_l.eval(), _r.eval());
 }

@@ -12,7 +12,7 @@ Scalar::Scalar(float value) noexcept
 }
 
 TNVX_INLINE
-vf4 Scalar::eval() const noexcept
+Scalar::result_t Scalar::eval() const noexcept
 {
 	return _value;
 }

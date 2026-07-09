@@ -11,11 +11,13 @@ namespace tnvx
 template<packed_expr E>
 struct Normalize3Fast : Expr<Normalize3Fast<E>>
 {
+	using result_t = vf4;
+
 	TNVX_INLINE
 	explicit Normalize3Fast(const E& TNVX_RESTRICT e) noexcept;
 
 	[[nodiscard]] TNVX_INLINE
-	vf4 eval() const noexcept;
+	result_t eval() const noexcept;
 
 private:
 	tnvx_ref_or_value_t<E> _e;

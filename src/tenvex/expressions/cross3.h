@@ -11,6 +11,8 @@ namespace tnvx
 template<vec_expr L, vec_expr R>
 struct Cross3 : Expr<Cross3<L, R>>
 {
+	using result_t = vf4;
+
 	TNVX_INLINE
 	Cross3(const L& TNVX_RESTRICT l, const R& TNVX_RESTRICT r) noexcept;
 

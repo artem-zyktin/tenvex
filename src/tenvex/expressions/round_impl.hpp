@@ -14,7 +14,7 @@ Round<E>::Round(const E& TNVX_RESTRICT e) noexcept
 
 template<vec_expr E>
 [[nodiscard]] TNVX_INLINE
-vf4 Round<E>::eval() const noexcept
+Round<E>::result_t Round<E>::eval() const noexcept
 {
 	return detail::round(_e.eval());
 }

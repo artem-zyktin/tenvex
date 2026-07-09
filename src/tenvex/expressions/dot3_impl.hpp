@@ -15,7 +15,7 @@ Dot3<L, R>::Dot3(const L& TNVX_RESTRICT l, const R& TNVX_RESTRICT r) noexcept
 
 template<vec_expr L, vec_expr R>
 TNVX_INLINE
-vf4 Dot3<L, R>::eval() const noexcept
+Dot3<L, R>::result_t Dot3<L, R>::eval() const noexcept
 {
 	return detail::dot3(_l.eval(), _r.eval());
 }

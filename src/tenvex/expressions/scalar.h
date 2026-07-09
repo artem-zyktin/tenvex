@@ -10,11 +10,13 @@ namespace tnvx
 
 struct Scalar : Expr<Scalar>
 {
+	using result_t = vf4;
+
 	TNVX_INLINE
 	explicit Scalar(float value) noexcept;
 
 	[[nodiscard]] TNVX_INLINE
-	vf4 eval() const noexcept;
+	result_t eval() const noexcept;
 
 private:
 	vf4 _value;

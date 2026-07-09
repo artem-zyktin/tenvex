@@ -11,11 +11,13 @@ namespace tnvx
 template<vec_expr V, quat_expr Q>
 struct Rotate : Expr<Rotate<V, Q>>
 {
+	using result_t = vf4;
+
 	TNVX_INLINE
 	Rotate(const V& TNVX_RESTRICT v, const Q& TNVX_RESTRICT q) noexcept;
 
 	[[nodiscard]] TNVX_INLINE
-	vf4 eval() const noexcept;
+	result_t eval() const noexcept;
 
 private:
 	tnvx_ref_or_value_t<V> _v;

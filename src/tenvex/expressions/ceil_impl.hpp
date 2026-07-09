@@ -14,7 +14,7 @@ Ceil<E>::Ceil(const E& TNVX_RESTRICT e) noexcept
 
 template<vec_expr E>
 TNVX_INLINE
-vf4 Ceil<E>::eval() const noexcept
+Ceil<E>:: result_t Ceil<E>::eval() const noexcept
 {
 	return detail::ceil(_e.eval());
 }

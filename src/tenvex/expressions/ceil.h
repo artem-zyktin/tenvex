@@ -11,12 +11,13 @@ namespace tnvx
 template<vec_expr E>
 struct Ceil : Expr<Ceil<E>>
 {
+	using result_t = vf4;
 
 	TNVX_INLINE
 	explicit Ceil(const E& TNVX_RESTRICT e) noexcept;
 
 	[[nodiscard]] TNVX_INLINE
-	vf4 eval() const noexcept;
+	result_t eval() const noexcept;
 
 private:
 	tnvx_ref_or_value_t<E> _e;

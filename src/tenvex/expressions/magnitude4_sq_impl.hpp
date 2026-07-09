@@ -13,7 +13,8 @@ Magn4Sq<E>::Magn4Sq(const E& TNVX_RESTRICT e) noexcept
 }
 
 template<packed_expr E>
-TNVX_INLINE vf4 Magn4Sq<E>::eval() const noexcept
+TNVX_INLINE
+Magn4Sq<E>::result_t Magn4Sq<E>::eval() const noexcept
 {
 	return detail::magnitude4_sq(_e.eval());
 }

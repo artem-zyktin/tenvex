@@ -11,12 +11,13 @@ namespace tnvx
 template<quat_expr L, quat_expr R>
 struct QuatMul : Expr<QuatMul<L, R>>
 {
+	using result_t = vf4;
 
 	TNVX_INLINE
 	QuatMul(const L& TNVX_RESTRICT l, const R& TNVX_RESTRICT r) noexcept;
 
 	[[nodiscard]] TNVX_INLINE
-	vf4 eval() const noexcept;
+	result_t eval() const noexcept;
 
 private:
 	tnvx_ref_or_value_t<L> _l;

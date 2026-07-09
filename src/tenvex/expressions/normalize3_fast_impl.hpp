@@ -14,7 +14,7 @@ Normalize3Fast<E>::Normalize3Fast(const E& TNVX_RESTRICT e) noexcept
 
 template<packed_expr E>
 TNVX_INLINE
-vf4 Normalize3Fast<E>::eval() const noexcept
+Normalize3Fast<E>::result_t Normalize3Fast<E>::eval() const noexcept
 {
 	return detail::normalize3_fast(_e.eval());
 }

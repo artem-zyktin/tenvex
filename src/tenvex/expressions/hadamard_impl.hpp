@@ -14,7 +14,7 @@ Hadamard<L, R>::Hadamard(const L& TNVX_RESTRICT l, const R& TNVX_RESTRICT r) noe
 
 template<vec_expr L, vec_expr R>
 TNVX_INLINE
-vf4 Hadamard<L, R>::eval() const noexcept
+Hadamard<L, R>::result_t Hadamard<L, R>::eval() const noexcept
 {
 	return detail::mul(_l.eval(), _r.eval());
 }

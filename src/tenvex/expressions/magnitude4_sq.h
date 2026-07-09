@@ -11,11 +11,13 @@ namespace tnvx
 template<packed_expr E>
 struct Magn4Sq : public Expr<Magn4Sq<E>>
 {
+	using result_t = vf4;
+
 	TNVX_INLINE
 	explicit Magn4Sq(const E& TNVX_RESTRICT e) noexcept;
 
 	[[nodiscard]] TNVX_INLINE
-	vf4 eval() const noexcept;
+	result_t eval() const noexcept;
 
 	[[nodiscard]] TNVX_INLINE
 	operator float() const noexcept;

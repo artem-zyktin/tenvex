@@ -14,7 +14,7 @@ QuatMul<L, R>::QuatMul(const L& TNVX_RESTRICT l, const R& TNVX_RESTRICT r) noexc
 
 template<quat_expr L, quat_expr R>
 TNVX_INLINE
-vf4 QuatMul<L, R>::eval() const noexcept
+QuatMul<L, R>::result_t QuatMul<L, R>::eval() const noexcept
 {
 	return detail::quat_mul(_l.eval(), _r.eval());
 }

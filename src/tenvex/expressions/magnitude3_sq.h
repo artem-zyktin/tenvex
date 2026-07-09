@@ -11,11 +11,13 @@ namespace tnvx
 template<vec_expr E>
 struct Magn3Sq : Expr<Magn3Sq<E>>
 {
+	using result_t = vf4;
+
 	TNVX_INLINE
 	explicit Magn3Sq(const E& TNVX_RESTRICT e) noexcept;
 
 	[[nodiscard]] TNVX_INLINE
-	vf4 eval() const noexcept;
+	result_t eval() const noexcept;
 
 	[[nodiscard]] TNVX_INLINE
 	operator float() const noexcept;

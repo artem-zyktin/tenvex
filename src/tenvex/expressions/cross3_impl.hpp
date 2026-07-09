@@ -15,7 +15,7 @@ Cross3<L, R>::Cross3(const L& TNVX_RESTRICT l, const R& TNVX_RESTRICT r) noexcep
 
 template<vec_expr L, vec_expr R>
 TNVX_INLINE
-vf4 Cross3<L, R>::eval() const noexcept
+Cross3<L, R>::result_t Cross3<L, R>::eval() const noexcept
 {
 	return detail::cross3(_l.eval(), _r.eval());
 }

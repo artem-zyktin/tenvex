@@ -10,6 +10,8 @@ namespace tnvx
 
 struct alignas(16) vec4 : Expr<vec4>
 {
+	using result_t = vf4;
+
 	TNVX_INLINE
 	vec4() noexcept = default;
 
@@ -33,7 +35,7 @@ struct alignas(16) vec4 : Expr<vec4>
 	float w() const noexcept;
 
 	[[nodiscard]] TNVX_INLINE
-	vf4 eval() const noexcept;
+	result_t eval() const noexcept;
 
 	[[nodiscard]] TNVX_INLINE static vec4 zero() noexcept;
 	[[nodiscard]] TNVX_INLINE static vec4 one() noexcept;

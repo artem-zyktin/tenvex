@@ -11,11 +11,13 @@ namespace tnvx
 template<vec_expr L, vec_expr R>
 struct Dot3 : Expr<Dot3<L, R>>
 {
+	using result_t = vf4;
+
 	TNVX_INLINE
 	Dot3(const L& TNVX_RESTRICT l, const R& TNVX_RESTRICT r) noexcept;
 
 	[[nodiscard]] TNVX_INLINE
-	vf4 eval() const noexcept;
+	result_t eval() const noexcept;
 
 	[[nodiscard]] TNVX_INLINE
 	operator float() const noexcept;
