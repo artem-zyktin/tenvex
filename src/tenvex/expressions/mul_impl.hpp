@@ -17,7 +17,7 @@ Mul<L, R>::Mul(const L& TNVX_RESTRICT l, const R& TNVX_RESTRICT r) noexcept
 template<expression L, expression R>
 requires scalable<L, R>
 TNVX_INLINE
-vf4 Mul<L, R>::eval() const noexcept
+Mul<L, R>::result_t Mul<L, R>::eval() const noexcept
 {
 	return detail::mul(_l.eval(), _r.eval());
 }

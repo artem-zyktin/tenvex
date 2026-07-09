@@ -14,11 +14,13 @@ template<expression L, expression R>
 requires same_category<L, R>
 struct Sub : Expr<Sub<L, R>>
 {
+	using result_t = vf4;
+
 	TNVX_INLINE
 	Sub(const L& TNVX_RESTRICT l, const R& TNVX_RESTRICT r) noexcept;
 
 	[[nodiscard]] TNVX_INLINE
-	vf4 eval() const noexcept;
+	result_t eval() const noexcept;
 
 	[[nodiscard]] TNVX_INLINE
 	operator float() const noexcept

@@ -14,7 +14,7 @@ tnvx::Neg<E>::Neg(const E& TNVX_RESTRICT e) noexcept
 
 template<expression E>
 TNVX_INLINE
-vf4 Neg<E>::eval() const noexcept
+Neg<E>::result_t Neg<E>::eval() const noexcept
 {
 	return detail::neg(_e.eval());
 }

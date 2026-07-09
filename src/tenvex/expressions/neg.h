@@ -11,11 +11,13 @@ namespace tnvx
 template<expression E>
 struct Neg : Expr<Neg<E>>
 {
+	using result_t = vf4;
+
 	TNVX_INLINE
 	explicit Neg(const E& TNVX_RESTRICT e) noexcept;
 
 	[[nodiscard]] TNVX_INLINE
-	vf4 eval() const noexcept;
+	result_t eval() const noexcept;
 
 	[[nodiscard]] TNVX_INLINE
 	operator float() const noexcept requires scalar_expr<E>;

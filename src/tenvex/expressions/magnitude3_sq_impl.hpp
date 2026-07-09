@@ -14,7 +14,7 @@ Magn3Sq<E>::Magn3Sq(const E& TNVX_RESTRICT e) noexcept
 
 template<vec_expr E>
 TNVX_INLINE
-vf4 Magn3Sq<E>::eval() const noexcept
+Magn3Sq<E>::result_t Magn3Sq<E>::eval() const noexcept
 {
 	return detail::magnitude3_sq(_e.eval());
 }

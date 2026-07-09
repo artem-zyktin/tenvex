@@ -295,6 +295,8 @@ vec4 result = norm3(a + b * 2.0f) * dot3(b, c) + c * 3.0f;
 | `packed_expr<T>` | A `vec_expr` or `quat_expr` — a 4-lane packed value, as opposed to a collapsed scalar |
 | `same_packed_category<L,R>` | Two `packed_expr` of the same category (both vectors or both quaternions); the operand rule for `dot4` |
 
+**Result type.** Every node declares `using result_t = ...;` — the register set its `eval()` produces (`vf4` for vectors, quaternions, and broadcast scalars; `mf4` for matrices). The `expression` concept checks `eval()` against the node's *own* declaration instead of one global type: the protocol requires "a node returns what it claims", not "everything fits in one register". This is what lets multi-register matrix nodes, mixed-result nodes (`mat * vec` yields `vf4`, `determinant` a broadcast scalar), and future categories (SoA batches) share a single expression protocol — the same `Add` / `Sub` / `Neg` / scalar-`Mul` node templates, one storage policy, and generic utilities written once against `typename E::result_t`. Because the declaration is cross-checked by the concept, a node whose `eval()` drifts from its declared type fails at the first constraint with a clear diagnostic, not deep inside a kernel instantiation.
+
 ### Storage policy
 
 Each node's operands are stored by value or by `const&` depending on size and triviality. Leaves are small and stored by value; only larger composite nodes are held by `const&`. That reference can point at a temporary sub-expression, so a compound expression must not be kept in `auto` past its statement (see [Performance and best practices](#performance-and-best-practices)):

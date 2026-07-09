@@ -14,7 +14,7 @@ Conjugate<E>::Conjugate(const E& TNVX_RESTRICT expr) noexcept
 
 template<quat_expr E>
 TNVX_INLINE
-vf4 Conjugate<E>::eval() const noexcept
+Conjugate<E>::result_t Conjugate<E>::eval() const noexcept
 {
 	return detail::conjugate(_e.eval());
 }

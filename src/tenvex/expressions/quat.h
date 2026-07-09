@@ -12,6 +12,8 @@ namespace tnvx
 
 struct alignas(16) quat : Expr<quat>
 {
+	using result_t = vf4;
+
 	TNVX_INLINE
 	quat() noexcept = default;
 
@@ -23,7 +25,7 @@ struct alignas(16) quat : Expr<quat>
 	quat(const E& e) noexcept;
 
 	[[nodiscard]] TNVX_INLINE
-	vf4 eval() const noexcept;
+	result_t eval() const noexcept;
 
 	[[nodiscard]] TNVX_INLINE
 	float x() const noexcept;

@@ -13,7 +13,7 @@ Abs<E>::Abs(const E& TNVX_RESTRICT e) noexcept
 }
 
 template<vec_expr E>
-TNVX_INLINE vf4 Abs<E>::eval() const noexcept
+TNVX_INLINE Abs<E>::result_t Abs<E>::eval() const noexcept
 {
 	return detail::abs(_e.eval());
 }

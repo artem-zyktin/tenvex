@@ -15,7 +15,7 @@ Min<L, R>::Min(const L& TNVX_RESTRICT l, const R& TNVX_RESTRICT r) noexcept
 
 template<vec_expr L, vec_expr R>
 TNVX_INLINE
-vf4 Min<L, R>::eval() const noexcept
+Min<L, R>::result_t Min<L, R>::eval() const noexcept
 {
 	return detail::min(_l.eval(), _r.eval());
 }

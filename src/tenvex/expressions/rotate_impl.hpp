@@ -15,7 +15,7 @@ Rotate<V, Q>::Rotate(const V& TNVX_RESTRICT v, const Q& TNVX_RESTRICT q) noexcep
 
 template<vec_expr V, quat_expr Q>
 TNVX_INLINE
-vf4 Rotate<V, Q>::eval() const noexcept
+Rotate<V, Q>::result_t Rotate<V, Q>::eval() const noexcept
 {
 	return detail::rotate(_v.eval(), _q.eval());
 }

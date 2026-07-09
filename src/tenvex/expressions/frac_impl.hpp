@@ -14,7 +14,7 @@ Frac<E>::Frac(const E& TNVX_RESTRICT e) noexcept
 
 template<vec_expr E>
 TNVX_INLINE
-vf4 Frac<E>::eval() const noexcept
+Frac<E>::result_t Frac<E>::eval() const noexcept
 {
 	return detail::frac(_e.eval());
 }

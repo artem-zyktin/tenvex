@@ -11,6 +11,8 @@ namespace tnvx
 template<quat_expr E>
 struct Inverse : Expr<Inverse<E>>
 {
+	using result_t = vf4;
+
 	TNVX_INLINE
 	explicit Inverse(const E& TNVX_RESTRICT e) noexcept;
 

@@ -211,21 +211,27 @@ TEST(naive_quat, dot4_basic)
 {
 	quat a = { 1, 2, 3, 4 };
 	quat b = { 5, 6, 7, 8 };
-	EXPECT_FLOAT_EQ(70.0f, dot4(a, b));
+	float check = 70.0f;
+	float result = dot4(a, b);
+	EXPECT_FLOAT_EQ(check, result);
 }
 
 TEST(naive_quat, dot4_uses_all_four_lanes)
 {
 	quat a = { 0, 0, 0, 2 };
 	quat b = { 1, 1, 1, 3 };
-	EXPECT_FLOAT_EQ(6.0f, dot4(a, b));
+	float check = 6.0f;
+	float result = dot4(a, b);
+	EXPECT_FLOAT_EQ(check, result);
 
 }
 
 TEST(naive_quat, magnitude4_basic)
 {
 	quat q = { 1, 2, 2, 4 };
-	EXPECT_FLOAT_EQ(magnitude4(q), 5.0f);
+	float check = 5.0f;
+	float result = magnitude4(q);
+	EXPECT_FLOAT_EQ(check, result);
 }
 
 TEST(naive_quat, magnitude4_sq_basic)
@@ -233,7 +239,6 @@ TEST(naive_quat, magnitude4_sq_basic)
 	quat q = { 1, 2, 2, 4 };
 	float check = 25.0f;
 	float result = magnitude4_sq(q);
-
 	EXPECT_FLOAT_EQ(check, result);
 }
 

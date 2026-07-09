@@ -14,7 +14,7 @@ Floor<E>::Floor(const E& TNVX_RESTRICT e) noexcept
 
 template<vec_expr E>
 TNVX_INLINE
-vf4 Floor<E>::eval() const noexcept
+Floor<E>::result_t Floor<E>::eval() const noexcept
 {
 	return detail::floor(_e.eval());
 }

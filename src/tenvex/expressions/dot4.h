@@ -12,11 +12,13 @@ template<packed_expr L, packed_expr R>
 requires same_packed_category<L, R>
 struct Dot4 : Expr<Dot4<L, R>>
 {
+	using result_t = vf4;
+
 	TNVX_INLINE
 	Dot4(const L& TNVX_RESTRICT l, const R& TNVX_RESTRICT r) noexcept;
 
 	[[nodiscard]] TNVX_INLINE
-	vf4 eval() const noexcept;
+	result_t eval() const noexcept;
 
 	[[nodiscard]] TNVX_INLINE
 	operator float() const noexcept;

@@ -23,7 +23,7 @@ quat::quat(const E& e) noexcept
 }
 
 TNVX_INLINE
-vf4 quat::eval() const noexcept
+quat::result_t quat::eval() const noexcept
 {
 	return _data;
 }

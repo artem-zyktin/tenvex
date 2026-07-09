@@ -11,11 +11,13 @@ namespace tnvx
 template<quat_expr E>
 struct Conjugate : Expr<Conjugate<E>>
 {
+	using result_t = vf4;
+
 	TNVX_INLINE
 	explicit Conjugate(const E& TNVX_RESTRICT expr) noexcept;
 
 	[[nodiscard]] TNVX_INLINE
-	vf4 eval() const noexcept;
+	result_t eval() const noexcept;
 
 private:
 	tnvx_ref_or_value_t<E> _e;

@@ -15,7 +15,7 @@ tnvx::Div<L, R>::Div(const L& TNVX_RESTRICT l, const R& TNVX_RESTRICT r) noexcep
 
 template<vec_expr L, scalar_expr R>
 TNVX_INLINE
-vf4 Div<L, R>::eval() const noexcept
+Div<L, R>::result_t Div<L, R>::eval() const noexcept
 {
 	return detail::div(_l.eval(), _r.eval());
 }
