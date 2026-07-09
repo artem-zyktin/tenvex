@@ -17,3 +17,9 @@
 #endif
 
 #endif
+
+#if !defined(TNVX_SSE41) && !defined(TNVX_NEON)
+#error "tenvex: no SIMD backend detected. tenvex requires SSE4.1 (x86-64) or NEON (AArch64). \
+On x64 with GCC/Clang enable SSE4.1 in the consuming target (-msse4.1, or a wider -march=...); \
+MSVC x64 and AArch64 need no flags. To override detection, define TNVX_SSE41=1 or TNVX_NEON=1 manually."
+#endif
