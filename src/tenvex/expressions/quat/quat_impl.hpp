@@ -73,7 +73,7 @@ TNVX_INLINE quat quat::from_axis_angle(vec4 asix, float angle) noexcept
 	return from_axis_angle(asix.x(), asix.y(), asix.z(), angle);
 }
 
-inline TNVX_INLINE quat quat::from_to_rotation(vec4 from, vec4 to) noexcept
+TNVX_INLINE quat quat::from_to_rotation(vec4 from, vec4 to) noexcept
 {
 	vec4 f = normalize3(from);
 	vec4 t = normalize3(to);
