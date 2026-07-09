@@ -19,7 +19,9 @@ Both backends cover the full API.
 
 **Planned**
 
-- Matrices
+- Matrices (column-major, `M * v`)
+- SoA batching as the home for wider registers (AVX2 on x86-64, register pairs on NEON) - batch operations over independent elements are where 256-bit lanes pay off without cross-lane shuffles; single `vec4` / `quat` / `mat4` stay on the 128-bit baseline
+- Comparative benchmarks against established math libraries (DirectXMath, GLM, and others), same-toolchain, per compiler x backend cell
 
 ## Features
 

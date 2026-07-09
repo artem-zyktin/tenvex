@@ -4,6 +4,34 @@ Short records of decisions with non-obvious trade-offs: the problem (with
 rejected alternatives), the decision, the price. Newest first. A reversal is
 a new entry, not an edit.
 
+## 2026-07 — Matrices: column-major layout, column vectors, M * v
+
+Two coupled choices - register layout of `mf4` (rows vs columns) and the
+multiplication convention (`M * v` vs `v * M`). The fast SIMD kernel is the
+linear-combination form (the vector broadcasts combine the matrix
+registers: 4 splats + 4 fma, no shuffles of the matrix, no horizontal
+reductions; on NEON the broadcast folds into `fmla` by lane). That form
+requires the pair to be consistent: column-major layout pairs with `M * v`,
+row-major with `v * M`; a mismatched pair forces per-lane `dot4` reductions
+or an on-the-fly transpose.
+
+Decision criteria, in order: seamless GPU upload, then migration
+experience. All current shading-language defaults are column-major
+(GLSL/std140, SPIR-V, MSL, WGSL, HLSL cbuffer packing), so column-major
+layout uploads as a plain memcpy on every API. The dominant user-facing
+convention in the libraries tenvex would replace is `M * v` (GLM, Eigen,
+Unity, GLSL source), and it is the consistent partner of column-major.
+
+Decision: `mf4` holds four column registers; column vectors; `M * v`;
+composition `T * R * S` (applied right to left). Named functions keep their
+verb(object, argument) order - `rotate(v, q)` reads "rotate the vector by
+the quaternion" and is unrelated to the operator convention (GLM does the
+same).
+
+Price: migrants from DirectXMath/Unreal must mirror their multiplication
+order (`world * view * proj` -> `proj * view * world`); to be called out
+prominently in the README matrix section.
+
 ## 2026-07 — Storage policy and matrices: no global threshold raise; per-type override only
 
 Raising the 16-byte by-value threshold for mat4 (64 B) was considered and
