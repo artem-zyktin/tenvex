@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 #include "core.h"
-#include "expression.h"
 #include "concepts.h"
 #include "traits.h"
 
@@ -12,7 +11,7 @@ namespace tnvx
 
 template<expression L, expression R>
 requires same_category<L, R>
-struct Sub : Expr<Sub<L, R>>
+struct Sub
 {
 	using result_t = vf4;
 

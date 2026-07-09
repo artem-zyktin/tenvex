@@ -1,7 +1,6 @@
 #pragma once
 
 #include "core.h"
-#include "expression.h"
 #include "traits.h"
 #include "concepts.h"
 
@@ -9,7 +8,7 @@ namespace tnvx
 {
 
 template<vec_expr V, quat_expr Q>
-struct Rotate : Expr<Rotate<V, Q>>
+struct Rotate
 {
 	using result_t = vf4;
 

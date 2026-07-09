@@ -1,14 +1,13 @@
 ﻿#pragma once
 
 #include "core.h"
-#include "expression.h"
 #include "traits.h"
 #include "concepts.h"
 
 namespace tnvx
 {
 
-struct alignas(16) vec4 : Expr<vec4>
+struct alignas(16) vec4
 {
 	using result_t = vf4;
 

@@ -1,14 +1,13 @@
 ﻿#pragma once
 
 #include "core.h"
-#include "expression.h"
 #include "traits.h"
 #include "concepts.h"
 
 namespace tnvx
 {
 
-struct Scalar : Expr<Scalar>
+struct Scalar
 {
 	using result_t = vf4;
 

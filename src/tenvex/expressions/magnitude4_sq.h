@@ -1,7 +1,6 @@
 #pragma once
 
 #include "core.h"
-#include "expression.h"
 #include "traits.h"
 #include "concepts.h"
 
@@ -9,7 +8,7 @@ namespace tnvx
 {
 
 template<packed_expr E>
-struct Magn4Sq : public Expr<Magn4Sq<E>>
+struct Magn4Sq
 {
 	using result_t = vf4;
 

@@ -276,7 +276,7 @@ On Cortex-A76 the Newton-Raphson refinement is a 5-link dependency chain versus 
 
 ### Expression templates
 
-Every operation returns a lazy node rather than evaluating immediately. Nodes inherit from `Expr<Derived>` via CRTP (which provides `self()`) and expose a `vf4 eval() const` method. Evaluation happens only when the result is assigned to a `vec4`, or - for scalar nodes - when converted to `float`.
+Every operation returns a lazy node rather than evaluating immediately. There is no common base class: a node is any type that declares its result type (`using result_t = ...;`) and exposes a `result_t eval() const` method — the protocol is enforced purely by the `expression` concept below. Evaluation happens only when the result is assigned to a `vec4`, or - for scalar nodes - when converted to `float`.
 
 ```
 vec4 result = norm3(a + b * 2.0f) * dot3(b, c) + c * 3.0f;
@@ -288,14 +288,14 @@ vec4 result = norm3(a + b * 2.0f) * dot3(b, c) + c * 3.0f;
 
 | Concept          | Meaning                                                                 |
 | ---------------- | ----------------------------------------------------------------------- |
-| `expression<T>`  | Derives from `Expr<T>` and has `eval() -> vf4` and `self() -> const T&` |
-| `vec_expr<T>`    | An `expression` marked as a vector expression (`is_vec_expr<T>`)        |
-| `scalar_expr<T>` | An `expression` marked as a scalar expression (`is_scalar_expr<T>`)     |
-| `quat_expr<T>`   | An `expression` marked as a quaternion expression (`is_quat_expr<T>`)   |
+| `expression<T>`  | Declares a result type `result_t` and has `eval() -> T::result_t`      |
+| `vec_expr<T>`    | An `expression` marked as a vector expression (`is_vec_expr<T>`) whose `result_t` is `vf4` |
+| `scalar_expr<T>` | An `expression` marked as a scalar expression (`is_scalar_expr<T>`) whose `result_t` is `vf4` |
+| `quat_expr<T>`   | An `expression` marked as a quaternion expression (`is_quat_expr<T>`) whose `result_t` is `vf4` |
 | `packed_expr<T>` | A `vec_expr` or `quat_expr` — a 4-lane packed value, as opposed to a collapsed scalar |
 | `same_packed_category<L,R>` | Two `packed_expr` of the same category (both vectors or both quaternions); the operand rule for `dot4` |
 
-**Result type.** Every node declares `using result_t = ...;` — the register set its `eval()` produces (`vf4` for vectors, quaternions, and broadcast scalars; `mf4` for matrices). The `expression` concept checks `eval()` against the node's *own* declaration instead of one global type: the protocol requires "a node returns what it claims", not "everything fits in one register". This is what lets multi-register matrix nodes, mixed-result nodes (`mat * vec` yields `vf4`, `determinant` a broadcast scalar), and future categories (SoA batches) share a single expression protocol — the same `Add` / `Sub` / `Neg` / scalar-`Mul` node templates, one storage policy, and generic utilities written once against `typename E::result_t`. Because the declaration is cross-checked by the concept, a node whose `eval()` drifts from its declared type fails at the first constraint with a clear diagnostic, not deep inside a kernel instantiation.
+**Result type.** Every node declares `using result_t = ...;` — the register set its `eval()` produces (`vf4` for vectors, quaternions, and broadcast scalars; a multi-register type for planned matrix nodes). The `expression` concept checks `eval()` against the node's *own* declaration instead of one global type: the protocol requires "a node returns what it claims", not "everything fits in one register". The category concepts (`vec_expr`, `scalar_expr`, `quat_expr`) then pin `result_t` to `vf4`, so all existing 4-lane machinery stays fully typed. This is what lets multi-register matrix nodes, mixed-result nodes (`mat * vec` yields `vf4`, `determinant` a broadcast scalar), and future categories (SoA batches) share a single expression protocol — the same `Add` / `Sub` / `Neg` / scalar-`Mul` node templates, one storage policy, and generic utilities written once against `typename E::result_t`. Because the declaration is cross-checked by the concept, a node whose `eval()` drifts from its declared type fails at the first constraint with a clear diagnostic, not deep inside a kernel instantiation.
 
 ### Storage policy
 
