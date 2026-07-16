@@ -1,4 +1,4 @@
-#include "naive_vec4.h"
+#include "naive/naive_vec4.h"
 
 #include <benchmark/benchmark.h>
 

@@ -25,7 +25,7 @@ Both backends cover the full API.
 
 ## Features
 
-- Header-only - just include `tenvex.h`.
+- Header-only - just include `<tenvex/tenvex.h>`.
 - Expression-template engine: nodes are lazy and evaluated on assignment.
 - C++20 concepts (`expression`, `vec_expr`, `scalar_expr`, `quat_expr`, `packed_expr`) enforce type safety at compile time.
 - Storage policy: leaves (trivially-copyable, 16 bytes or less) are stored by value; larger composite nodes by `const&`. Because that reference can outlive a temporary sub-expression, assign compound expressions to a `vec4` / `float` rather than `auto` (see [Performance and best practices](#performance-and-best-practices)).
@@ -35,21 +35,21 @@ Both backends cover the full API.
 ## Requirements
 
 - A C++20 compiler (MSVC, GCC, or Clang).
-- One of: an x64 CPU with **SSE4.1**, or an **ARM64 / NEON** CPU (AArch64). The backend is selected automatically in `expressions/core/config.h`.
+- One of: an x64 CPU with **SSE4.1**, or an **ARM64 / NEON** CPU (AArch64). The backend is selected automatically in `detail/core/config.h`.
 - Premake for generating the test build (binaries are bundled for Windows, Linux, and macOS; an AArch64 premake binary is included for ARM64 Linux).
 
 ## Getting Started
 
-tenvex is header-only. Copy `src/tenvex/` into your project and include the single public header:
+tenvex is header-only. Add `src/include` to your include paths (or copy its contents into your project) and include the single public header:
 
 ```cpp
-#include "tenvex.h"
+#include <tenvex/tenvex.h>
 ```
 
 ### Basic Usage
 
 ```cpp
-#include "tenvex.h"
+#include <tenvex/tenvex.h>
 
 using namespace tnvx;
 
@@ -274,15 +274,15 @@ On Cortex-A76 the Newton-Raphson refinement is a 5-link dependency chain versus 
 
 ### Two layers
 
-- **Eager kernel layer** (`expressions/core/core.h`, namespace `tnvx::detail`): `TNVX_INLINE` functions over `vf4` (`neg`, `abs`, `add`, `sub`, `mul`, `div`, `dot3`, `dot4`, `magnitude3`, `magnitude3_sq`, `magnitude4`, `magnitude4_sq`, `normalize3`, `normalize3_fast`, `normalize4`, `cross3`, `min`, `max`, `with_w`, `floor`, `ceil`, `round`, `frac`, `scalar`, `get_lane`, `eq`, `approx_eq`, and the quaternion kernels `conjugate`, `quat_mul`, `rotate`, `inverse`). This is the only place intrinsics live, and the only place the SIMD backend is selected: `core/core.h` dispatches to `core_sse.h` (SSE4.1) or `core_neon.h` (NEON) per the autodetected target.
+- **Eager kernel layer** (`detail/core/core.h`, namespace `tnvx::detail`): `TNVX_INLINE` functions over `vf4` (`neg`, `abs`, `add`, `sub`, `mul`, `div`, `dot3`, `dot4`, `magnitude3`, `magnitude3_sq`, `magnitude4`, `magnitude4_sq`, `normalize3`, `normalize3_fast`, `normalize4`, `cross3`, `min`, `max`, `with_w`, `floor`, `ceil`, `round`, `frac`, `scalar`, `get_lane`, `eq`, `approx_eq`, and the quaternion kernels `conjugate`, `quat_mul`, `rotate`, `inverse`). This is the only place intrinsics live, and the only place the SIMD backend is selected: `core/core.h` dispatches to `core_sse.h` (SSE4.1) or `core_neon.h` (NEON) per the autodetected target.
 - **Expression layer** (everything else in namespace `tnvx`): lazy nodes that compose and delegate down to the kernels. This layer operates only on `vf4` and contains no intrinsics.
 
 ### Header layout
 
 ```
-src/tenvex/
+src/include/tenvex/
 ├── tenvex.h              # public umbrella — includes the three group headers below
-└── expressions/
+└── detail/
     ├── core/             # kernel layer: defines.h, config.h (backend selection), core.h, core_sse.h, core_neon.h
     ├── protocol/         # traits.h (category traits, storage policy) and concepts.h
     ├── common.h, common/ # nodes generic over categories: Scalar, Neg, Add, Sub, Mul, Div,
@@ -291,7 +291,7 @@ src/tenvex/
     └── quat.h, quat/     # quat, quaternion-only nodes, and the eager quat_operations
 ```
 
-`common.h`, `vec.h`, and `quat.h` are group headers: each fixes the include order of its own folder once, so `tenvex.h` reduces to three includes. Consumers still include only `tenvex.h`. Planned categories slot in alongside (`mat.h` + `mat/`, batches as `batch.h` + `batch/`).
+`common.h`, `vec.h`, and `quat.h` are group headers: each fixes the include order of its own folder once, so `tenvex.h` reduces to three includes. Consumers still include only `tenvex/tenvex.h`. Planned categories slot in alongside (`mat.h` + `mat/`, batches as `batch.h` + `batch/`).
 
 ### Expression templates
 
@@ -373,7 +373,7 @@ Comparison helpers (free functions in `tnvx`, backed by `tnvx::detail`):
 
 ### Composed operations
 
-Free functions in `tnvx` that compose the operators above. **They evaluate eagerly and return concrete types** (`vec4` / `float`), not expression nodes - returning a lazy expression that references function-local temporaries would dangle. Defined in `expressions/vec/vec_operations.h` (declarations) / `vec_operations_impl.hpp` (definitions), included by the `vec.h` group header; the quaternion convenience functions `slerp` / `nlerp` live in `expressions/quat/quat_operations.h`.
+Free functions in `tnvx` that compose the operators above. **They evaluate eagerly and return concrete types** (`vec4` / `float`), not expression nodes - returning a lazy expression that references function-local temporaries would dangle. Defined in `detail/vec/vec_operations.h` (declarations) / `vec_operations_impl.hpp` (definitions), included by the `vec.h` group header; the quaternion convenience functions `slerp` / `nlerp` live in `detail/quat/quat_operations.h`.
 
 | Function           | Returns | Composition                | Notes                                                                     |
 | ------------------ | ------- | -------------------------- | ------------------------------------------------------------------------- |
@@ -423,7 +423,7 @@ tenvex only collapses to tight code with optimization on. Build the consuming ta
 
 **Compiler per platform.** On **x86-64**, GCC, Clang, and MSVC are all zero-cost - use whichever you already have. On **AArch64**, prefer **Clang**: it is zero-cost, whereas GCC's AArch64 backend adds roughly a third to compound expressions (a missed dead-store elimination, detailed under [Is the abstraction zero-cost?](#is-the-abstraction-zero-cost-compiler-x-backend)). If you must use GCC on AArch64, bind reused leaves to a `vec4` in hot loops.
 
-**SSE4.1 is an x64-only flag.** tenvex does not force `-msse4.1` onto consumers. On x64 with GCC/Clang you must enable it yourself (`-msse4.1`, or a wider arch such as `-march=native`); on AArch64, NEON is the baseline and needs no flag. The backend is then selected automatically in `expressions/core/config.h` from `__SSE4_1__` / `__ARM_NEON` (and `_M_X64` / `_M_ARM64` on MSVC) - there is no manual switch.
+**SSE4.1 is an x64-only flag.** tenvex does not force `-msse4.1` onto consumers. On x64 with GCC/Clang you must enable it yourself (`-msse4.1`, or a wider arch such as `-march=native`); on AArch64, NEON is the baseline and needs no flag. The backend is then selected automatically in `detail/core/config.h` from `__SSE4_1__` / `__ARM_NEON` (and `_M_X64` / `_M_ARM64` on MSVC) - there is no manual switch.
 
 **LTO and mixing compilers.** The bundled `release` configuration enables link-time optimization, and LTO bytecode is tied to the exact compiler and version that produced it - a build tree must not mix them. When you switch compiler or version, clean first:
 
@@ -490,7 +490,7 @@ A [Google Benchmark](https://github.com/google/benchmark) suite (vendored in `th
 
 Cases cover both **latency** (serial dependency chains, e.g. `dot3`/`normalize3`, and an AABB-box build that folds `min`/`max` into a running bound) and **throughput** (independent inputs the CPU can pipeline, e.g. isolated `dot3`/`dot4`, and single-op `min`/`max`).
 
-A naive scalar reference implementation - `naive::vec4` in `src/naive/naive_vec4.h` (and `naive::quat` in `src/naive/naive_quat.h`) - mirrors the tenvex API and semantics with plain `float` math (everything `inline`, by-value, reciprocal-multiply for division/normalization). It is benchmarked side by side (the `BM_Naive_*` cases) and has its own mirrored test suites (`src/tests/naive_tests_vec4.cpp`, `src/tests/naive_tests_quat.cpp`), so the SIMD path can be compared against a straightforward baseline. Quaternion operations are covered by `src/benchmarks/bench_quat.cpp` (`BM_Quat{Add,Sub,Mul,Hamilton,Conj,Rotate}_Throughput`; latency and throughput for the shared 4-lane reductions `BM_Quat{Dot4,Magnitude4,Magnitude4Sq}`, the unit-quaternion ops `BM_Quat{Normalize,Inverse}`, and the interpolators `BM_Quat{Slerp,Nlerp}`) against the matching `BM_Naive_Quat*` baselines. `slerp` is transcendental-bound (`acos` + `sin` dominate, so the SIMD and scalar paths run neck and neck), whereas `nlerp` shows the usual split - a small throughput win for the packed path, a latency loss to its two serial horizontal reductions. The same reductions on `vec4` are `BM_{Dot4,Magnitude4,Magnitude4Sq}` in `bench_vec4.cpp`.
+A naive scalar reference implementation - `naive::vec4` in `src/include/naive/naive_vec4.h` (and `naive::quat` in `src/include/naive/naive_quat.h`) - mirrors the tenvex API and semantics with plain `float` math (everything `inline`, by-value, reciprocal-multiply for division/normalization). It is benchmarked side by side (the `BM_Naive_*` cases) and has its own mirrored test suites (`src/tests/naive_tests_vec4.cpp`, `src/tests/naive_tests_quat.cpp`), so the SIMD path can be compared against a straightforward baseline. Quaternion operations are covered by `src/benchmarks/bench_quat.cpp` (`BM_Quat{Add,Sub,Mul,Hamilton,Conj,Rotate}_Throughput`; latency and throughput for the shared 4-lane reductions `BM_Quat{Dot4,Magnitude4,Magnitude4Sq}`, the unit-quaternion ops `BM_Quat{Normalize,Inverse}`, and the interpolators `BM_Quat{Slerp,Nlerp}`) against the matching `BM_Naive_Quat*` baselines. `slerp` is transcendental-bound (`acos` + `sin` dominate, so the SIMD and scalar paths run neck and neck), whereas `nlerp` shows the usual split - a small throughput win for the packed path, a latency loss to its two serial horizontal reductions. The same reductions on `vec4` are `BM_{Dot4,Magnitude4,Magnitude4Sq}` in `bench_vec4.cpp`.
 
 ### Is the abstraction zero-cost? (compiler x backend)
 
@@ -545,5 +545,4 @@ expression-object materialization is captured as-is - under GCC 14
 `cg_compound_et` carries a 128-byte frame and dead stores while `_manual` /
 `_intrin` are frameless and equal, and under Clang 19 all three bodies are
 identical. Workflow rule: regenerate on any change that can affect codegen;
-the diff must be empty or explained in the commit message (rationale in
-docs/decisions.md).
+the diff must be empty or explained in the commit

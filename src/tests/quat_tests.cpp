@@ -1,4 +1,4 @@
-#include "tenvex.h"
+#include "tenvex/tenvex.h"
 
 #include "gtest/gtest.h"
 

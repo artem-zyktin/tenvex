@@ -140,12 +140,12 @@ project "tenvex"
 	objdir    ("bin/" .. outputdir .. "/intermediate")
 
 	files {
-		"src/tenvex/**.h",
-		"src/tenvex/**.hpp",
+		"src/include/tenvex/**.h",
+		"src/include/tenvex/**.hpp",
 	}
 
 	includedirs {
-		"src/tenvex",
+		"src/include",
 	}
 
 	filter "configurations:debug"
@@ -184,8 +184,7 @@ project "tenvex_tests"
 	}
 
 	includedirs {
-		"src/tenvex",
-		"src/naive",
+		"src/include",
 		"thirdparty/gtest/googletest/include",
 	}
 
@@ -232,8 +231,7 @@ project "tenvex_bench"
 	}
 
 	includedirs {
-		"src/naive",
-		"src/tenvex",
+		"src/include",
 		"thirdparty/benchmark/include",
 	}
 

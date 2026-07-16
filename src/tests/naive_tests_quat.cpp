@@ -1,4 +1,4 @@
-#include "naive_quat.h"
+#include "naive/naive_quat.h"
 
 #include "gtest/gtest.h"
 

@@ -1,4 +1,4 @@
-#include "tenvex.h"
+#include "tenvex/tenvex.h"
 
 #include <benchmark/benchmark.h>
 

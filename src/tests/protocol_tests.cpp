@@ -1,4 +1,4 @@
-#include "tenvex.h"
+#include "tenvex/tenvex.h"
 
 // Compile-time protocol boundary tests: the full operand matrix for every
 // public operation. A runtime test cannot fail when an overload set
