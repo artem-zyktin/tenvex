@@ -222,6 +222,39 @@ bool near = approx_eq(q1, q2); // default epsilon = 1e-6f
 
 `rotate(v, q)` returns the rotated **vector** (a `vec_expr`, so it stays lazy and can feed a larger expression); the `w` lane of `v` is carried through unchanged. It uses the cross-product form `v + 2w(n x v) + 2(n x (n x v))` (with `n = q.xyz`, `w = q.w`), which is the sandwich `q * v * conjugate(q)` for a **unit** `q` - the unit precondition is assumed, not checked. `conjugate`, `normalize4`, `inverse`, `*`, `+`, `-`, and `rotate` are lazy nodes: the same "assign to a concrete type, don't hold a compound expression in `auto`" rule from [Performance and best practices](#performance-and-best-practices) applies to quaternion expressions too. `slerp` and `nlerp` are composed convenience functions - like `lerp` / `reflect` on vectors they evaluate eagerly and return a concrete `quat`. Both assume unit-length inputs, take the shortest arc (via the sign of `dot4`), and fall back to a normalized lerp when the inputs are nearly parallel; `nlerp` skips the `acos` / `sin` entirely, trading constant angular velocity for speed.
 
+## Matrices
+
+`mat4` is a 4x4 single-precision matrix stored as **four column registers** (`vf4 cols[4]`), 64 bytes, `alignas(16)`. Column-major throughout: storage, constructor arguments, and the multiplication convention all agree.
+
+**Conventions.** `cols[j]` is the j-th column. The memory image matches GLSL/std140, SPIR-V, MSL, WGSL and HLSL cbuffer packing, so a `mat4` uploads to any GPU API as a plain `memcpy`. Vectors are **column vectors** and transforms apply by left-multiplication: `M * v`. Composition reads right to left - `T * R * S` scales first, then rotates, then translates. **Migrating from DirectXMath / Unreal:** mirror your multiplication order - `world * view * proj` becomes `proj * view * world`.
+
+```cpp
+// From four columns:
+mat4 m = { c0, c1, c2, c3 };
+
+// From 16 scalars - arguments run down the columns (column-major),
+// exactly matching storage:
+mat4 m = {
+    m00, m10, m20, m30,   // column 0
+    m01, m11, m21, m31,   // column 1
+    m02, m12, m22, m32,   // column 2
+    m03, m13, m23, m33,   // column 3
+};
+
+mat4 id = mat4::identity();
+```
+
+> **Note.** The scalar constructor takes arguments in **storage order** (columns), not in the visual row order you would write on paper - a matrix written on paper appears *transposed* in the code literal. This matches GLM.
+
+Element access:
+
+```cpp
+const vf4& c = m.col(j);     // j-th column register - free
+float      e = m.at(i, j);   // element at row i, column j - slow
+```
+
+`at(i, j)` extracts a single lane from a SIMD register (shuffle + move). Like the scalar accessors on `vec4` and `quat`, it exists for tests, debugging and I/O - do not use it in hot paths. To read a whole column, use `col(j)`.
+
 ## Performance and best practices
 
 tenvex is zero-overhead when used the way the optimizer expects. A few rules keep the generated code tight and steer around the one real footgun.
