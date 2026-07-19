@@ -10,6 +10,8 @@ using vf4 = __m128;
 #error "tenvex requires SSE4.1 backend"
 #endif
 
+struct mf4 { vf4 cols[4]; };
+
 #if defined(TNVX_SSE41)
 
 namespace tnvx::detail

@@ -10,6 +10,8 @@ using vf4 = float32x4_t;
 #error "tenvex requires NEON backend"
 #endif
 
+struct mf4 { vf4 cols[4]; };
+
 #if defined(TNVX_NEON)
 
 namespace tnvx::detail
