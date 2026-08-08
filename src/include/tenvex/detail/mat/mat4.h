@@ -76,6 +76,14 @@ private:
 	mf4 _data;
 };
 
+template<> inline constexpr bool is_mat_expr = true;
+
+TNVX_INLINE
+bool approx_eq(const mat4& lhs, const mat4& rhs, float eps = 1e-6f) noexcept;
+
+TNVX_INLINE
+bool operator==(const mat4& lhs, const mat4& rhs) noexcept;
+
 }
 
 #include "mat4_impl.hpp"

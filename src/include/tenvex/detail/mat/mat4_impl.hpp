@@ -133,4 +133,28 @@ mat4::result_t mat4::eval() const noexcept
 	return _data;
 }
 
+TNVX_INLINE
+bool approx_eq(const mat4& lhs, const mat4& rhs, float eps) noexcept
+{
+	const mf4 l = lhs.eval();
+	const mf4 r = rhs.eval();
+
+	return detail::approx_eq(l.cols[0], r.cols[0], eps)
+		&& detail::approx_eq(l.cols[1], r.cols[1], eps)
+		&& detail::approx_eq(l.cols[2], r.cols[2], eps)
+		&& detail::approx_eq(l.cols[3], r.cols[3], eps);
+}
+
+TNVX_INLINE
+bool operator==(const mat4& lhs, const mat4& rhs) noexcept
+{
+	const mf4 l = lhs.eval();
+	const mf4 r = rhs.eval();
+
+	return detail::eq(l.cols[0], r.cols[0])
+		&& detail::eq(l.cols[1], r.cols[1])
+		&& detail::eq(l.cols[2], r.cols[2])
+		&& detail::eq(l.cols[3], r.cols[3]);
+}
+
 }
