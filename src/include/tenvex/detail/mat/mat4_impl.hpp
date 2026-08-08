@@ -20,6 +20,13 @@ mat4::mat4(float m00, float m10, float m20, float m30,
 {
 }
 
+template<mat_expr E>
+TNVX_INLINE
+mat4::mat4(const E& e) noexcept
+	: _data(e.eval())
+{
+}
+
 TNVX_INLINE
 mat4::mat4(vf4 col0, vf4 col1, vf4 col2, vf4 col3) noexcept
 	: _data({ col0, col1, col2, col3 })

@@ -22,6 +22,10 @@ struct alignas(64) mat4
 		 float m02, float m12, float m22, float m32,
 		 float m03, float m13, float m23, float m33) noexcept;
 
+	template<mat_expr E>
+	TNVX_INLINE
+	mat4(const E& TNVX_RESTRICT e) noexcept;
+
 	TNVX_INLINE
 	mat4(vf4 col0, vf4 col1, vf4 col2, vf4 col3) noexcept;
 
