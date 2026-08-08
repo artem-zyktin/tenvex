@@ -281,6 +281,35 @@ vf4 normalize4(vf4 q) noexcept
 	return _mm_div_ps(q, magnitude4(q));
 }
 
+[[nodiscard]] TNVX_INLINE
+mf4 mat_from_quat(vf4 q) noexcept
+{
+	const vf4 q2 = _mm_add_ps(q, q);
+	const vf4 e  = _mm_mul_ps(q, q2);
+
+	const vf4 e1 = _mm_shuffle_ps(e, e, _MM_SHUFFLE(3, 0, 0, 1));
+	const vf4 e2 = _mm_shuffle_ps(e, e, _MM_SHUFFLE(3, 1, 2, 2));
+
+	vf4 dg = _mm_sub_ps(_mm_sub_ps(set(1.0f, 1.0f, 1.0f, 0.0f), e1), e2);
+	dg = _mm_blend_ps(dg, _mm_setzero_ps(), 0b1000);
+
+	const vf4 p = _mm_mul_ps(_mm_shuffle_ps(q, q, _MM_SHUFFLE(3, 0, 2, 1)), q2);
+	const vf4 w = _mm_mul_ps(_mm_shuffle_ps(q2, q2, _MM_SHUFFLE(3, 1, 0, 2)),
+							 _mm_shuffle_ps(q,  q,  _MM_SHUFFLE(3, 3, 3, 3)));
+
+	const vf4 s  = _mm_add_ps(p, w);
+	const vf4 sr = _mm_shuffle_ps(s, s, _MM_SHUFFLE(3, 1, 0, 2));
+	const vf4 m  = _mm_sub_ps(p, w);
+
+	mf4 r;
+	r.cols[0] = _mm_blend_ps(_mm_blend_ps(dg, sr, 0b0010), m,  0b0100);
+	r.cols[1] = _mm_blend_ps(_mm_blend_ps(dg, m,  0b0001), sr, 0b0100);
+	r.cols[2] = _mm_blend_ps(_mm_blend_ps(dg, sr, 0b0001), m,  0b0010);
+	r.cols[3] = set(0.0f, 0.0f, 0.0f, 1.0f);
+
+	return r;
+}
+
 } // namespace tnvx::detail
 
 #endif

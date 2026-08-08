@@ -285,6 +285,56 @@ vf4 normalize4(vf4 q) noexcept
 	return vdivq_f32(q, magnitude4(q));
 }
 
+[[nodiscard]] TNVX_INLINE
+mf4 mat_from_quat(vf4 q) noexcept
+{
+	alignas(16) static const uint8_t idx_yxx_bytes[16] = {
+		4, 5, 6, 7,    0, 1, 2, 3,    0, 1, 2, 3,   12,13,14,15
+	};
+	alignas(16) static const uint8_t idx_zzy_bytes[16] = {
+		8, 9,10,11,    8, 9,10,11,    4, 5, 6, 7,   12,13,14,15
+	};
+	alignas(16) static const uint8_t idx_yzx_bytes[16] = {
+		4, 5, 6, 7,    8, 9,10,11,    0, 1, 2, 3,   12,13,14,15
+	};
+	alignas(16) static const uint8_t idx_zxy_bytes[16] = {
+		8, 9,10,11,    0, 1, 2, 3,    4, 5, 6, 7,   12,13,14,15
+	};
+
+	const uint8x16_t idx_yxx = vld1q_u8(idx_yxx_bytes);
+	const uint8x16_t idx_zzy = vld1q_u8(idx_zzy_bytes);
+	const uint8x16_t idx_yzx = vld1q_u8(idx_yzx_bytes);
+	const uint8x16_t idx_zxy = vld1q_u8(idx_zxy_bytes);
+
+	const vf4 q2 = vaddq_f32(q, q);
+	const vf4 e  = vmulq_f32(q, q2);
+
+	const uint8x16_t eb  = vreinterpretq_u8_f32(e);
+	const vf4 e1 = vreinterpretq_f32_u8(vqtbl1q_u8(eb, idx_yxx));
+	const vf4 e2 = vreinterpretq_f32_u8(vqtbl1q_u8(eb, idx_zzy));
+
+	vf4 dg = vsubq_f32(vsubq_f32(set(1.0f, 1.0f, 1.0f, 0.0f), e1), e2);
+	dg = vsetq_lane_f32(0.0f, dg, 3);
+
+	const vf4 q_yzx  = vreinterpretq_f32_u8(vqtbl1q_u8(vreinterpretq_u8_f32(q),  idx_yzx));
+	const vf4 q2_zxy = vreinterpretq_f32_u8(vqtbl1q_u8(vreinterpretq_u8_f32(q2), idx_zxy));
+
+	const vf4 p = vmulq_f32(q_yzx, q2);
+	const vf4 w = vmulq_f32(q2_zxy, vdupq_laneq_f32(q, 3));
+
+	const vf4 s  = vaddq_f32(p, w);
+	const vf4 sr = vreinterpretq_f32_u8(vqtbl1q_u8(vreinterpretq_u8_f32(s), idx_zxy));
+	const vf4 m  = vsubq_f32(p, w);
+
+	mf4 r;
+	r.cols[0] = vcopyq_laneq_f32(vcopyq_laneq_f32(dg, 1, sr, 1), 2, m,  2);
+	r.cols[1] = vcopyq_laneq_f32(vcopyq_laneq_f32(dg, 0, m,  0), 2, sr, 2);
+	r.cols[2] = vcopyq_laneq_f32(vcopyq_laneq_f32(dg, 0, sr, 0), 1, m,  1);
+	r.cols[3] = set(0.0f, 0.0f, 0.0f, 1.0f);
+
+	return r;
+}
+
 }
 
 #endif
