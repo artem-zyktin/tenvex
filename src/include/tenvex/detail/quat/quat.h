@@ -23,6 +23,9 @@ struct alignas(16) quat
 	TNVX_INLINE
 	quat(const E& e) noexcept;
 
+	TNVX_INLINE
+	quat(vf4 value) noexcept;
+
 	[[nodiscard]] TNVX_INLINE
 	result_t eval() const noexcept;
 

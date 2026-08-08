@@ -21,6 +21,12 @@ quat::quat(const E& e) noexcept
 }
 
 TNVX_INLINE
+quat::quat(vf4 value) noexcept
+	: _data(value)
+{
+}
+
+TNVX_INLINE
 quat::result_t quat::eval() const noexcept
 {
 	return _data;

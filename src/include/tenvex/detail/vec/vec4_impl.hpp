@@ -17,6 +17,12 @@ vec4::result_t vec4::eval() const noexcept
 	return _data;
 }
 
+TNVX_INLINE
+vec4::vec4(vf4 value) noexcept
+	: _data(value)
+{
+}
+
 TNVX_INLINE vec4 vec4::zero() noexcept
 {
 	return { 0.0f, 0.0f, 0.0f, 0.0f };
