@@ -76,7 +76,7 @@ private:
 	mf4 _data;
 };
 
-template<> inline constexpr bool is_mat_expr = true;
+template<> inline constexpr bool is_mat_expr<mat4> = true;
 
 TNVX_INLINE
 bool approx_eq(const mat4& lhs, const mat4& rhs, float eps = 1e-6f) noexcept;
