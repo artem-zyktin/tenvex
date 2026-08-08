@@ -30,6 +30,11 @@ concept quat_expr = expression<T>
 					&& std::same_as<typename T::result_t, vf4>;
 
 template<typename T>
+concept mat_exptr = expression<T>
+					&& is_mat_expr<T>
+					&& std::same_as<typename T::result_t, mf4>;
+
+template<typename T>
 concept packed_expr = quat_expr<T> || vec_expr<T>;
 
 template<typename L, typename R>

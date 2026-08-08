@@ -22,4 +22,7 @@ inline constexpr bool is_vec_expr = false;
 template<typename>
 inline constexpr bool is_quat_expr = false;
 
+template<typename>
+inline constexpr bool is_mat_expr = false;
+
 }
