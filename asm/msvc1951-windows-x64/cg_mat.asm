@@ -72,33 +72,75 @@ $pdata$?from_quat@mat4@tnvx@@SA?AU12@AEBUquat@2@@Z DD imagerel $LN19
 pdata	ENDS
 ;	COMDAT pdata
 pdata	SEGMENT
-$pdata$cg_mat_from_quat DD imagerel $LN39
-	DD	imagerel $LN39+919
+$pdata$cg_mat_from_quat DD imagerel $LN41
+	DD	imagerel $LN41+52
 	DD	imagerel $unwind$cg_mat_from_quat
 pdata	ENDS
 ;	COMDAT pdata
 pdata	SEGMENT
-$pdata$cg_mat_translation DD imagerel $LN93
-	DD	imagerel $LN93+326
+$pdata$0$cg_mat_from_quat DD imagerel $LN41+52
+	DD	imagerel $LN41+702
+	DD	imagerel $chain$0$cg_mat_from_quat
+pdata	ENDS
+;	COMDAT pdata
+pdata	SEGMENT
+$pdata$1$cg_mat_from_quat DD imagerel $LN41+702
+	DD	imagerel $LN41+898
+	DD	imagerel $chain$1$cg_mat_from_quat
+pdata	ENDS
+;	COMDAT pdata
+pdata	SEGMENT
+$pdata$cg_mat_translation DD imagerel $LN95
+	DD	imagerel $LN95+55
 	DD	imagerel $unwind$cg_mat_translation
 pdata	ENDS
 ;	COMDAT pdata
 pdata	SEGMENT
-$pdata$cg_mat_scaling_vec DD imagerel $LN136
-	DD	imagerel $LN136+402
+$pdata$0$cg_mat_translation DD imagerel $LN95+55
+	DD	imagerel $LN95+263
+	DD	imagerel $chain$0$cg_mat_translation
+pdata	ENDS
+;	COMDAT pdata
+pdata	SEGMENT
+$pdata$1$cg_mat_translation DD imagerel $LN95+263
+	DD	imagerel $LN95+324
+	DD	imagerel $chain$1$cg_mat_translation
+pdata	ENDS
+;	COMDAT pdata
+pdata	SEGMENT
+$pdata$cg_mat_scaling_vec DD imagerel $LN138
+	DD	imagerel $LN138+56
 	DD	imagerel $unwind$cg_mat_scaling_vec
 pdata	ENDS
 ;	COMDAT pdata
 pdata	SEGMENT
-$pdata$cg_mat_scaling_scalar DD imagerel $LN63
-	DD	imagerel $LN63+534
+$pdata$0$cg_mat_scaling_vec DD imagerel $LN138+56
+	DD	imagerel $LN138+322
+	DD	imagerel $chain$0$cg_mat_scaling_vec
+pdata	ENDS
+;	COMDAT pdata
+pdata	SEGMENT
+$pdata$1$cg_mat_scaling_vec DD imagerel $LN138+322
+	DD	imagerel $LN138+400
+	DD	imagerel $chain$1$cg_mat_scaling_vec
+pdata	ENDS
+;	COMDAT pdata
+pdata	SEGMENT
+$pdata$cg_mat_scaling_scalar DD imagerel $LN39
+	DD	imagerel $LN39+33
 	DD	imagerel $unwind$cg_mat_scaling_scalar
 pdata	ENDS
 ;	COMDAT pdata
 pdata	SEGMENT
-$pdata$cg_mat_identity DD imagerel $LN44
-	DD	imagerel $LN44+117
-	DD	imagerel $unwind$cg_mat_identity
+$pdata$1$cg_mat_scaling_scalar DD imagerel $LN39+33
+	DD	imagerel $LN39+341
+	DD	imagerel $chain$1$cg_mat_scaling_scalar
+pdata	ENDS
+;	COMDAT pdata
+pdata	SEGMENT
+$pdata$2$cg_mat_scaling_scalar DD imagerel $LN39+341
+	DD	imagerel $LN39+425
+	DD	imagerel $chain$2$cg_mat_scaling_scalar
 pdata	ENDS
 ;	COMDAT pdata
 pdata	SEGMENT
@@ -144,37 +186,88 @@ $unwind$cg_mat_from_quat_value DD 030e01H
 xdata	ENDS
 ;	COMDAT xdata
 xdata	SEGMENT
-$unwind$cg_mat_identity DD 020f01H
-	DD	050027206H
+$chain$2$cg_mat_scaling_scalar DD 021H
+	DD	imagerel $LN39
+	DD	imagerel $LN39+33
+	DD	imagerel $unwind$cg_mat_scaling_scalar
 xdata	ENDS
 ;	COMDAT xdata
 xdata	SEGMENT
-$unwind$cg_mat_scaling_scalar DD 051201H
-	DD	070057209H
-	DD	030036004H
-	DD	05002H
+$chain$1$cg_mat_scaling_scalar DD 040b21H
+	DD	0740bH
+	DD	023405H
+	DD	imagerel $LN39
+	DD	imagerel $LN39+33
+	DD	imagerel $unwind$cg_mat_scaling_scalar
 xdata	ENDS
 ;	COMDAT xdata
 xdata	SEGMENT
-$unwind$cg_mat_scaling_vec DD 061801H
-	DD	04680fH
-	DD	0c340aH
-	DD	05006920aH
+$unwind$cg_mat_scaling_scalar DD 010401H
+	DD	0204H
 xdata	ENDS
 ;	COMDAT xdata
 xdata	SEGMENT
-$unwind$cg_mat_translation DD 041301H
-	DD	0a340aH
-	DD	05006720aH
+$chain$1$cg_mat_scaling_vec DD 021H
+	DD	imagerel $LN138
+	DD	imagerel $LN138+56
+	DD	imagerel $unwind$cg_mat_scaling_vec
 xdata	ENDS
 ;	COMDAT xdata
 xdata	SEGMENT
-$unwind$cg_mat_from_quat DD 0a2301H
-	DD	04881aH
-	DD	057814H
-	DD	06680fH
-	DD	010340aH
-	DD	05006d20aH
+$chain$0$cg_mat_scaling_vec DD 020521H
+	DD	023405H
+	DD	imagerel $LN138
+	DD	imagerel $LN138+56
+	DD	imagerel $unwind$cg_mat_scaling_vec
+xdata	ENDS
+;	COMDAT xdata
+xdata	SEGMENT
+$unwind$cg_mat_scaling_vec DD 032601H
+	DD	06826H
+	DD	02204H
+xdata	ENDS
+;	COMDAT xdata
+xdata	SEGMENT
+$chain$1$cg_mat_translation DD 021H
+	DD	imagerel $LN95
+	DD	imagerel $LN95+55
+	DD	imagerel $unwind$cg_mat_translation
+xdata	ENDS
+;	COMDAT xdata
+xdata	SEGMENT
+$chain$0$cg_mat_translation DD 020421H
+	DD	03404H
+	DD	imagerel $LN95
+	DD	imagerel $LN95+55
+	DD	imagerel $unwind$cg_mat_translation
+xdata	ENDS
+;	COMDAT xdata
+xdata	SEGMENT
+$unwind$cg_mat_translation DD 010401H
+	DD	0204H
+xdata	ENDS
+;	COMDAT xdata
+xdata	SEGMENT
+$chain$1$cg_mat_from_quat DD 021H
+	DD	imagerel $LN41
+	DD	imagerel $LN41+52
+	DD	imagerel $unwind$cg_mat_from_quat
+xdata	ENDS
+;	COMDAT xdata
+xdata	SEGMENT
+$chain$0$cg_mat_from_quat DD 020521H
+	DD	063405H
+	DD	imagerel $LN41
+	DD	imagerel $LN41+52
+	DD	imagerel $unwind$cg_mat_from_quat
+xdata	ENDS
+;	COMDAT xdata
+xdata	SEGMENT
+$unwind$cg_mat_from_quat DD 072101H
+	DD	08821H
+	DD	017811H
+	DD	026809H
+	DD	06204H
 xdata	ENDS
 ;	COMDAT xdata
 xdata	SEGMENT
@@ -493,38 +586,57 @@ m23$ = 128
 m33$ = 136
 ??0mat4@tnvx@@QEAA@MMMMMMMMMMMMMMMM@Z PROC		; tnvx::mat4::mat4, COMDAT
 ; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\mat\mat4_impl.hpp
-; Line 16
-	movss	xmm0, DWORD PTR m30$[rsp]
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\core\core_sse.h
+; Line 23
+	movss	xmm0, DWORD PTR m11$[rsp]
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\mat\mat4_impl.hpp
 ; Line 21
 	mov	rax, rcx
-	movss	DWORD PTR [rcx+12], xmm0
-	movss	xmm0, DWORD PTR m11$[rsp]
-	movss	DWORD PTR [rcx], xmm1
-	movss	xmm1, DWORD PTR m01$[rsp]
-	movss	DWORD PTR [rcx+20], xmm0
-	movss	xmm0, DWORD PTR m31$[rsp]
-	movss	DWORD PTR [rcx+16], xmm1
-	movss	xmm1, DWORD PTR m21$[rsp]
-	movss	DWORD PTR [rcx+28], xmm0
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\core\core_sse.h
+; Line 23
+	movss	xmm4, DWORD PTR m30$[rsp]
+	unpcklps xmm3, xmm4
+	unpcklps xmm1, xmm2
+	movss	xmm2, DWORD PTR m21$[rsp]
+	movlhps	xmm1, xmm3
+	movss	xmm3, DWORD PTR m01$[rsp]
+	unpcklps xmm3, xmm0
 	movss	xmm0, DWORD PTR m12$[rsp]
-	movss	DWORD PTR [rcx+24], xmm1
-	movss	xmm1, DWORD PTR m02$[rsp]
-	movss	DWORD PTR [rcx+36], xmm0
-	movss	xmm0, DWORD PTR m32$[rsp]
-	movss	DWORD PTR [rcx+32], xmm1
-	movss	xmm1, DWORD PTR m22$[rsp]
-	movss	DWORD PTR [rcx+44], xmm0
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\mat\mat4_impl.hpp
+; Line 16
+	movups	XMMWORD PTR [rcx], xmm1
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\core\core_sse.h
+; Line 23
+	movss	xmm1, DWORD PTR m31$[rsp]
+	unpcklps xmm2, xmm1
+	movss	xmm1, DWORD PTR m32$[rsp]
+	movlhps	xmm3, xmm2
+	movss	xmm2, DWORD PTR m22$[rsp]
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\mat\mat4_impl.hpp
+; Line 16
+	movups	XMMWORD PTR [rcx+16], xmm3
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\core\core_sse.h
+; Line 23
+	movss	xmm3, DWORD PTR m02$[rsp]
+	unpcklps xmm3, xmm0
 	movss	xmm0, DWORD PTR m13$[rsp]
-	movss	DWORD PTR [rcx+40], xmm1
-	movss	xmm1, DWORD PTR m03$[rsp]
-	movss	DWORD PTR [rcx+52], xmm0
-	movss	xmm0, DWORD PTR m33$[rsp]
-	movss	DWORD PTR [rcx+48], xmm1
-	movss	xmm1, DWORD PTR m23$[rsp]
-	movss	DWORD PTR [rcx+60], xmm0
-	movss	DWORD PTR [rcx+4], xmm2
-	movss	DWORD PTR [rcx+8], xmm3
-	movss	DWORD PTR [rcx+56], xmm1
+	unpcklps xmm2, xmm1
+	movss	xmm1, DWORD PTR m33$[rsp]
+	movlhps	xmm3, xmm2
+	movss	xmm2, DWORD PTR m23$[rsp]
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\mat\mat4_impl.hpp
+; Line 16
+	movups	XMMWORD PTR [rcx+32], xmm3
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\core\core_sse.h
+; Line 23
+	movss	xmm3, DWORD PTR m03$[rsp]
+	unpcklps xmm3, xmm0
+	unpcklps xmm2, xmm1
+	movlhps	xmm3, xmm2
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\mat\mat4_impl.hpp
+; Line 16
+	movups	XMMWORD PTR [rcx+48], xmm3
+; Line 21
 	ret	0
 ??0mat4@tnvx@@QEAA@MMMMMMMMMMMMMMMM@Z ENDP		; tnvx::mat4::mat4
 _TEXT	ENDS
@@ -583,21 +695,31 @@ _TEXT	SEGMENT
 __$ReturnUdt$ = 8
 ?identity@mat4@tnvx@@SA?AU12@XZ PROC			; tnvx::mat4::identity, COMDAT
 ; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\mat\mat4_impl.hpp
-; Line 16
-	xor	eax, eax
-	mov	QWORD PTR [rcx], 1065353216		; 3f800000H
-	mov	QWORD PTR [rcx+8], rax
-	mov	DWORD PTR [rcx+16], eax
-	mov	QWORD PTR [rcx+28], rax
-	mov	DWORD PTR [rcx+36], eax
-	mov	QWORD PTR [rcx+48], rax
-	mov	DWORD PTR [rcx+56], eax
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\core\core_sse.h
+; Line 23
+	movdqa	xmm0, XMMWORD PTR __xmm@0000000000000000000000003f800000
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\mat\mat4_impl.hpp
 ; Line 54
 	mov	rax, rcx
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\core\core_sse.h
+; Line 23
+	movdqa	xmm1, XMMWORD PTR __xmm@00000000000000003f80000000000000
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\mat\mat4_impl.hpp
 ; Line 16
-	mov	QWORD PTR [rcx+20], 1065353216		; 3f800000H
-	mov	QWORD PTR [rcx+40], 1065353216		; 3f800000H
-	mov	DWORD PTR [rcx+60], 1065353216		; 3f800000H
+	movups	XMMWORD PTR [rcx], xmm0
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\core\core_sse.h
+; Line 23
+	movdqa	xmm0, XMMWORD PTR __xmm@000000003f8000000000000000000000
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\mat\mat4_impl.hpp
+; Line 16
+	movups	XMMWORD PTR [rcx+16], xmm1
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\core\core_sse.h
+; Line 23
+	movdqa	xmm1, XMMWORD PTR __xmm@3f800000000000000000000000000000
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\mat\mat4_impl.hpp
+; Line 16
+	movups	XMMWORD PTR [rcx+32], xmm0
+	movups	XMMWORD PTR [rcx+48], xmm1
 ; Line 58
 	ret	0
 ?identity@mat4@tnvx@@SA?AU12@XZ ENDP			; tnvx::mat4::identity
@@ -641,21 +763,42 @@ y$ = 24
 z$ = 32
 ?scaling@mat4@tnvx@@SA?AU12@MMM@Z PROC			; tnvx::mat4::scaling, COMDAT
 ; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\mat\mat4_impl.hpp
-; Line 16
-	xor	eax, eax
-	movss	DWORD PTR [rcx], xmm1
-	mov	QWORD PTR [rcx+4], rax
-	mov	QWORD PTR [rcx+12], rax
-	mov	QWORD PTR [rcx+24], rax
-	mov	QWORD PTR [rcx+32], rax
-	mov	QWORD PTR [rcx+44], rax
-	mov	QWORD PTR [rcx+52], rax
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\core\core_sse.h
+; Line 23
+	movaps	xmm4, xmm1
+	xorps	xmm0, xmm0
+	xorps	xmm1, xmm1
+	unpcklps xmm4, xmm0
+	unpcklps xmm4, xmm1
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\mat\mat4_impl.hpp
 ; Line 81
 	mov	rax, rcx
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\core\core_sse.h
+; Line 23
+	movaps	xmm1, xmm2
+	xorps	xmm2, xmm2
+	unpcklps xmm1, xmm0
+	movaps	xmm0, xmm3
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\mat\mat4_impl.hpp
 ; Line 16
-	movss	DWORD PTR [rcx+20], xmm2
-	movss	DWORD PTR [rcx+40], xmm3
-	mov	DWORD PTR [rcx+60], 1065353216		; 3f800000H
+	movups	XMMWORD PTR [rcx], xmm4
+	xorps	xmm3, xmm3
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\core\core_sse.h
+; Line 23
+	unpcklps xmm2, xmm1
+	unpcklps xmm3, xmm0
+	xorps	xmm1, xmm1
+	movdqa	xmm0, XMMWORD PTR __xmm@3f800000000000000000000000000000
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\mat\mat4_impl.hpp
+; Line 16
+	movups	XMMWORD PTR [rcx+16], xmm2
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\core\core_sse.h
+; Line 23
+	unpcklps xmm3, xmm1
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\mat\mat4_impl.hpp
+; Line 16
+	movups	XMMWORD PTR [rcx+32], xmm3
+	movups	XMMWORD PTR [rcx+48], xmm0
 ; Line 85
 	ret	0
 ?scaling@mat4@tnvx@@SA?AU12@MMM@Z ENDP			; tnvx::mat4::scaling
@@ -992,31 +1135,27 @@ _TEXT	ENDS
 ; Function compile flags: /Ogtpy
 ;	COMDAT cg_mat_from_quat
 _TEXT	SEGMENT
-qa$ = 128
-out$ = 136
-n$ = 144
+qa$ = 64
+out$ = 72
+n$ = 80
 cg_mat_from_quat PROC					; COMDAT
 ; File C:\Users\artem_zyktin\projects\tenvex\src\codegen\cg_mat.cpp
 ; Line 31
-$LN39:
-	mov	QWORD PTR [rsp+8], rbx
-	push	rbp
-	sub	rsp, 112				; 00000070H
-	movaps	XMMWORD PTR [rsp+96], xmm6
-	movaps	XMMWORD PTR [rsp+80], xmm7
-	movaps	XMMWORD PTR [rsp+64], xmm8
-	lea	rbp, QWORD PTR [rsp+64]
-	and	rbp, -64				; ffffffffffffffc0H
+$LN41:
+	sub	rsp, 56					; 00000038H
+	movaps	XMMWORD PTR [rsp+32], xmm6
+	xor	r9d, r9d
+	movaps	XMMWORD PTR [rsp+16], xmm7
+	mov	r10, rcx
 ; Line 32
 	movdqa	xmm7, XMMWORD PTR __xmm@3f800000000000000000000000000000
-	xor	r9d, r9d
+	movaps	XMMWORD PTR [rsp], xmm8
 	movdqa	xmm8, XMMWORD PTR __xmm@000000003f8000003f8000003f800000
-	mov	r10, rcx
 	cmp	r8, 4
 	jb	$LN36@cg_mat_fro
-	lea	rbx, QWORD PTR [r8-3]
+	mov	QWORD PTR [rsp+48], rbx
 	xor	r11d, r11d
-	npad	5
+	lea	rbx, QWORD PTR [r8-3]
 $LL31@cg_mat_fro:
 ; Line 33
 	mov	rcx, r9
@@ -1255,6 +1394,7 @@ $LL31@cg_mat_fro:
 	add	r11, 256				; 00000100H
 	cmp	r9, rbx
 	jb	$LL31@cg_mat_fro
+	mov	rbx, QWORD PTR [rsp+48]
 $LN36@cg_mat_fro:
 ; Line 32
 	cmp	r9, r8
@@ -1334,30 +1474,24 @@ $LC4@cg_mat_fro:
 	jb	$LC4@cg_mat_fro
 $LN29@cg_mat_fro:
 ; Line 34
-	mov	rbx, QWORD PTR [rsp+128]
-	movaps	xmm6, XMMWORD PTR [rsp+96]
-	movaps	xmm7, XMMWORD PTR [rsp+80]
-	movaps	xmm8, XMMWORD PTR [rsp+64]
-	add	rsp, 112				; 00000070H
-	pop	rbp
+	movaps	xmm6, XMMWORD PTR [rsp+32]
+	movaps	xmm7, XMMWORD PTR [rsp+16]
+	movaps	xmm8, XMMWORD PTR [rsp]
+	add	rsp, 56					; 00000038H
 	ret	0
 cg_mat_from_quat ENDP
 _TEXT	ENDS
 ; Function compile flags: /Ogtpy
 ;	COMDAT cg_mat_translation
 _TEXT	SEGMENT
-va$ = 80
-out$ = 88
-n$ = 96
+va$ = 16
+out$ = 24
+n$ = 32
 cg_mat_translation PROC					; COMDAT
 ; File C:\Users\artem_zyktin\projects\tenvex\src\codegen\cg_mat.cpp
 ; Line 37
-$LN93:
-	mov	QWORD PTR [rsp+8], rbx
-	push	rbp
-	sub	rsp, 64					; 00000040H
-	lea	rbp, QWORD PTR [rsp+64]
-	and	rbp, -64				; ffffffffffffffc0H
+$LN95:
+	sub	rsp, 8
 ; Line 38
 	movdqa	xmm1, XMMWORD PTR __xmm@0000000000000000000000003f800000
 	xor	r9d, r9d
@@ -1368,9 +1502,10 @@ $LN93:
 	movdqa	xmm4, XMMWORD PTR __xmm@3f8000003f8000003f8000003f800000
 	cmp	r8, 4
 	jb	$LN90@cg_mat_tra
+	mov	QWORD PTR [rsp], rbx
 	lea	rbx, QWORD PTR [r8-3]
 	xor	r8d, r8d
-	npad	3
+	npad	14
 $LL85@cg_mat_tra:
 ; Line 39
 	mov	rcx, r9
@@ -1437,6 +1572,7 @@ $LL85@cg_mat_tra:
 	movups	XMMWORD PTR [rdx+r8-16], xmm0
 	cmp	r9, rbx
 	jb	$LL85@cg_mat_tra
+	mov	rbx, QWORD PTR [rsp]
 $LN90@cg_mat_tra:
 ; Line 38
 	cmp	r9, r10
@@ -1466,40 +1602,35 @@ $LC4@cg_mat_tra:
 	jb	SHORT $LC4@cg_mat_tra
 $LN83@cg_mat_tra:
 ; Line 40
-	mov	rbx, QWORD PTR [rsp+80]
-	add	rsp, 64					; 00000040H
-	pop	rbp
+	add	rsp, 8
 	ret	0
 cg_mat_translation ENDP
 _TEXT	ENDS
 ; Function compile flags: /Ogtpy
 ;	COMDAT cg_mat_scaling_vec
 _TEXT	SEGMENT
-va$ = 96
-out$ = 104
-n$ = 112
+va$ = 32
+out$ = 40
+n$ = 48
 cg_mat_scaling_vec PROC					; COMDAT
 ; File C:\Users\artem_zyktin\projects\tenvex\src\codegen\cg_mat.cpp
 ; Line 43
-$LN136:
-	mov	QWORD PTR [rsp+8], rbx
-	push	rbp
-	sub	rsp, 80					; 00000050H
-	movaps	XMMWORD PTR [rsp+64], xmm6
-	lea	rbp, QWORD PTR [rsp+64]
-	and	rbp, -64				; ffffffffffffffc0H
+$LN138:
+	sub	rsp, 24
 ; Line 44
 	movdqa	xmm3, XMMWORD PTR __xmm@0000000000000000000000003f800000
 	xor	r9d, r9d
 	movdqa	xmm4, XMMWORD PTR __xmm@00000000000000003f80000000000000
 	mov	r10, rcx
 	movdqa	xmm5, XMMWORD PTR __xmm@000000003f8000000000000000000000
+	movaps	XMMWORD PTR [rsp], xmm6
 	movdqa	xmm6, XMMWORD PTR __xmm@3f800000000000000000000000000000
 	cmp	r8, 4
 	jb	$LN133@cg_mat_sca
-	lea	rbx, QWORD PTR [r8-3]
+	mov	QWORD PTR [rsp+16], rbx
 	xor	r11d, r11d
-	npad	1
+	lea	rbx, QWORD PTR [r8-3]
+	npad	12
 $LL128@cg_mat_sca:
 ; Line 45
 	mov	rcx, r9
@@ -1602,6 +1733,7 @@ $LL128@cg_mat_sca:
 	movups	XMMWORD PTR [rdx+r11-32], xmm2
 	cmp	r9, rbx
 	jb	$LL128@cg_mat_sca
+	mov	rbx, QWORD PTR [rsp+16]
 $LN133@cg_mat_sca:
 ; Line 44
 	cmp	r9, r8
@@ -1643,199 +1775,215 @@ $LC4@cg_mat_sca:
 	jb	SHORT $LC4@cg_mat_sca
 $LN126@cg_mat_sca:
 ; Line 46
-	mov	rbx, QWORD PTR [rsp+96]
-	movaps	xmm6, XMMWORD PTR [rsp+64]
-	add	rsp, 80					; 00000050H
-	pop	rbp
+	movaps	xmm6, XMMWORD PTR [rsp]
+	add	rsp, 24
 	ret	0
 cg_mat_scaling_vec ENDP
 _TEXT	ENDS
 ; Function compile flags: /Ogtpy
 ;	COMDAT cg_mat_scaling_scalar
 _TEXT	SEGMENT
-sx$ = 104
-sy$ = 112
-sz$ = 120
-out$ = 128
-n$ = 136
+sx$ = 16
+sy$ = 24
+sz$ = 32
+out$ = 40
+n$ = 48
 cg_mat_scaling_scalar PROC				; COMDAT
 ; File C:\Users\artem_zyktin\projects\tenvex\src\codegen\cg_mat.cpp
 ; Line 50
-$LN63:
-	push	rbp
-	push	rbx
-	push	rsi
-	push	rdi
-	sub	rsp, 64					; 00000040H
-	lea	rbp, QWORD PTR [rsp+64]
-	and	rbp, -64				; ffffffffffffffc0H
-	mov	rbx, QWORD PTR n$[rsp]
-	xor	esi, esi
-	mov	r11, rcx
-	mov	r10d, esi
+$LN39:
+	sub	rsp, 8
+	mov	r11, QWORD PTR n$[rsp]
+	mov	r10, r9
 ; Line 51
-	cmp	rbx, 4
-	jb	$LN60@cg_mat_sca
-	lea	rdi, QWORD PTR [rbx-3]
-$LL55@cg_mat_sca:
-; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\mat\mat4_impl.hpp
-; Line 16
-	movss	xmm0, DWORD PTR [rdx+r10*4]
+	movdqa	xmm5, XMMWORD PTR __xmm@3f800000000000000000000000000000
+	xor	r9d, r9d
+	cmp	r11, 4
+	jb	$LN34@cg_mat_sca
+	mov	QWORD PTR [rsp+16], rbx
+	xor	ebx, ebx
+	mov	QWORD PTR [rsp], rdi
+	lea	rdi, QWORD PTR [r11-3]
+$LL29@cg_mat_sca:
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\core\core_sse.h
+; Line 23
+	movss	xmm1, DWORD PTR [rdx+r9*4]
 ; File C:\Users\artem_zyktin\projects\tenvex\src\codegen\cg_mat.cpp
 ; Line 52
-	mov	rcx, r10
-; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\mat\mat4_impl.hpp
-; Line 16
-	movss	xmm1, DWORD PTR [r8+r10*4]
+	lea	rbx, QWORD PTR [rbx+256]
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\core\core_sse.h
+; Line 23
+	movss	xmm0, DWORD PTR [r8+r9*4]
+	xorps	xmm3, xmm3
+	movss	xmm2, DWORD PTR [rcx+r9*4]
+	xorps	xmm4, xmm4
+	unpcklps xmm4, xmm1
 ; File C:\Users\artem_zyktin\projects\tenvex\src\codegen\cg_mat.cpp
 ; Line 52
-	mov	eax, DWORD PTR [r11+r10*4]
-	shl	rcx, 6
-	movss	DWORD PTR [r9+rcx+20], xmm0
-	movss	DWORD PTR [r9+rcx+40], xmm1
-	mov	DWORD PTR [r9+rcx], eax
-	mov	QWORD PTR [r9+rcx+4], rsi
-	mov	QWORD PTR [r9+rcx+12], rsi
-	mov	QWORD PTR [r9+rcx+24], rsi
-	mov	QWORD PTR [r9+rcx+32], rsi
-	mov	QWORD PTR [r9+rcx+44], rsi
-	mov	QWORD PTR [r9+rcx+52], rsi
-	mov	DWORD PTR [r9+rcx+60], 1065353216	; 3f800000H
-; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\mat\mat4_impl.hpp
-; Line 16
-	movss	xmm0, DWORD PTR [rdx+r10*4+4]
-	movss	xmm1, DWORD PTR [r8+r10*4+4]
+	mov	rax, r9
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\core\core_sse.h
+; Line 23
+	unpcklps xmm3, xmm0
+	xorps	xmm1, xmm1
+	unpcklps xmm3, xmm1
 ; File C:\Users\artem_zyktin\projects\tenvex\src\codegen\cg_mat.cpp
 ; Line 52
-	mov	eax, DWORD PTR [r11+r10*4+4]
-	movss	DWORD PTR [r9+rcx+84], xmm0
-	movss	DWORD PTR [r9+rcx+104], xmm1
-	mov	DWORD PTR [r9+rcx+64], eax
-	mov	QWORD PTR [r9+rcx+68], rsi
-	mov	QWORD PTR [r9+rcx+76], rsi
-	mov	QWORD PTR [r9+rcx+88], rsi
-	mov	QWORD PTR [r9+rcx+96], rsi
-	mov	QWORD PTR [r9+rcx+108], rsi
-	mov	QWORD PTR [r9+rcx+116], rsi
-	mov	DWORD PTR [r9+rcx+124], 1065353216	; 3f800000H
-; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\mat\mat4_impl.hpp
-; Line 16
-	movss	xmm0, DWORD PTR [rdx+r10*4+8]
-	movss	xmm1, DWORD PTR [r8+r10*4+8]
+	shl	rax, 6
+	movups	XMMWORD PTR [r10+rax], xmm2
+	movups	XMMWORD PTR [r10+rax+16], xmm4
+	xorps	xmm4, xmm4
+	movups	XMMWORD PTR [r10+rax+32], xmm3
+	xorps	xmm3, xmm3
+	movups	XMMWORD PTR [r10+rax+48], xmm5
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\core\core_sse.h
+; Line 23
+	movss	xmm1, DWORD PTR [rdx+r9*4+4]
+	movss	xmm0, DWORD PTR [r8+r9*4+4]
+	movss	xmm2, DWORD PTR [rcx+r9*4+4]
 ; File C:\Users\artem_zyktin\projects\tenvex\src\codegen\cg_mat.cpp
 ; Line 52
-	mov	eax, DWORD PTR [r11+r10*4+8]
-	movss	DWORD PTR [r9+rcx+148], xmm0
-	movss	DWORD PTR [r9+rcx+168], xmm1
-	mov	DWORD PTR [r9+rcx+128], eax
-	mov	QWORD PTR [r9+rcx+132], rsi
-	mov	QWORD PTR [r9+rcx+140], rsi
-	mov	QWORD PTR [r9+rcx+152], rsi
-	mov	QWORD PTR [r9+rcx+160], rsi
-	mov	QWORD PTR [r9+rcx+172], rsi
-	mov	QWORD PTR [r9+rcx+180], rsi
-	mov	DWORD PTR [r9+rcx+188], 1065353216	; 3f800000H
-; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\mat\mat4_impl.hpp
-; Line 16
-	movss	xmm0, DWORD PTR [rdx+r10*4+12]
-	movss	xmm1, DWORD PTR [r8+r10*4+12]
+	movups	XMMWORD PTR [r10+rax+64], xmm2
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\core\core_sse.h
+; Line 23
+	unpcklps xmm4, xmm1
+	xorps	xmm1, xmm1
 ; File C:\Users\artem_zyktin\projects\tenvex\src\codegen\cg_mat.cpp
 ; Line 52
-	mov	eax, DWORD PTR [r11+r10*4+12]
-	add	r10, 4
-	movss	DWORD PTR [r9+rcx+212], xmm0
-	movss	DWORD PTR [r9+rcx+232], xmm1
-	mov	DWORD PTR [r9+rcx+192], eax
-	mov	QWORD PTR [r9+rcx+196], rsi
-	mov	QWORD PTR [r9+rcx+204], rsi
-	mov	QWORD PTR [r9+rcx+216], rsi
-	mov	QWORD PTR [r9+rcx+224], rsi
-	mov	QWORD PTR [r9+rcx+236], rsi
-	mov	QWORD PTR [r9+rcx+244], rsi
-	mov	DWORD PTR [r9+rcx+252], 1065353216	; 3f800000H
-	cmp	r10, rdi
-	jb	$LL55@cg_mat_sca
-$LN60@cg_mat_sca:
+	movups	XMMWORD PTR [r10+rbx-176], xmm4
+	xorps	xmm4, xmm4
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\core\core_sse.h
+; Line 23
+	unpcklps xmm3, xmm0
+	unpcklps xmm3, xmm1
+; File C:\Users\artem_zyktin\projects\tenvex\src\codegen\cg_mat.cpp
+; Line 52
+	movups	XMMWORD PTR [r10+rbx-160], xmm3
+	xorps	xmm3, xmm3
+	movups	XMMWORD PTR [r10+rbx-144], xmm5
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\core\core_sse.h
+; Line 23
+	movss	xmm1, DWORD PTR [rdx+r9*4+8]
+	movss	xmm0, DWORD PTR [r8+r9*4+8]
+	movss	xmm2, DWORD PTR [rcx+r9*4+8]
+; File C:\Users\artem_zyktin\projects\tenvex\src\codegen\cg_mat.cpp
+; Line 52
+	movups	XMMWORD PTR [r10+rbx-128], xmm2
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\core\core_sse.h
+; Line 23
+	unpcklps xmm4, xmm1
+	xorps	xmm1, xmm1
+; File C:\Users\artem_zyktin\projects\tenvex\src\codegen\cg_mat.cpp
+; Line 52
+	movups	XMMWORD PTR [r10+rbx-112], xmm4
+	xorps	xmm4, xmm4
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\core\core_sse.h
+; Line 23
+	unpcklps xmm3, xmm0
+	unpcklps xmm3, xmm1
+; File C:\Users\artem_zyktin\projects\tenvex\src\codegen\cg_mat.cpp
+; Line 52
+	movups	XMMWORD PTR [r10+rbx-96], xmm3
+	xorps	xmm3, xmm3
+	movups	XMMWORD PTR [r10+rbx-80], xmm5
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\core\core_sse.h
+; Line 23
+	movss	xmm1, DWORD PTR [rdx+r9*4+12]
+	movss	xmm0, DWORD PTR [r8+r9*4+12]
+	movss	xmm2, DWORD PTR [rcx+r9*4+12]
+; File C:\Users\artem_zyktin\projects\tenvex\src\codegen\cg_mat.cpp
+; Line 52
+	add	r9, 4
+	movups	XMMWORD PTR [r10+rbx-64], xmm2
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\core\core_sse.h
+; Line 23
+	unpcklps xmm4, xmm1
+	xorps	xmm1, xmm1
+; File C:\Users\artem_zyktin\projects\tenvex\src\codegen\cg_mat.cpp
+; Line 52
+	movups	XMMWORD PTR [r10+rbx-48], xmm4
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\core\core_sse.h
+; Line 23
+	unpcklps xmm3, xmm0
+	unpcklps xmm3, xmm1
+; File C:\Users\artem_zyktin\projects\tenvex\src\codegen\cg_mat.cpp
+; Line 52
+	movups	XMMWORD PTR [r10+rbx-32], xmm3
+	movups	XMMWORD PTR [r10+rbx-16], xmm5
+	cmp	r9, rdi
+	jb	$LL29@cg_mat_sca
+	mov	rdi, QWORD PTR [rsp]
+	mov	rbx, QWORD PTR [rsp+16]
+$LN34@cg_mat_sca:
 ; Line 51
-	cmp	r10, rbx
-	jae	SHORT $LN41@cg_mat_sca
+	cmp	r9, r11
+	jae	SHORT $LN27@cg_mat_sca
 $LC4@cg_mat_sca:
-; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\mat\mat4_impl.hpp
-; Line 16
-	movss	xmm0, DWORD PTR [rdx+r10*4]
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\core\core_sse.h
+; Line 23
+	movss	xmm1, DWORD PTR [rdx+r9*4]
 ; File C:\Users\artem_zyktin\projects\tenvex\src\codegen\cg_mat.cpp
 ; Line 52
-	mov	rcx, r10
-; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\mat\mat4_impl.hpp
-; Line 16
-	movss	xmm1, DWORD PTR [r8+r10*4]
+	mov	rax, r9
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\core\core_sse.h
+; Line 23
+	movss	xmm0, DWORD PTR [r8+r9*4]
+	xorps	xmm3, xmm3
+	movss	xmm2, DWORD PTR [rcx+r9*4]
+	xorps	xmm4, xmm4
 ; File C:\Users\artem_zyktin\projects\tenvex\src\codegen\cg_mat.cpp
 ; Line 52
-	mov	eax, DWORD PTR [r11+r10*4]
-	inc	r10
-	shl	rcx, 6
-	movss	DWORD PTR [r9+rcx+20], xmm0
-	movss	DWORD PTR [r9+rcx+40], xmm1
-	mov	DWORD PTR [r9+rcx], eax
-	mov	QWORD PTR [r9+rcx+4], rsi
-	mov	QWORD PTR [r9+rcx+12], rsi
-	mov	QWORD PTR [r9+rcx+24], rsi
-	mov	QWORD PTR [r9+rcx+32], rsi
-	mov	QWORD PTR [r9+rcx+44], rsi
-	mov	QWORD PTR [r9+rcx+52], rsi
-	mov	DWORD PTR [r9+rcx+60], 1065353216	; 3f800000H
-	cmp	r10, rbx
+	shl	rax, 6
+	inc	r9
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\core\core_sse.h
+; Line 23
+	unpcklps xmm4, xmm1
+	xorps	xmm1, xmm1
+	unpcklps xmm3, xmm0
+	unpcklps xmm3, xmm1
+; File C:\Users\artem_zyktin\projects\tenvex\src\codegen\cg_mat.cpp
+; Line 52
+	movups	XMMWORD PTR [r10+rax], xmm2
+	movups	XMMWORD PTR [r10+rax+16], xmm4
+	movups	XMMWORD PTR [r10+rax+32], xmm3
+	movups	XMMWORD PTR [r10+rax+48], xmm5
+	cmp	r9, r11
 	jb	SHORT $LC4@cg_mat_sca
-$LN41@cg_mat_sca:
+$LN27@cg_mat_sca:
 ; Line 53
-	add	rsp, 64					; 00000040H
-	pop	rdi
-	pop	rsi
-	pop	rbx
-	pop	rbp
+	add	rsp, 8
 	ret	0
 cg_mat_scaling_scalar ENDP
 _TEXT	ENDS
 ; Function compile flags: /Ogtpy
 ;	COMDAT cg_mat_identity
 _TEXT	SEGMENT
-out$ = 80
-n$ = 88
+out$ = 8
+n$ = 16
 cg_mat_identity PROC					; COMDAT
 ; File C:\Users\artem_zyktin\projects\tenvex\src\codegen\cg_mat.cpp
 ; Line 56
-$LN44:
-	push	rbp
-	sub	rsp, 64					; 00000040H
-	lea	rbp, QWORD PTR [rsp+64]
-	and	rbp, -64				; ffffffffffffffc0H
-	xor	r9d, r9d
-	mov	r8d, r9d
+	xor	r8d, r8d
 ; Line 57
 	test	rdx, rdx
 	je	SHORT $LN3@cg_mat_ide
-	npad	6
+	movdqa	xmm0, XMMWORD PTR __xmm@0000000000000000000000003f800000
+	movdqa	xmm1, XMMWORD PTR __xmm@00000000000000003f80000000000000
+	movdqa	xmm2, XMMWORD PTR __xmm@000000003f8000000000000000000000
+	movdqa	xmm3, XMMWORD PTR __xmm@3f800000000000000000000000000000
+	npad	8
 $LL4@cg_mat_ide:
 ; Line 58
 	mov	rax, r8
 	inc	r8
 	shl	rax, 6
-	mov	QWORD PTR [rcx+rax], 1065353216		; 3f800000H
-	mov	QWORD PTR [rcx+rax+8], r9
-	mov	DWORD PTR [rcx+rax+16], r9d
-	mov	QWORD PTR [rcx+rax+20], 1065353216	; 3f800000H
-	mov	QWORD PTR [rcx+rax+28], r9
-	mov	DWORD PTR [rcx+rax+36], r9d
-	mov	QWORD PTR [rcx+rax+40], 1065353216	; 3f800000H
-	mov	QWORD PTR [rcx+rax+48], r9
-	mov	DWORD PTR [rcx+rax+56], r9d
-	mov	DWORD PTR [rcx+rax+60], 1065353216	; 3f800000H
+	movups	XMMWORD PTR [rcx+rax], xmm0
+	movups	XMMWORD PTR [rcx+rax+16], xmm1
+	movups	XMMWORD PTR [rcx+rax+32], xmm2
+	movups	XMMWORD PTR [rcx+rax+48], xmm3
 	cmp	r8, rdx
 	jb	SHORT $LL4@cg_mat_ide
 $LN3@cg_mat_ide:
 ; Line 59
-	add	rsp, 64					; 00000040H
-	pop	rbp
 	ret	0
 cg_mat_identity ENDP
 _TEXT	ENDS
@@ -2067,19 +2215,42 @@ y$ = 24
 z$ = 32
 cg_mat_scaling_scalar_value PROC			; COMDAT
 ; File C:\Users\artem_zyktin\projects\tenvex\src\codegen\cg_mat.cpp
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\core\core_sse.h
+; Line 23
+	movaps	xmm4, xmm1
+	xorps	xmm0, xmm0
+	xorps	xmm1, xmm1
+	unpcklps xmm4, xmm0
+	unpcklps xmm4, xmm1
+; File C:\Users\artem_zyktin\projects\tenvex\src\codegen\cg_mat.cpp
 ; Line 85
-	xor	eax, eax
-	movss	DWORD PTR [rcx], xmm1
-	mov	QWORD PTR [rcx+4], rax
-	mov	QWORD PTR [rcx+12], rax
-	mov	QWORD PTR [rcx+24], rax
-	mov	QWORD PTR [rcx+32], rax
-	mov	QWORD PTR [rcx+44], rax
-	mov	QWORD PTR [rcx+52], rax
 	mov	rax, rcx
-	movss	DWORD PTR [rcx+20], xmm2
-	movss	DWORD PTR [rcx+40], xmm3
-	mov	DWORD PTR [rcx+60], 1065353216		; 3f800000H
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\core\core_sse.h
+; Line 23
+	movaps	xmm1, xmm2
+; File C:\Users\artem_zyktin\projects\tenvex\src\codegen\cg_mat.cpp
+; Line 85
+	movups	XMMWORD PTR [rcx], xmm4
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\core\core_sse.h
+; Line 23
+	unpcklps xmm1, xmm0
+	xorps	xmm2, xmm2
+	movaps	xmm0, xmm3
+	unpcklps xmm2, xmm1
+	xorps	xmm3, xmm3
+; File C:\Users\artem_zyktin\projects\tenvex\src\codegen\cg_mat.cpp
+; Line 85
+	movups	XMMWORD PTR [rcx+16], xmm2
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\core\core_sse.h
+; Line 23
+	unpcklps xmm3, xmm0
+	xorps	xmm1, xmm1
+	movdqa	xmm0, XMMWORD PTR __xmm@3f800000000000000000000000000000
+	unpcklps xmm3, xmm1
+; File C:\Users\artem_zyktin\projects\tenvex\src\codegen\cg_mat.cpp
+; Line 85
+	movups	XMMWORD PTR [rcx+32], xmm3
+	movups	XMMWORD PTR [rcx+48], xmm0
 ; Line 86
 	ret	0
 cg_mat_scaling_scalar_value ENDP
@@ -2090,19 +2261,31 @@ _TEXT	SEGMENT
 __$ReturnAddress$ = 8
 cg_mat_identity_value PROC				; COMDAT
 ; File C:\Users\artem_zyktin\projects\tenvex\src\codegen\cg_mat.cpp
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\core\core_sse.h
+; Line 23
+	movdqa	xmm0, XMMWORD PTR __xmm@0000000000000000000000003f800000
+; File C:\Users\artem_zyktin\projects\tenvex\src\codegen\cg_mat.cpp
 ; Line 90
-	xor	eax, eax
-	mov	QWORD PTR [rcx], 1065353216		; 3f800000H
-	mov	QWORD PTR [rcx+8], rax
-	mov	DWORD PTR [rcx+16], eax
-	mov	QWORD PTR [rcx+28], rax
-	mov	DWORD PTR [rcx+36], eax
-	mov	QWORD PTR [rcx+48], rax
-	mov	DWORD PTR [rcx+56], eax
 	mov	rax, rcx
-	mov	QWORD PTR [rcx+20], 1065353216		; 3f800000H
-	mov	QWORD PTR [rcx+40], 1065353216		; 3f800000H
-	mov	DWORD PTR [rcx+60], 1065353216		; 3f800000H
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\core\core_sse.h
+; Line 23
+	movdqa	xmm1, XMMWORD PTR __xmm@00000000000000003f80000000000000
+; File C:\Users\artem_zyktin\projects\tenvex\src\codegen\cg_mat.cpp
+; Line 90
+	movups	XMMWORD PTR [rcx], xmm0
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\core\core_sse.h
+; Line 23
+	movdqa	xmm0, XMMWORD PTR __xmm@000000003f8000000000000000000000
+; File C:\Users\artem_zyktin\projects\tenvex\src\codegen\cg_mat.cpp
+; Line 90
+	movups	XMMWORD PTR [rcx+16], xmm1
+; File C:\Users\artem_zyktin\projects\tenvex\src\include\tenvex\detail\core\core_sse.h
+; Line 23
+	movdqa	xmm1, XMMWORD PTR __xmm@3f800000000000000000000000000000
+; File C:\Users\artem_zyktin\projects\tenvex\src\codegen\cg_mat.cpp
+; Line 90
+	movups	XMMWORD PTR [rcx+32], xmm0
+	movups	XMMWORD PTR [rcx+48], xmm1
 ; Line 91
 	ret	0
 cg_mat_identity_value ENDP

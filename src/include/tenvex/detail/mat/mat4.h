@@ -10,7 +10,7 @@
 namespace tnvx
 {
 
-struct alignas(64) mat4
+struct alignas(16) mat4
 {
 	using result_t = mf4;
 
