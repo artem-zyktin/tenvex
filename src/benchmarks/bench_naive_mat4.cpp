@@ -1,12 +1,14 @@
-#include "tenvex/tenvex.h"
+#include "naive/naive_mat4.h"
 
 #include <benchmark/benchmark.h>
 
 #include <vector>
 #include <random>
 
-using namespace tnvx;
+using namespace naive;
 
+// File-local; mirrors the generators in bench_mat4.cpp with the same seeds,
+// so the naive and tenvex benchmarks run on identical input data.
 static std::vector<quat> make_quats(int n, unsigned seed)
 {
 	std::mt19937 rng(seed);
@@ -50,7 +52,12 @@ static std::vector<mat4> make_mats(int n, unsigned seed)
 	return v;
 }
 
-static void BM_MatFromQuat_Throughput(benchmark::State& state)
+// =====================================================================
+// THROUGHPUT ONLY, mirroring bench_mat4.cpp: see the note there on why a
+// latency chain through one lane would under-measure a 64-byte result.
+// =====================================================================
+
+static void BM_Naive_MatFromQuat_Throughput(benchmark::State& state)
 {
 	const auto q = make_quats(1024, 1);
 	std::size_t i = 0;
@@ -62,9 +69,9 @@ static void BM_MatFromQuat_Throughput(benchmark::State& state)
 		i = (i + 1) & 1023;
 	}
 }
-BENCHMARK(BM_MatFromQuat_Throughput);
+BENCHMARK(BM_Naive_MatFromQuat_Throughput);
 
-static void BM_MatFromRotation_Throughput(benchmark::State& state)
+static void BM_Naive_MatFromRotation_Throughput(benchmark::State& state)
 {
 	const auto a = make_vecs(1024, 3);
 	std::size_t i = 0;
@@ -76,9 +83,9 @@ static void BM_MatFromRotation_Throughput(benchmark::State& state)
 		i = (i + 1) & 1023;
 	}
 }
-BENCHMARK(BM_MatFromRotation_Throughput);
+BENCHMARK(BM_Naive_MatFromRotation_Throughput);
 
-static void BM_MatTranslation_Throughput(benchmark::State& state)
+static void BM_Naive_MatTranslation_Throughput(benchmark::State& state)
 {
 	const auto t = make_vecs(1024, 4);
 	std::size_t i = 0;
@@ -90,9 +97,9 @@ static void BM_MatTranslation_Throughput(benchmark::State& state)
 		i = (i + 1) & 1023;
 	}
 }
-BENCHMARK(BM_MatTranslation_Throughput);
+BENCHMARK(BM_Naive_MatTranslation_Throughput);
 
-static void BM_MatScalingVec_Throughput(benchmark::State& state)
+static void BM_Naive_MatScalingVec_Throughput(benchmark::State& state)
 {
 	const auto s = make_vecs(1024, 5);
 	std::size_t i = 0;
@@ -104,9 +111,9 @@ static void BM_MatScalingVec_Throughput(benchmark::State& state)
 		i = (i + 1) & 1023;
 	}
 }
-BENCHMARK(BM_MatScalingVec_Throughput);
+BENCHMARK(BM_Naive_MatScalingVec_Throughput);
 
-static void BM_MatScalingScalar_Throughput(benchmark::State& state)
+static void BM_Naive_MatScalingScalar_Throughput(benchmark::State& state)
 {
 	const auto sx = make_floats(1024, 6);
 	const auto sy = make_floats(1024, 7);
@@ -120,18 +127,18 @@ static void BM_MatScalingScalar_Throughput(benchmark::State& state)
 		i = (i + 1) & 1023;
 	}
 }
-BENCHMARK(BM_MatScalingScalar_Throughput);
+BENCHMARK(BM_Naive_MatScalingScalar_Throughput);
 
-static void BM_MatAt_Throughput(benchmark::State& state)
+static void BM_Naive_MatAt_Throughput(benchmark::State& state)
 {
 	const auto m = make_mats(1024, 9);
 	std::size_t i = 0;
 	for (auto _ : state)
 	{
 		mat4 mm = m[i];
-		float f = mm.at<2, 1>();
+		float f = mm.at(2, 1);
 		benchmark::DoNotOptimize(f);
 		i = (i + 1) & 1023;
 	}
 }
-BENCHMARK(BM_MatAt_Throughput);
+BENCHMARK(BM_Naive_MatAt_Throughput);
