@@ -39,8 +39,8 @@ if not exist "%OUT%" mkdir "%OUT%"
 set "CLVER="
 for /f "delims=" %%v in ('cl 2^>^&1 ^| findstr /r /c:"[0-9][0-9]*\.[0-9]"') do if not defined CLVER set "CLVER=%%v"
 
-set "FLAGS=/nologo /c /O2 /std:c++20 /EHsc /W3 /I"%ROOT%\src\tenvex""
-set "FLAGSPRINT=/nologo /c /O2 /std:c++20 /EHsc /W3 /Isrc\tenvex"
+set "FLAGS=/nologo /c /O2 /std:c++20 /EHsc /W3 /I"%ROOT%\src\include" /I"%ROOT%\src\include\tenvex""
+set "FLAGSPRINT=/nologo /c /O2 /std:c++20 /EHsc /W3 /Isrc\include /Isrc\include\tenvex"
 
 for %%f in ("%ROOT%\src\codegen\cg_*.cpp") do (
 	cl %FLAGS% /FA /Fa"%TMPDIR%\%%~nf.asm" /Fo"%TMPDIR%\%%~nf.obj" "%%f" >nul
