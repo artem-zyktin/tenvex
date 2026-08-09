@@ -17,9 +17,15 @@ BSD 3-Clause License. Copyright (c) 2026 Artem Zyktin. See [LICENSE.txt](LICENSE
 
 Both backends cover the full API.
 
+The `mat4` type, its constructors and transform factories are implemented on
+both backends. Matrix *expressions* are not: there are no `mat4 * mat4`,
+`mat4 * vec4`, `transpose`, `determinant` or `inverse` nodes yet, and no
+projection or camera factories (`look_at`, `perspective`) - those wait on a
+clip-space convention decision. The `mat_expr` concept and the converting
+constructor are in place, so the nodes drop in without touching the type.
+
 **Planned**
 
-- Matrices (column-major, `M * v`)
 - SoA batching as the home for wider registers (AVX2 on x86-64, register pairs on NEON) - batch operations over independent elements are where 256-bit lanes pay off without cross-lane shuffles; single `vec4` / `quat` / `mat4` stay on the 128-bit baseline
 - Comparative benchmarks against established math libraries (DirectXMath, GLM, and others), same-toolchain, per compiler x backend cell
 
@@ -27,10 +33,11 @@ Both backends cover the full API.
 
 - Header-only - just include `<tenvex/tenvex.h>`.
 - Expression-template engine: nodes are lazy and evaluated on assignment.
-- C++20 concepts (`expression`, `vec_expr`, `scalar_expr`, `quat_expr`, `packed_expr`) enforce type safety at compile time.
+- C++20 concepts (`expression`, `vec_expr`, `scalar_expr`, `quat_expr`, `mat_expr`, `packed_expr`) enforce type safety at compile time.
 - Storage policy: leaves (trivially-copyable, 16 bytes or less) are stored by value; larger composite nodes by `const&`. Because that reference can outlive a temporary sub-expression, assign compound expressions to a `vec4` / `float` rather than `auto` (see [Performance and best practices](#performance-and-best-practices)).
 - Operations: `+`, `-` (binary), `-` (unary negation), `*` (scalar), `/` (by scalar), `dot3`, `dot4`, `cross3`, `normalize3`, `normalize3_fast` (approximate, see below), `magnitude3`, `magnitude3_sq`, `magnitude4`, `magnitude4_sq`, `min`, `max`, `abs`, `hadamard` (component-wise), `floor`, `ceil`, `round`, `frac` (rounding), `clamp`, `saturate`, `lerp`, `distance3`, `distance3_sq`, `reflect`, `orthogonal` (composed), `==`, `approx_eq`, ordered magnitude comparisons (`<`, `<=`, `>`, `>=` on `magnitude3`, see [Comparison](#comparison)), and component accessors `x()`, `y()`, `z()`, `w()`, and named constants (`zero`, `one`, `unit_x`, `unit_y`, `unit_z`, `unit_w`, `splat`). The 4-lane reductions `dot4`, `magnitude4`, and `magnitude4_sq` accept a `quat` as well as a `vec4`.
 - A `quat` type with Hamilton product (`*`), `conjugate`, `normalize4`, `inverse`, `rotate`, `slerp`, `nlerp`, the constructors `identity`, `from_axis_angle`, `from_to_rotation`, and the usual `+`, `-`, scalar `*`, `==`, `approx_eq` (see [Quaternions](#quaternions)).
+- A `mat4` type: column-major 4x4, built from 16 scalars, four columns, or a `quat`; the factories `zero`, `identity`, `translation`, `scaling`, `from_quat`, `from_rotation`; column and element access; `==`, `approx_eq` (see [Matrices](#matrices)).
 
 ## Requirements
 
@@ -246,14 +253,47 @@ mat4 id = mat4::identity();
 
 > **Note.** The scalar constructor takes arguments in **storage order** (columns), not in the visual row order you would write on paper - a matrix written on paper appears *transposed* in the code literal. This matches GLM.
 
+Transform factories:
+
+```cpp
+mat4 z = mat4::zero();
+mat4 i = mat4::identity();
+
+mat4 t = mat4::translation(offset);        // or translation(x, y, z)
+mat4 s = mat4::scaling(sx, sy, sz);        // or scaling(s), scaling(vec4)
+mat4 r = mat4::from_quat(q);               // q must be unit length
+mat4 r2 = mat4::from_rotation(axis, angle);
+```
+
+`translation` and `scaling` read only `xyz` from a `vec4` argument; the `w`
+lane is ignored. `from_quat` assumes a unit quaternion and does not
+normalize - a hidden `sqrt` in a per-object call is worse than a documented
+precondition. `from_rotation` is `from_quat(quat::from_axis_angle(...))`.
+
 Element access:
 
 ```cpp
-const vf4& c = m.col(j);     // j-th column register - free
-float      e = m.at(i, j);   // element at row i, column j - slow
+vec4  c = m.col(j);        // j-th column, runtime index - one 16-byte load
+float e = m.at<i, j>();    // element at row i, column j - compile-time indices
+mf4   d = m.eval();        // the raw backend aggregate
 ```
 
-`at(i, j)` extracts a single lane from a SIMD register (shuffle + move). Like the scalar accessors on `vec4` and `quat`, it exists for tests, debugging and I/O - do not use it in hot paths. To read a whole column, use `col(j)`.
+Both indices of `at` are template parameters because extracting a lane needs
+an immediate on SSE (`_MM_SHUFFLE`) and on NEON (`vgetq_lane_f32`) alike; a
+runtime row index has no cheap encoding. When the matrix is in memory this
+compiles to a single scalar load, so it is not the disaster the equivalent
+accessor is on `vec4` - but it is still per-element, and reading a whole
+column through `col(j)` is one instruction for four values.
+
+Comparison mirrors `vec4` and `quat`:
+
+```cpp
+bool same  = (a == b);                 // exact, all 16 lanes
+bool close = approx_eq(a, b, 1e-6f);   // per-lane epsilon
+```
+
+`mat4` is 64 bytes, so by the [storage policy](#storage-policy) it will be
+held by `const&` inside future expression nodes rather than copied.
 
 ## Performance and best practices
 
@@ -469,7 +509,7 @@ A stale object from another toolchain surfaces at link time as `bytecode stream 
 
 ## Running Tests
 
-The test suite uses Google Test (vendored in `thirdparty/gtest/`) and covers 361 cases - 241 vector / expression and 120 quaternion. The table below groups the suite by area (representative names):
+The test suite uses Google Test (vendored in `thirdparty/gtest/`) and covers 403 cases - 246 vector / expression, 123 quaternion and 34 matrix. Each area is tested twice: against the SIMD implementation and against an independent scalar mirror in `src/include/naive/`. The table below groups the suite by area (representative names):
 
 | Category             | Tests                                                                                                      |
 | -------------------- | ---------------------------------------------------------------------------------------------------------- |
@@ -499,6 +539,7 @@ The test suite uses Google Test (vendored in `thirdparty/gtest/`) and covers 361
 | Quaternion normalize / inverse | `normalize_scalar_quat`, `normalize_uniform`, `normalize_yields_unit_length`, `normalize_is_quat_expr`, `inverse_scalar_quat`, `inverse_of_unit_equals_conj`, `inverse_times_self_is_identity`, `inverse_is_quat_expr` |
 | Quaternion constructors | `identity_is_zero_rotation`, `from_axis_angle_z90`, `from_axis_angle_zero_angle_is_identity`, `from_axis_angle_is_unit_length`, `from_axis_angle_normalizes_axis_internally`, `from_axis_angle_rotates_vector`, `from_axis_angle_vec_overload_matches_scalar`, `from_to_rotation_maps_from_onto_to`, `from_to_rotation_same_direction_is_identity`, `from_to_rotation_normalizes_inputs`, `from_to_rotation_is_unit_length`, `from_to_rotation_antipodal_flips_direction`, `from_to_rotation_antipodal_is_unit_length` |
 | Quaternion interpolation | `slerp_endpoint_start`, `slerp_endpoint_end`, `slerp_midpoint_is_halfway_arc`, `slerp_takes_shortest_path`, `slerp_preserves_unit_length`, `nlerp_midpoint_is_renormalized_chord`, `nlerp_takes_shortest_path`, `nlerp_preserves_unit_length` |
+| Matrices             | `ctor_scalar_is_column_major`, `ctor_scalar_last_column`, `ctor_vec4_columns`, `ctor_vf4_columns`, `ctor_mf4_roundtrip`, `at_matches_col`, `zero_is_all_zeroes`, `identity_matches_unit_scaling`, `scaling_uniform_matches_xyz`, `scaling_vec4_matches_scalar`, `scaling_keeps_w_one`, `translation_lands_in_last_column`, `translation_scalar_matches_vec4`, `translation_ignores_input_w`, `from_quat_identity_is_identity`, `from_quat_z90_matches_literal`, `from_quat_columns_are_rotated_basis`, `from_rotation_matches_from_quat` |
 
 Build and run `tenvex_tests` from the generated project or makefile.
 
@@ -564,7 +605,10 @@ GCC/AArch64 dead stores - with `_value` shapes alongside where a bare kernel
 listing is easier to read, and the `_et` / `_manual` / `_intrin` triple for
 the compound expression where the zero-cost invariant is stated explicitly.
 A `cg_clean` / `cg_spilled` reference pair against an opaque kernel shows
-what a spill looks like in a listing.
+what a spill looks like in a listing. `cg_mat.cpp` covers the matrix
+factories; its `cg_mat_identity` / `cg_mat_scaling_scalar` pair separates
+constant folding from the runtime lane-insert path, which is how two
+MSVC-specific costs were found and fixed.
 
 `scripts/disasm.sh` (Linux/macOS; cross-compiles the aarch64 cells when a
 cross toolchain is installed) and `scripts/disasm.bat` (run from a VS x64
