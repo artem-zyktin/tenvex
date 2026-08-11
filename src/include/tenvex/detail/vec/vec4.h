@@ -54,10 +54,10 @@ private:
 template<> inline constexpr bool is_vec_expr<vec4> = true;
 
 TNVX_INLINE
-bool approx_eq(const vec4& lhs, const vec4& rhs, float eps = 1e-6f) noexcept;
+bool approx_eq(vec4 lhs, vec4 rhs, float eps = 1e-6f) noexcept;
 
 TNVX_INLINE
-bool operator==(const vec4& lhs, const vec4& rhs) noexcept;
+bool operator==(vec4 lhs, vec4 rhs) noexcept;
 
 }
 
