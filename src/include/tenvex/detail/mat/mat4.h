@@ -42,7 +42,7 @@ struct alignas(16) mat4
 	static mat4 identity() noexcept;
 
 	[[nodiscard]] TNVX_INLINE
-	static mat4 translation(const vec4& vec) noexcept;
+	static mat4 translation(vec4 vec) noexcept;
 
 	[[nodiscard]] TNVX_INLINE
 	static mat4 translation(float x, float y, float z) noexcept;
@@ -54,13 +54,13 @@ struct alignas(16) mat4
 	static mat4 scaling(float x, float y, float z) noexcept;
 
 	[[nodiscard]] TNVX_INLINE
-	static mat4 scaling(const vec4& v) noexcept;
+	static mat4 scaling(vec4) noexcept;
 
 	[[nodiscard]] TNVX_INLINE
-	static mat4 from_quat(const quat& q) noexcept;
+	static mat4 from_quat(quat) noexcept;
 
 	[[nodiscard]] TNVX_INLINE
-	static mat4 from_rotation(const vec4& axis, float angle) noexcept;
+	static mat4 from_rotation(vec4 axis, float angle) noexcept;
 
 	[[nodiscard]] TNVX_INLINE
 	vec4 col(int j) const noexcept;

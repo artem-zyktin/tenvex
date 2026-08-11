@@ -64,7 +64,7 @@ mat4::mat4(const mf4& data) noexcept
 }
 
 TNVX_INLINE
-mat4 mat4::translation(const vec4& t) noexcept
+mat4 mat4::translation(vec4 t) noexcept
 {
 	return { vec4::unit_x(), vec4::unit_y(), vec4::unit_z(), with_w(t, vec4::one()) };
 }
@@ -91,7 +91,7 @@ mat4 mat4::scaling(float s) noexcept
 }
 
 TNVX_INLINE
-mat4 mat4::scaling(const vec4& s) noexcept
+mat4 mat4::scaling(vec4 s) noexcept
 {
 	return { hadamard(vec4::unit_x(), s),
 			 hadamard(vec4::unit_y(), s),
@@ -100,13 +100,13 @@ mat4 mat4::scaling(const vec4& s) noexcept
 }
 
 TNVX_INLINE
-mat4 mat4::from_quat(const quat& q) noexcept
+mat4 mat4::from_quat(quat q) noexcept
 {
 	return mat4( detail::mat_from_quat(q.eval()) );
 }
 
 TNVX_INLINE
-mat4 mat4::from_rotation(const vec4& axis, float angle) noexcept
+mat4 mat4::from_rotation(vec4 axis, float angle) noexcept
 {
 	return from_quat(quat::from_axis_angle(axis, angle));
 }
