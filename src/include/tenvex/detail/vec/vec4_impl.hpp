@@ -60,13 +60,13 @@ vec4::vec4(const E& e) noexcept
 }
 
 TNVX_INLINE
-bool approx_eq(const vec4& lhs, const vec4& rhs, float eps) noexcept
+bool approx_eq(vec4 lhs, vec4 rhs, float eps) noexcept
 {
 	return detail::approx_eq(lhs.eval(), rhs.eval(), eps);
 }
 
 TNVX_INLINE
-bool operator==(const vec4& lhs, const vec4& rhs) noexcept
+bool operator==(vec4 lhs, vec4 rhs) noexcept
 {
 	return detail::eq(lhs.eval(), rhs.eval());
 }
