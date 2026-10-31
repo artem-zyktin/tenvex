@@ -793,4 +793,106 @@ TEST(mat4, orthographic_off_centre_box_maps_its_centre_to_the_origin)
 	EXPECT_NEAR(0.0f, centre.y(), 1e-5f);
 }
 
+// ---------------------------------------------------------------------------
+// Matrix to quaternion
+// ---------------------------------------------------------------------------
+
+// q and -q are the same rotation, so from_mat is only pinned up to sign
+static bool same_rotation(const quat& a, const quat& b, float eps = 1e-6f)
+{
+	return approx_eq(a, b, eps) || approx_eq(a, quat(b * -1.0f), eps);
+}
+
+TEST(mat4, from_mat_of_identity_is_the_identity_quat)
+{
+	quat check = quat::identity();
+	quat result = quat::from_mat(mat4::identity());
+	EXPECT_TRUE(same_rotation(check, result));
+}
+
+TEST(mat4, from_mat_z90_matches_the_literal)
+{
+	constexpr float pi = 3.14159265f;
+	mat4 m = {  0.0f, 1.0f, 0.0f, 0.0f,
+			   -1.0f, 0.0f, 0.0f, 0.0f,
+				0.0f, 0.0f, 1.0f, 0.0f,
+				0.0f, 0.0f, 0.0f, 1.0f };
+	quat check = quat::from_axis_angle(vec4 { 0.0f, 0.0f, 1.0f, 0.0f }, pi / 2.0f);
+	quat result = quat::from_mat(m);
+	EXPECT_TRUE(same_rotation(check, result));
+}
+
+TEST(mat4, from_mat_inverts_from_quat)
+{
+	constexpr float pi = 3.14159265f;
+	quat check = quat::from_axis_angle(vec4 { 1.0f, 2.0f, 3.0f, 0.0f }, pi / 3.0f);
+	quat result = quat::from_mat(mat4::from_quat(check));
+	EXPECT_TRUE(same_rotation(check, result, 1e-5f));
+}
+
+// the four branches of the selection: a positive trace, then 180 degrees
+// about x, y and z, which make 4x^2, 4y^2 and 4z^2 the largest in turn
+TEST(mat4, from_mat_handles_a_half_turn_about_x)
+{
+	constexpr float pi = 3.14159265f;
+	quat check = quat::from_axis_angle(vec4 { 1.0f, 0.0f, 0.0f, 0.0f }, pi);
+	quat result = quat::from_mat(mat4::from_quat(check));
+	EXPECT_TRUE(same_rotation(check, result, 1e-5f));
+}
+
+TEST(mat4, from_mat_handles_a_half_turn_about_y)
+{
+	constexpr float pi = 3.14159265f;
+	quat check = quat::from_axis_angle(vec4 { 0.0f, 1.0f, 0.0f, 0.0f }, pi);
+	quat result = quat::from_mat(mat4::from_quat(check));
+	EXPECT_TRUE(same_rotation(check, result, 1e-5f));
+}
+
+TEST(mat4, from_mat_handles_a_half_turn_about_z)
+{
+	constexpr float pi = 3.14159265f;
+	quat check = quat::from_axis_angle(vec4 { 0.0f, 0.0f, 1.0f, 0.0f }, pi);
+	quat result = quat::from_mat(mat4::from_quat(check));
+	EXPECT_TRUE(same_rotation(check, result, 1e-5f));
+}
+
+TEST(mat4, from_mat_yields_a_unit_quaternion)
+{
+	constexpr float pi = 3.14159265f;
+	mat4 m = mat4::from_rotation(vec4 { 1.0f, -2.0f, 0.5f, 0.0f }, pi / 5.0f);
+	quat result = quat::from_mat(m);
+	EXPECT_NEAR(1.0f, magnitude4(result), 1e-6f);
+}
+
+TEST(mat4, from_mat_rotates_a_vector_the_same_way)
+{
+	constexpr float pi = 3.14159265f;
+	mat4 m = mat4::from_rotation(vec4 { 0.3f, 0.5f, -0.8f, 0.0f }, pi / 7.0f);
+	vec4 v = { 0.4f, -1.2f, 2.5f, 0.0f };
+	vec4 check = m * v;
+	vec4 result = rotate(v, quat::from_mat(m));
+	EXPECT_TRUE(approx_eq(check, result, 1e-5f));
+}
+
+TEST(mat4, from_mat_accepts_an_expression)
+{
+	constexpr float pi = 3.14159265f;
+	quat q = quat::from_axis_angle(vec4 { 1.0f, 2.0f, 3.0f, 0.0f }, pi / 3.0f);
+	mat4 m = mat4::from_quat(q);
+
+	// the transpose of a rotation is its inverse, so the conjugate comes back
+	quat check = conjugate(q);
+	quat result = quat::from_mat(transpose(m));
+	EXPECT_TRUE(same_rotation(check, result, 1e-5f));
+}
+
+TEST(mat4, from_mat_ignores_the_translation_column)
+{
+	constexpr float pi = 3.14159265f;
+	mat4 r = mat4::from_rotation(vec4 { 1.0f, 2.0f, 3.0f, 0.0f }, pi / 3.0f);
+	quat check = quat::from_mat(r);
+	quat result = quat::from_mat(mat4(mat4::translation(4.0f, 5.0f, 6.0f) * r));
+	EXPECT_TRUE(same_rotation(check, result, 1e-5f));
+}
+
 }

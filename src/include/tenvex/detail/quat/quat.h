@@ -46,6 +46,13 @@ struct alignas(16) quat
 	[[nodiscard]] TNVX_INLINE static quat from_axis_angle(vec4 axis, float angle) noexcept;
 	[[nodiscard]] TNVX_INLINE static quat from_to_rotation(vec4 from, vec4 to) noexcept;
 
+	// the inverse of mat4::from_quat. Templated on mat_expr rather than taking
+	// a mat4, so quat/ keeps knowing nothing about mat/ - only the concept and
+	// the mf4 aggregate, both of which come from below.
+	template<mat_expr M>
+	[[nodiscard]] TNVX_INLINE
+	static quat from_mat(const M& m) noexcept;
+
 private:
 	vf4 _data;
 };
