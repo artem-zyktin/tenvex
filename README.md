@@ -17,9 +17,15 @@ BSD 3-Clause License. Copyright (c) 2026 Artem Zyktin. See [LICENSE.txt](LICENSE
 
 Both backends cover the full API.
 
+Matrices are complete on both backends: the `mat4` type and its factories,
+the expression nodes (`mat4 * mat4`, `mat4 * vec4`, `transpose`,
+`determinant`, `inverse`), the element-wise `+` / `-` / unary `-` / scalar
+`*` through the shared nodes, and the camera and projection factories
+(`look_at`, `perspective`, `orthographic`) - right-handed, clip depth in
+`[0, 1]`, recorded in [docs/decisions.md](docs/decisions.md).
+
 **Planned**
 
-- Matrices (column-major, `M * v`)
 - SoA batching as the home for wider registers (AVX2 on x86-64, register pairs on NEON) - batch operations over independent elements are where 256-bit lanes pay off without cross-lane shuffles; single `vec4` / `quat` / `mat4` stay on the 128-bit baseline
 - Comparative benchmarks against established math libraries (DirectXMath, GLM, and others), same-toolchain, per compiler x backend cell
 
@@ -27,10 +33,11 @@ Both backends cover the full API.
 
 - Header-only - just include `<tenvex/tenvex.h>`.
 - Expression-template engine: nodes are lazy and evaluated on assignment.
-- C++20 concepts (`expression`, `vec_expr`, `scalar_expr`, `quat_expr`, `packed_expr`) enforce type safety at compile time.
+- C++20 concepts (`expression`, `vec_expr`, `scalar_expr`, `quat_expr`, `mat_expr`, `packed_expr`) enforce type safety at compile time.
 - Storage policy: leaves (trivially-copyable, 16 bytes or less) are stored by value; larger composite nodes by `const&`. Because that reference can outlive a temporary sub-expression, assign compound expressions to a `vec4` / `float` rather than `auto` (see [Performance and best practices](#performance-and-best-practices)).
 - Operations: `+`, `-` (binary), `-` (unary negation), `*` (scalar), `/` (by scalar), `dot3`, `dot4`, `cross3`, `normalize3`, `normalize3_fast` (approximate, see below), `magnitude3`, `magnitude3_sq`, `magnitude4`, `magnitude4_sq`, `min`, `max`, `abs`, `hadamard` (component-wise), `floor`, `ceil`, `round`, `frac` (rounding), `clamp`, `saturate`, `lerp`, `distance3`, `distance3_sq`, `reflect`, `orthogonal` (composed), `==`, `approx_eq`, ordered magnitude comparisons (`<`, `<=`, `>`, `>=` on `magnitude3`, see [Comparison](#comparison)), and component accessors `x()`, `y()`, `z()`, `w()`, and named constants (`zero`, `one`, `unit_x`, `unit_y`, `unit_z`, `unit_w`, `splat`). The 4-lane reductions `dot4`, `magnitude4`, and `magnitude4_sq` accept a `quat` as well as a `vec4`.
 - A `quat` type with Hamilton product (`*`), `conjugate`, `normalize4`, `inverse`, `rotate`, `slerp`, `nlerp`, the constructors `identity`, `from_axis_angle`, `from_to_rotation`, and the usual `+`, `-`, scalar `*`, `==`, `approx_eq` (see [Quaternions](#quaternions)).
+- A `mat4` type: column-major 4x4, column vectors, `M * v`; built from 16 scalars, four columns, or a `quat`; the factories `zero`, `identity`, `translation`, `scaling`, `from_quat`, `from_rotation`, `look_at`, `perspective`, `orthographic`; the matrix product (`*`), `transform` (`M * v`), `transpose`, `determinant`, `inverse`; column and element access; `+`, `-`, unary `-`, scalar `*`, `==`, `approx_eq` (see [Matrices](#matrices)).
 
 ## Requirements
 
@@ -112,6 +119,22 @@ quat qb = quat::from_to_rotation(a, b);             // shortest rotation a -> b
 quat qc = conjugate(q);   // negate xyz, keep w (inverse of a unit quaternion)
 quat qh = q * q;          // Hamilton product - composes rotations (non-commutative)
 vec4 vr = rotate(a, q);   // rotate a vec4 by a unit quaternion
+
+// Matrices (column-major, column vectors, M * v)
+mat4 mi = mat4::identity();
+mat4 mt = mat4::translation(1.0f, 2.0f, 3.0f);
+mat4 mr = mat4::from_quat(q);                    // from a unit quaternion
+mat4 ms = mat4::scaling(2.0f);                   // uniform; also scaling(x, y, z)
+mat4 mw = mt * mr * ms;                          // right to left: scale, rotate, translate
+
+vec4 pt  = mw * vec4 { 1.0f, 0.0f, 0.0f, 1.0f }; // a point     (w = 1, translated)
+vec4 dir = mw * vec4 { 1.0f, 0.0f, 0.0f, 0.0f }; // a direction (w = 0, not translated)
+vec4 pt2 = transform(pt, mw);                    // the named form of M * v
+
+mat4 mtr = transpose(mw);
+mat4 miv = inverse(mw);
+float md = determinant(mw);
+vec4 mc3 = mw.col(3);                            // the translation column
 ```
 
 `dot3` and `magnitude3` return scalar-expression nodes (`Dot3`, `Magn3`) that are implicitly convertible to `float` (the scalar is taken from lane 0), so `float d = dot3(a, b);` works, and they can also be used as operands inside a larger lazy expression.
@@ -222,6 +245,125 @@ bool near = approx_eq(q1, q2); // default epsilon = 1e-6f
 
 `rotate(v, q)` returns the rotated **vector** (a `vec_expr`, so it stays lazy and can feed a larger expression); the `w` lane of `v` is carried through unchanged. It uses the cross-product form `v + 2w(n x v) + 2(n x (n x v))` (with `n = q.xyz`, `w = q.w`), which is the sandwich `q * v * conjugate(q)` for a **unit** `q` - the unit precondition is assumed, not checked. `conjugate`, `normalize4`, `inverse`, `*`, `+`, `-`, and `rotate` are lazy nodes: the same "assign to a concrete type, don't hold a compound expression in `auto`" rule from [Performance and best practices](#performance-and-best-practices) applies to quaternion expressions too. `slerp` and `nlerp` are composed convenience functions - like `lerp` / `reflect` on vectors they evaluate eagerly and return a concrete `quat`. Both assume unit-length inputs, take the shortest arc (via the sign of `dot4`), and fall back to a normalized lerp when the inputs are nearly parallel; `nlerp` skips the `acos` / `sin` entirely, trading constant angular velocity for speed.
 
+## Matrices
+
+`mat4` is a 4x4 single-precision matrix stored as **four column registers** (`vf4 cols[4]`), 64 bytes, `alignas(16)`. Column-major throughout: storage, constructor arguments, and the multiplication convention all agree.
+
+**Conventions.** `cols[j]` is the j-th column. The memory image matches GLSL/std140, SPIR-V, MSL, WGSL and HLSL cbuffer packing, so a `mat4` uploads to any GPU API as a plain `memcpy`. Vectors are **column vectors** and transforms apply by left-multiplication: `M * v`. Composition reads right to left - `T * R * S` scales first, then rotates, then translates. **Migrating from DirectXMath / Unreal:** mirror your multiplication order - `world * view * proj` becomes `proj * view * world`.
+
+```cpp
+// From four columns:
+mat4 m = { c0, c1, c2, c3 };
+
+// From 16 scalars - arguments run down the columns (column-major),
+// exactly matching storage:
+mat4 m = {
+    m00, m10, m20, m30,   // column 0
+    m01, m11, m21, m31,   // column 1
+    m02, m12, m22, m32,   // column 2
+    m03, m13, m23, m33,   // column 3
+};
+
+mat4 id = mat4::identity();
+```
+
+> **Note.** The scalar constructor takes arguments in **storage order** (columns), not in the visual row order you would write on paper - a matrix written on paper appears *transposed* in the code literal. This matches GLM.
+
+Transform factories:
+
+```cpp
+mat4 z = mat4::zero();
+mat4 i = mat4::identity();
+
+mat4 t = mat4::translation(offset);        // or translation(x, y, z)
+mat4 s = mat4::scaling(sx, sy, sz);        // or scaling(s), scaling(vec4)
+mat4 r = mat4::from_quat(q);               // q must be unit length
+mat4 r2 = mat4::from_rotation(axis, angle);
+```
+
+`translation` and `scaling` read only `xyz` from a `vec4` argument; the `w`
+lane is ignored. `from_quat` assumes a unit quaternion and does not
+normalize - a hidden `sqrt` in a per-object call is worse than a documented
+precondition. `from_rotation` is `from_quat(quat::from_axis_angle(...))`.
+
+Camera and projection factories:
+
+```cpp
+mat4 view  = mat4::look_at(eye, target, up);
+mat4 proj  = mat4::perspective(fov_y, aspect, near_z, far_z);
+mat4 ortho = mat4::orthographic(left, right, bottom, top, near_z, far_z);
+```
+
+All three are **right-handed** - the camera looks down its own `-z` - with
+clip depth in **`[0, 1]`**: the range Vulkan, D3D, Metal and WebGPU want, and
+the one OpenGL reaches with `glClipControl`. `near_z` and `far_z` are
+positive distances in front of the camera, and `fov_y` is the **full**
+vertical field of view in radians. On a `[-1, 1]` depth pipeline, adjust the
+range yourself. The pair of conventions is fixed rather than selectable; the
+trade-off is recorded in [docs/decisions.md](docs/decisions.md).
+
+Element access:
+
+```cpp
+vec4  c = m.col(j);        // j-th column, runtime index - one 16-byte load
+float e = m.at<i, j>();    // element at row i, column j - compile-time indices
+mf4   d = m.eval();        // the raw backend aggregate
+```
+
+Both indices of `at` are template parameters because extracting a lane needs
+an immediate on SSE (`_MM_SHUFFLE`) and on NEON (`vgetq_lane_f32`) alike; a
+runtime row index has no cheap encoding. When the matrix is in memory this
+compiles to a single scalar load, so it is not the disaster the equivalent
+accessor is on `vec4` - but it is still per-element, and reading a whole
+column through `col(j)` is one instruction for four values.
+
+Operations (lazy nodes, evaluated on assignment, same as vectors and quaternions):
+
+```cpp
+mat4 prod = a * b;            // MatMul      - matrix product; non-commutative
+vec4 v2   = m * v;            // Transform   - M * v, the linear-combination kernel
+vec4 v3   = transform(v, m);  // the same node, named form
+mat4 tr   = transpose(m);     // Transpose   - the four-register shuffle network
+mat4 iv   = inverse(m);       // MatInverse  - adjugate over the determinant
+float d   = determinant(m);   // Determinant - collapses to a broadcast scalar
+
+mat4 sum = a + b;             // Add / Sub   - component-wise, stay matrix-typed
+mat4 neg = -a;                // unary minus
+mat4 sc  = a * 2.0f;          // scalar *    - scales all sixteen lanes (float or scalar_expr)
+```
+
+The named `transform(v, m)` keeps the `verb(object, argument)` order of
+`rotate(v, q)` and is unrelated to the operator convention; `m * v` and
+`transform(v, m)` build the same node. `M * v` is the kernel the column-major
+layout is chosen for: the vector broadcasts combine the matrix registers -
+4 splats and 4 multiply-adds, no shuffle of the matrix and no horizontal
+reduction (on NEON the broadcast folds into `fmla` by lane).
+
+`determinant` and `inverse` share one branch-free cofactor decomposition
+over the columns; a **singular** matrix divides by zero and yields `inf` /
+`nan` lanes, the same way `normalize3` of a zero vector does - it is not
+checked. `determinant` is a `scalar_expr`, so it converts to `float` and
+folds into a larger scalar expression, and `transform` / `m * v` are
+`vec_expr`, so a matrix feeds a vector expression with no boundary:
+
+```cpp
+vec4 lit = m * normal * dot3(light, vec4(m * normal));
+```
+
+Comparison mirrors `vec4` and `quat`:
+
+```cpp
+bool same  = (a == b);                 // exact, all 16 lanes
+bool close = approx_eq(a, b, 1e-6f);   // per-lane epsilon
+```
+
+`mat4` is 64 bytes, so by the [storage policy](#storage-policy) it is held
+by `const&` inside expression nodes rather than copied. The "assign compound
+expressions to a concrete type, don't keep them in `auto`" rule from
+[Performance and best practices](#performance-and-best-practices) therefore
+matters here as much as it does for vectors - more so, since every matrix
+leaf is a reference.
+
 ## Performance and best practices
 
 tenvex is zero-overhead when used the way the optimizer expects. A few rules keep the generated code tight and steer around the one real footgun.
@@ -274,24 +416,26 @@ On Cortex-A76 the Newton-Raphson refinement is a 5-link dependency chain versus 
 
 ### Two layers
 
-- **Eager kernel layer** (`detail/core/core.h`, namespace `tnvx::detail`): `TNVX_INLINE` functions over `vf4` (`neg`, `abs`, `add`, `sub`, `mul`, `div`, `dot3`, `dot4`, `magnitude3`, `magnitude3_sq`, `magnitude4`, `magnitude4_sq`, `normalize3`, `normalize3_fast`, `normalize4`, `cross3`, `min`, `max`, `with_w`, `floor`, `ceil`, `round`, `frac`, `scalar`, `get_lane`, `eq`, `approx_eq`, and the quaternion kernels `conjugate`, `quat_mul`, `rotate`, `inverse`). This is the only place intrinsics live, and the only place the SIMD backend is selected: `core/core.h` dispatches to `core_sse.h` (SSE4.1) or `core_neon.h` (NEON) per the autodetected target.
-- **Expression layer** (everything else in namespace `tnvx`): lazy nodes that compose and delegate down to the kernels. This layer operates only on `vf4` and contains no intrinsics.
+- **Eager kernel layer** (`detail/core/core.h`, namespace `tnvx::detail`): `TNVX_INLINE` functions over `vf4` (`neg`, `abs`, `add`, `sub`, `mul`, `div`, `dot3`, `dot4`, `magnitude3`, `magnitude3_sq`, `magnitude4`, `magnitude4_sq`, `normalize3`, `normalize3_fast`, `normalize4`, `cross3`, `min`, `max`, `with_w`, `floor`, `ceil`, `round`, `frac`, `scalar`, `get_lane`, `eq`, `approx_eq`, the quaternion kernels `conjugate`, `quat_mul`, `rotate`, `inverse`, and - over `mf4`, the four-column matrix aggregate - `mat_from_quat`, the element-wise overloads `add` / `sub` / `neg` / `mul`, and `mat_transpose`, `mat_transform`, `mat_mul`, `mat_determinant`, `mat_inverse`). This is the only place intrinsics live, and the only place the SIMD backend is selected: `core/core.h` dispatches to `core_sse.h` (SSE4.1) or `core_neon.h` (NEON) per the autodetected target.
+- **Expression layer** (everything else in namespace `tnvx`): lazy nodes that compose and delegate down to the kernels. This layer operates only on `vf4` / `mf4` and contains no intrinsics.
 
 ### Header layout
 
 ```
 src/include/tenvex/
-├── tenvex.h              # public umbrella — includes the three group headers below
+├── tenvex.h              # public umbrella — includes the four group headers below
 └── detail/
     ├── core/             # kernel layer: defines.h, config.h (backend selection), core.h, core_sse.h, core_neon.h
     ├── protocol/         # traits.h (category traits, storage policy) and concepts.h
     ├── common.h, common/ # nodes generic over categories: Scalar, Neg, Add, Sub, Mul, Div,
     │                     # the packed reductions Dot4 / Magn4 / Magn4Sq, and Normalize3 / Normalize3Fast / Normalize4
     ├── vec.h, vec/       # vec4, vector-only nodes, and the eager vec_operations
-    └── quat.h, quat/     # quat, quaternion-only nodes, and the eager quat_operations
+    ├── quat.h, quat/     # quat, quaternion-only nodes, and the eager quat_operations
+    └── mat.h, mat/       # mat4 and the matrix-only nodes: MatMul, Transform,
+                          # Transpose, Determinant, MatInverse
 ```
 
-`common.h`, `vec.h`, and `quat.h` are group headers: each fixes the include order of its own folder once, so `tenvex.h` reduces to three includes. Consumers still include only `tenvex/tenvex.h`. Planned categories slot in alongside (`mat.h` + `mat/`, batches as `batch.h` + `batch/`).
+`common.h`, `vec.h`, `quat.h`, and `mat.h` are group headers: each fixes the include order of its own folder once, so `tenvex.h` reduces to four includes. Consumers still include only `tenvex/tenvex.h`. A group may depend on a lower one - `quat/` uses `vec4`, `mat/` uses both - but never the other way round. The planned batch category slots in alongside as `batch.h` + `batch/`.
 
 ### Expression templates
 
@@ -311,10 +455,12 @@ vec4 result = normalize3(a + b * 2.0f) * dot3(b, c) + c * 3.0f;
 | `vec_expr<T>`    | An `expression` marked as a vector expression (`is_vec_expr<T>`) whose `result_t` is `vf4` |
 | `scalar_expr<T>` | An `expression` marked as a scalar expression (`is_scalar_expr<T>`) whose `result_t` is `vf4` |
 | `quat_expr<T>`   | An `expression` marked as a quaternion expression (`is_quat_expr<T>`) whose `result_t` is `vf4` |
+| `mat_expr<T>`    | An `expression` marked as a matrix expression (`is_mat_expr<T>`) whose `result_t` is `mf4` - four column registers, not one |
 | `packed_expr<T>` | A `vec_expr` or `quat_expr` — a 4-lane packed value, as opposed to a collapsed scalar |
 | `same_packed_category<L,R>` | Two `packed_expr` of the same category (both vectors or both quaternions); the operand rule for `dot4` |
+| `same_category<L,R>` | Two expressions of the same category (vectors, scalars, quaternions, or matrices); the operand rule for `Add` / `Sub` |
 
-**Result type.** Every node declares `using result_t = ...;` — the register set its `eval()` produces (`vf4` for vectors, quaternions, and broadcast scalars; a multi-register type for planned matrix nodes). The `expression` concept checks `eval()` against the node's *own* declaration instead of one global type: the protocol requires "a node returns what it claims", not "everything fits in one register". The category concepts (`vec_expr`, `scalar_expr`, `quat_expr`) then pin `result_t` to `vf4`, so all existing 4-lane machinery stays fully typed. This is what lets multi-register matrix nodes, mixed-result nodes (`mat * vec` yields `vf4`, `determinant` a broadcast scalar), and future categories (SoA batches) share a single expression protocol — the same `Add` / `Sub` / `Neg` / scalar-`Mul` node templates, one storage policy, and generic utilities written once against `typename E::result_t`. Because the declaration is cross-checked by the concept, a node whose `eval()` drifts from its declared type fails at the first constraint with a clear diagnostic, not deep inside a kernel instantiation.
+**Result type.** Every node declares `using result_t = ...;` — the register set its `eval()` produces (`vf4` for vectors, quaternions, and broadcast scalars; `mf4`, four column registers, for matrix nodes). The `expression` concept checks `eval()` against the node's *own* declaration instead of one global type: the protocol requires "a node returns what it claims", not "everything fits in one register". The 4-lane category concepts (`vec_expr`, `scalar_expr`, `quat_expr`) pin `result_t` to `vf4` and `mat_expr` pins it to `mf4`, so every category stays fully typed. This is what lets multi-register matrix nodes, mixed-result nodes (`mat * vec` yields `vf4`, `determinant` a broadcast scalar), and future categories (SoA batches) share a single expression protocol — the `Add` / `Sub` / `Neg` / scalar-`Mul` node templates take their `result_t` from their operands and serve all four categories unchanged, over one storage policy, with generic utilities written once against `typename E::result_t`. Because the declaration is cross-checked by the concept, a node whose `eval()` drifts from its declared type fails at the first constraint with a clear diagnostic, not deep inside a kernel instantiation.
 
 ### Storage policy
 
@@ -334,13 +480,13 @@ The **Intrinsics** column lists the SSE4.1 (x86-64) backend; the NEON (AArch64) 
 
 | Node          | Concept       | Intrinsics                                                  | Notes                                                                       |
 | ------------- | ------------- | ----------------------------------------------------------- | --------------------------------------------------------------------------- |
-| `Neg<E>`      | vec / scalar  | `_mm_xor_ps` (sign mask)                                   | Unary negation; result is `vec_expr` when E is `vec_expr`, `scalar_expr` when E is `scalar_expr`; both stay lazy |
+| `Neg<E>`      | any category  | `_mm_xor_ps` (sign mask)                                   | Unary negation; the result keeps the operand's category (vector, scalar, quaternion, or matrix - four registers for a matrix) and stays lazy |
 | `Abs<E>`      | `vec_expr`    | `_mm_andnot_ps` (sign mask)                                | Component-wise absolute value; clears the sign bit of each lane (pure bit op, not arithmetic) |
 | `Scalar`      | `scalar_expr` | `_mm_set_ps1`                                               | Broadcasts a `float` to all 4 lanes                                         |
-| `Add<L,R>`    | `vec_expr`    | `_mm_add_ps`                                                |                                                                             |
-| `Sub<L,R>`    | `vec_expr`    | `_mm_sub_ps`                                                |                                                                             |
-| `Mul<L,R>`    | vec / scalar  | `_mm_mul_ps`                                                | Scalar multiply only (no component-wise `vec * vec`). Operands may be vector×scalar, scalar×vector, or scalar×scalar; a scalar operand is a `float` or a scalar expression |
-| `Div<L,R>`    | vec / quat    | `_mm_div_ps`                                                | A packed value (vector or quaternion) divided by a scalar (`float` or a scalar expression); result keeps the operand's category |
+| `Add<L,R>`    | any category  | `_mm_add_ps`                                                | Component-wise; both operands must be the same category (`same_category`), and the result keeps it |
+| `Sub<L,R>`    | any category  | `_mm_sub_ps`                                                | Component-wise; `same_category`, as `Add`                                   |
+| `Mul<L,R>`    | any category  | `_mm_mul_ps`                                                | Scalar multiply only (no component-wise `vec * vec`). Operands may be packed×scalar, scalar×packed, matrix×scalar, scalar×matrix, or scalar×scalar; a scalar operand is a `float` or a scalar expression. The non-scalar operand decides the result category |
+| `Div<L,R>`    | vec / quat    | `_mm_div_ps`                                                | A packed value (vector or quaternion) divided by a scalar (`float` or a scalar expression); result keeps the operand's category. Matrices are deliberately not divisible - scale by the reciprocal |
 | `Dot3<L,R>`   | `scalar_expr` | `_mm_mul_ps` + shuffles + `_mm_add_ss`                      | 3-component dot (ignores w), broadcast to all lanes; convertible to `float` |
 | `Dot4<L,R>`   | `scalar_expr` | `_mm_mul_ps` + `_mm_hadd_ps` x2                             | 4-component dot (includes w), broadcast to all lanes; convertible to `float`; operands are two vectors or two quaternions (`same_packed_category`) |
 | `Cross3<L,R>` | `vec_expr`    | `_mm_shuffle_ps` + `_mm_mul_ps` + `_mm_sub_ps`              | 3-component cross product; result `w = 0`                                   |
@@ -363,6 +509,11 @@ The **Intrinsics** column lists the SSE4.1 (x86-64) backend; the NEON (AArch64) 
 | `Inverse<E>`  | `quat_expr`   | `conjugate` + `dot4(q,q)` + `_mm_div_ps`                   | Quaternion inverse `conjugate(q) / magnitude4_sq(q)`; equals `conjugate` for a unit quaternion |
 | `QuatMul<L,R>` | `quat_expr`  | shuffles + `_mm_mul_ps` + `_mm_xor_ps` + `_mm_add_ps`      | Hamilton product (`operator*` on two `quat_expr`); non-commutative; composes rotations |
 | `Rotate<V,Q>` | `vec_expr`    | `cross3` x2 + `_mm_mul_ps` + `_mm_add_ps`                  | Rotates vector V by unit quaternion Q via `v + 2w(n x v) + 2(n x (n x v))`; result is a `vec_expr`, w carried from V |
+| `Transform<V,M>` | `vec_expr` | `_mm_shuffle_ps` x4 + `_mm_mul_ps` x4 + `_mm_add_ps` x3    | `M * v` as a linear combination of the columns: 4 broadcasts, 4 multiply-adds, no shuffle of the matrix and no reduction (on NEON the broadcast folds into `fmla` by lane). Built by `operator*(M, v)` and by the named `transform(v, m)` |
+| `MatMul<L,R>` | `mat_expr`    | `mat_transform` x4                                          | Matrix product: one column kernel per column of the right operand; non-commutative; composes right to left |
+| `Transpose<E>` | `mat_expr`   | `_mm_unpacklo_ps` / `_mm_unpackhi_ps` + `_mm_movelh_ps` / `_mm_movehl_ps` | The four-register shuffle network, no arithmetic; involutive |
+| `Determinant<E>` | `scalar_expr` | `cross3` x2 + `_mm_mul_ps` / `_mm_sub_ps` + `dot3` x2    | Cofactor decomposition over the columns, broadcast to all lanes; convertible to `float` |
+| `MatInverse<E>` | `mat_expr`  | the `Determinant` decomposition + `cross3` x4 + `with_w` x4 + one `_mm_div_ps` + `mat_transpose` | Adjugate over determinant; named `MatInverse` because `Inverse` is the quaternion node, but the free function is the same `inverse`. A singular matrix yields `inf` / `nan` lanes, unchecked |
 
 Comparison helpers (free functions in `tnvx`, backed by `tnvx::detail`):
 
@@ -436,7 +587,7 @@ A stale object from another toolchain surfaces at link time as `bytecode stream 
 
 ## Running Tests
 
-The test suite uses Google Test (vendored in `thirdparty/gtest/`) and covers 361 cases - 241 vector / expression and 120 quaternion. The table below groups the suite by area (representative names):
+The test suite uses Google Test (vendored in `thirdparty/gtest/`) and covers 490 cases - 246 vector / expression, 123 quaternion and 121 matrix. Each area is tested twice: against the SIMD implementation and against an independent scalar mirror in `src/include/naive/`. The table below groups the suite by area (representative names):
 
 | Category             | Tests                                                                                                      |
 | -------------------- | ---------------------------------------------------------------------------------------------------------- |
@@ -466,6 +617,14 @@ The test suite uses Google Test (vendored in `thirdparty/gtest/`) and covers 361
 | Quaternion normalize / inverse | `normalize_scalar_quat`, `normalize_uniform`, `normalize_yields_unit_length`, `normalize_is_quat_expr`, `inverse_scalar_quat`, `inverse_of_unit_equals_conj`, `inverse_times_self_is_identity`, `inverse_is_quat_expr` |
 | Quaternion constructors | `identity_is_zero_rotation`, `from_axis_angle_z90`, `from_axis_angle_zero_angle_is_identity`, `from_axis_angle_is_unit_length`, `from_axis_angle_normalizes_axis_internally`, `from_axis_angle_rotates_vector`, `from_axis_angle_vec_overload_matches_scalar`, `from_to_rotation_maps_from_onto_to`, `from_to_rotation_same_direction_is_identity`, `from_to_rotation_normalizes_inputs`, `from_to_rotation_is_unit_length`, `from_to_rotation_antipodal_flips_direction`, `from_to_rotation_antipodal_is_unit_length` |
 | Quaternion interpolation | `slerp_endpoint_start`, `slerp_endpoint_end`, `slerp_midpoint_is_halfway_arc`, `slerp_takes_shortest_path`, `slerp_preserves_unit_length`, `nlerp_midpoint_is_renormalized_chord`, `nlerp_takes_shortest_path`, `nlerp_preserves_unit_length` |
+| Matrix type and factories | `ctor_scalar_is_column_major`, `ctor_scalar_last_column`, `ctor_vec4_columns`, `ctor_vf4_columns`, `ctor_mf4_roundtrip`, `at_matches_col`, `zero_is_all_zeroes`, `identity_matches_unit_scaling`, `scaling_uniform_matches_xyz`, `scaling_vec4_matches_scalar`, `scaling_keeps_w_one`, `translation_lands_in_last_column`, `translation_scalar_matches_vec4`, `translation_ignores_input_w`, `from_quat_identity_is_identity`, `from_quat_z90_matches_literal`, `from_quat_columns_are_rotated_basis`, `from_rotation_matches_from_quat` |
+| M * v                | `transform_matches_hand_computed`, `transform_named_matches_operator`, `transform_of_basis_is_a_column`, `transform_by_identity_is_a_noop`, `transform_translates_a_point`, `transform_leaves_a_direction_untranslated`, `transform_scales_each_axis`, `transform_by_rotation_matches_quat_rotate`, `transform_is_linear`, `transform_is_vec_expr`, `transform_fuses_into_a_vector_expression`, `transform_feeds_a_reduction` |
+| Matrix product       | `product_matches_hand_computed`, `product_with_identity_is_a_noop`, `product_is_not_commutative`, `product_is_associative`, `product_applies_right_to_left`, `product_of_transforms_matches_applying_both`, `product_is_mat_expr` |
+| Matrix arithmetic    | `add_doubles_every_lane`, `sub_of_self_is_zero`, `neg_cancels_under_add`, `neg_is_involutive`, `mul_by_float_matches_add`, `mul_float_on_either_side`, `mul_by_scalar_expr`, `arithmetic_stays_mat_expr`, `expression_mixes_product_sum_and_scale`, `expression_from_temporaries` |
+| Transpose            | `transpose_swaps_rows_and_columns`, `transpose_is_involutive`, `transpose_of_identity_is_identity`, `transpose_reverses_a_product`, `transpose_is_mat_expr` |
+| Determinant          | `determinant_of_identity_is_one`, `determinant_of_scaling_is_the_product_of_the_scales`, `determinant_of_translation_is_one`, `determinant_of_rotation_is_one`, `determinant_of_a_singular_matrix_is_zero`, `determinant_block_diagonal`, `determinant_is_invariant_under_transpose`, `determinant_is_multiplicative`, `determinant_is_scalar_expr`, `determinant_times_literal_collapses` |
+| Matrix inverse       | `inverse_of_identity_is_identity`, `inverse_times_self_is_identity`, `inverse_of_translation_negates_it`, `inverse_of_scaling_reciprocates_it`, `inverse_of_rotation_is_its_transpose`, `inverse_is_involutive`, `inverse_undoes_a_transform`, `inverse_of_singular_is_not_finite`, `inverse_is_mat_expr` |
+| View and projection  | `look_at_maps_the_eye_to_the_origin`, `look_at_puts_the_target_down_negative_z`, `look_at_preserves_distances`, `perspective_maps_the_near_plane_to_zero`, `perspective_maps_the_far_plane_to_one`, `perspective_w_carries_the_view_depth`, `perspective_divides_x_by_the_aspect_ratio`, `orthographic_maps_the_depth_range_to_zero_one`, `orthographic_maps_the_box_corner_to_the_cube_corner`, `orthographic_off_centre_box_maps_its_centre_to_the_origin` |
 
 Build and run `tenvex_tests` from the generated project or makefile.
 
@@ -473,7 +632,7 @@ Build and run `tenvex_tests` from the generated project or makefile.
 
 Alongside the runtime suite, `src/tests/protocol_tests.cpp` pins the type
 system at compile time: the full operand matrix of every public operation
-over `vec4` / `quat` / `Scalar` (and `float` for the operators), one
+over `vec4` / `quat` / `mat4` / `Scalar` (and `float` for the operators), one
 `static_assert` per combination - both what must compile and what must not.
 Runtime tests cannot catch an overload set that silently widens (invalid
 code simply isn't in them), so the negative space is only testable here: if
@@ -490,7 +649,7 @@ A [Google Benchmark](https://github.com/google/benchmark) suite (vendored in `th
 
 Cases cover both **latency** (serial dependency chains, e.g. `dot3`/`normalize3`, and an AABB-box build that folds `min`/`max` into a running bound) and **throughput** (independent inputs the CPU can pipeline, e.g. isolated `dot3`/`dot4`, and single-op `min`/`max`).
 
-A naive scalar reference implementation - `naive::vec4` in `src/include/naive/naive_vec4.h` (and `naive::quat` in `src/include/naive/naive_quat.h`) - mirrors the tenvex API and semantics with plain `float` math (everything `inline`, by-value, reciprocal-multiply for division/normalization). It is benchmarked side by side (the `BM_Naive_*` cases) and has its own mirrored test suites (`src/tests/naive_tests_vec4.cpp`, `src/tests/naive_tests_quat.cpp`), so the SIMD path can be compared against a straightforward baseline. Quaternion operations are covered by `src/benchmarks/bench_quat.cpp` (`BM_Quat{Add,Sub,Mul,Hamilton,Conj,Rotate}_Throughput`; latency and throughput for the shared 4-lane reductions `BM_Quat{Dot4,Magnitude4,Magnitude4Sq}`, the unit-quaternion ops `BM_Quat{Normalize,Inverse}`, and the interpolators `BM_Quat{Slerp,Nlerp}`) against the matching `BM_Naive_Quat*` baselines. `slerp` is transcendental-bound (`acos` + `sin` dominate, so the SIMD and scalar paths run neck and neck), whereas `nlerp` shows the usual split - a small throughput win for the packed path, a latency loss to its two serial horizontal reductions. The same reductions on `vec4` are `BM_{Dot4,Magnitude4,Magnitude4Sq}` in `bench_vec4.cpp`.
+A naive scalar reference implementation - `naive::vec4` in `src/include/naive/naive_vec4.h` (and `naive::quat` in `src/include/naive/naive_quat.h`, `naive::mat4` in `src/include/naive/naive_mat4.h`) - mirrors the tenvex API and semantics with plain `float` math (everything `inline`, by-value, reciprocal-multiply for division/normalization). It is benchmarked side by side (the `BM_Naive_*` cases) and has its own mirrored test suites (`src/tests/naive_tests_vec4.cpp`, `src/tests/naive_tests_quat.cpp`, `src/tests/naive_tests_mat4.cpp`), so the SIMD path can be compared against a straightforward baseline. Quaternion operations are covered by `src/benchmarks/bench_quat.cpp` (`BM_Quat{Add,Sub,Mul,Hamilton,Conj,Rotate}_Throughput`; latency and throughput for the shared 4-lane reductions `BM_Quat{Dot4,Magnitude4,Magnitude4Sq}`, the unit-quaternion ops `BM_Quat{Normalize,Inverse}`, and the interpolators `BM_Quat{Slerp,Nlerp}`) against the matching `BM_Naive_Quat*` baselines. `slerp` is transcendental-bound (`acos` + `sin` dominate, so the SIMD and scalar paths run neck and neck), whereas `nlerp` shows the usual split - a small throughput win for the packed path, a latency loss to its two serial horizontal reductions. The same reductions on `vec4` are `BM_{Dot4,Magnitude4,Magnitude4Sq}` in `bench_vec4.cpp`. Matrices live in `src/benchmarks/bench_mat4.cpp` against `bench_naive_mat4.cpp`: the factories (`BM_Mat{FromQuat,FromRotation,Translation,ScalingVec,ScalingScalar}_Throughput`, `BM_MatAt_Throughput`) and, for the expression nodes, throughput and latency for `BM_Mat{Transform,Mul,Transpose,Determinant,Inverse}` plus the element-wise `BM_Mat{Add,Scale}_Throughput` and `BM_MatCompose_Throughput` (build `T * R * S`, push a point through it). `transpose` comes out level with the scalar baseline - it is pure data movement either way - while `M * v`, the matrix product and `determinant` are where the packed kernels pull ahead; `inverse` is close, because the scalar cofactor expansion shares most of its subexpressions too.
 
 ### Is the abstraction zero-cost? (compiler x backend)
 
@@ -531,7 +690,13 @@ GCC/AArch64 dead stores - with `_value` shapes alongside where a bare kernel
 listing is easier to read, and the `_et` / `_manual` / `_intrin` triple for
 the compound expression where the zero-cost invariant is stated explicitly.
 A `cg_clean` / `cg_spilled` reference pair against an opaque kernel shows
-what a spill looks like in a listing.
+what a spill looks like in a listing. `cg_mat.cpp` covers the matrix
+factories and nodes; its `cg_mat_identity` / `cg_mat_scaling_scalar` pair
+separates constant folding from the runtime lane-insert path, which is how
+two MSVC-specific costs were found and fixed, and it is the first probe set
+whose nodes evaluate to more than one register - where the four live column
+registers, the `M * v` linear combination, and the by-`const&` storage of a
+64-byte leaf are read off the listing.
 
 `scripts/disasm.sh` (Linux/macOS; cross-compiles the aarch64 cells when a
 cross toolchain is installed) and `scripts/disasm.bat` (run from a VS x64

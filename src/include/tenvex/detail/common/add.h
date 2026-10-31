@@ -13,7 +13,7 @@ template<expression L, expression R>
 requires same_category<L, R>
 struct Add
 {
-	using result_t = vf4;
+	using result_t = typename L::result_t;
 
 	TNVX_INLINE
 	Add(const L& TNVX_RESTRICT l, const R& TNVX_RESTRICT r) noexcept;
@@ -33,6 +33,7 @@ private:
 template<vec_expr L, vec_expr R> inline constexpr bool is_vec_expr<Add<L, R>> = true;
 template<scalar_expr L, scalar_expr R> inline constexpr bool is_scalar_expr<Add<L, R>> = true;
 template<quat_expr L, quat_expr R> inline constexpr bool is_quat_expr<Add<L, R>> = true;
+template<mat_expr L, mat_expr R> inline constexpr bool is_mat_expr<Add<L, R>> = true;
 
 template<vec_expr L, vec_expr R>
 [[nodiscard]] TNVX_INLINE
@@ -51,6 +52,10 @@ template<scalar_expr E>
 Add<Scalar, E> operator+(float l, const E& e) noexcept;
 
 template<quat_expr L, quat_expr R>
+[[nodiscard]] TNVX_INLINE
+Add<L, R> operator+(const L& l, const R& r) noexcept;
+
+template<mat_expr L, mat_expr R>
 [[nodiscard]] TNVX_INLINE
 Add<L, R> operator+(const L& l, const R& r) noexcept;
 

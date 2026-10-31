@@ -649,4 +649,25 @@ TEST(quat, from_to_rotation_antipodal_is_unit_length)
 	EXPECT_NEAR(check, result, 1e-5f);
 }
 
+TEST(quat, ctor_from_vf4)
+{
+	quat check = { 1.0f, 2.0f, 3.0f, 4.0f };
+	quat result = { detail::set(1.0f, 2.0f, 3.0f, 4.0f) };
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(quat, ctor_from_vf4_implicit)
+{
+	quat check = { 0.0f, 0.0f, 0.70710678f, 0.70710678f };
+	quat result = detail::set(0.0f, 0.0f, 0.70710678f, 0.70710678f);
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(quat, ctor_from_vf4_roundtrip)
+{
+	quat check = { 1.5f, -2.5f, 0.0f, 9.0f };
+	quat result = { check.eval() };
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
 }

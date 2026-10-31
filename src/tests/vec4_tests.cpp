@@ -1566,4 +1566,46 @@ TEST(vec4, factory_splat)
 	EXPECT_TRUE(approx_eq(check, result));
 }
 
+TEST(vec4, ctor_from_vf4)
+{
+	vec4 check = { 1.0f, 2.0f, 3.0f, 4.0f };
+	vec4 result = { detail::set(1.0f, 2.0f, 3.0f, 4.0f) };
+
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, ctor_from_vf4_implicit)
+{
+	vec4 check = { 5.0f, 6.0f, 7.0f, 8.0f };
+	vec4 result = detail::set(5.0f, 6.0f, 7.0f, 8.0f);
+
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, ctor_from_vf4_roundtrip)
+{
+	vec4 check = { 1.5f, -2.5f, 0.0f, 3.0f };
+	vec4 result = { check.eval() };
+
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, ctor_from_vf4_preserves_w)
+{
+	vec4 check = { 0.0f, 0.0f, 0.0f, 9.0f };
+	vec4 result = { detail::set(0.0f, 0.0f, 0.0f, 9.0f) };
+
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
+TEST(vec4, ctor_from_vf4_in_expression)
+{
+	vec4 a = { 1.0f, 1.0f, 1.0f, 1.0f };
+	vec4 b = { detail::set(2.0f, 3.0f, 4.0f, 5.0f) };
+	vec4 check = { 3.0f, 4.0f, 5.0f, 6.0f };
+	vec4 result = a + b;
+
+	EXPECT_TRUE(approx_eq(check, result));
+}
+
 }

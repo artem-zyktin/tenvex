@@ -21,6 +21,9 @@ struct alignas(16) vec4
 	TNVX_INLINE
 	vec4(const E& e) noexcept;
 
+	TNVX_INLINE
+	vec4(vf4 value) noexcept;
+
 	[[nodiscard]] TNVX_INLINE
 	float x() const noexcept;
 
@@ -46,7 +49,6 @@ struct alignas(16) vec4
 
 private:
 	vf4 _data;
-
 };
 
 template<> inline constexpr bool is_vec_expr<vec4> = true;

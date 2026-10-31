@@ -10,6 +10,8 @@ using vf4 = float32x4_t;
 #error "tenvex requires NEON backend"
 #endif
 
+struct mf4 { vf4 cols[4]; };
+
 #if defined(TNVX_NEON)
 
 namespace tnvx::detail
@@ -281,6 +283,220 @@ vf4 inverse(vf4 q) noexcept
 vf4 normalize4(vf4 q) noexcept
 {
 	return vdivq_f32(q, magnitude4(q));
+}
+
+[[nodiscard]] TNVX_INLINE
+mf4 mat_from_quat(vf4 q) noexcept
+{
+	alignas(16) static const uint8_t idx_yxx_bytes[16] = {
+		4, 5, 6, 7,    0, 1, 2, 3,    0, 1, 2, 3,   12,13,14,15
+	};
+	alignas(16) static const uint8_t idx_zzy_bytes[16] = {
+		8, 9,10,11,    8, 9,10,11,    4, 5, 6, 7,   12,13,14,15
+	};
+	alignas(16) static const uint8_t idx_yzx_bytes[16] = {
+		4, 5, 6, 7,    8, 9,10,11,    0, 1, 2, 3,   12,13,14,15
+	};
+	alignas(16) static const uint8_t idx_zxy_bytes[16] = {
+		8, 9,10,11,    0, 1, 2, 3,    4, 5, 6, 7,   12,13,14,15
+	};
+
+	const uint8x16_t idx_yxx = vld1q_u8(idx_yxx_bytes);
+	const uint8x16_t idx_zzy = vld1q_u8(idx_zzy_bytes);
+	const uint8x16_t idx_yzx = vld1q_u8(idx_yzx_bytes);
+	const uint8x16_t idx_zxy = vld1q_u8(idx_zxy_bytes);
+
+	const vf4 q2 = vaddq_f32(q, q);
+	const vf4 e  = vmulq_f32(q, q2);
+
+	const uint8x16_t eb  = vreinterpretq_u8_f32(e);
+	const vf4 e1 = vreinterpretq_f32_u8(vqtbl1q_u8(eb, idx_yxx));
+	const vf4 e2 = vreinterpretq_f32_u8(vqtbl1q_u8(eb, idx_zzy));
+
+	vf4 dg = vsubq_f32(vsubq_f32(set(1.0f, 1.0f, 1.0f, 0.0f), e1), e2);
+	dg = vsetq_lane_f32(0.0f, dg, 3);
+
+	const vf4 q_yzx  = vreinterpretq_f32_u8(vqtbl1q_u8(vreinterpretq_u8_f32(q),  idx_yzx));
+	const vf4 q2_zxy = vreinterpretq_f32_u8(vqtbl1q_u8(vreinterpretq_u8_f32(q2), idx_zxy));
+
+	const vf4 p = vmulq_f32(q_yzx, q2);
+	const vf4 w = vmulq_f32(q2_zxy, vdupq_laneq_f32(q, 3));
+
+	const vf4 s  = vaddq_f32(p, w);
+	const vf4 sr = vreinterpretq_f32_u8(vqtbl1q_u8(vreinterpretq_u8_f32(s), idx_zxy));
+	const vf4 m  = vsubq_f32(p, w);
+
+	mf4 r;
+	r.cols[0] = vcopyq_laneq_f32(vcopyq_laneq_f32(dg, 1, sr, 1), 2, m,  2);
+	r.cols[1] = vcopyq_laneq_f32(vcopyq_laneq_f32(dg, 0, m,  0), 2, sr, 2);
+	r.cols[2] = vcopyq_laneq_f32(vcopyq_laneq_f32(dg, 0, sr, 0), 1, m,  1);
+	r.cols[3] = set(0.0f, 0.0f, 0.0f, 1.0f);
+
+	return r;
+}
+
+// Matrix kernels. The element-wise four are overloads rather than mat_-prefixed
+// names like mat_from_quat above: the shared Add / Sub / Neg / Mul nodes
+// dispatch on the operand type, so the matrix case has to answer to the same
+// name as the vf4 case.
+
+[[nodiscard]] TNVX_INLINE
+mf4 add(mf4 a, mf4 b) noexcept
+{
+	mf4 r;
+	r.cols[0] = vaddq_f32(a.cols[0], b.cols[0]);
+	r.cols[1] = vaddq_f32(a.cols[1], b.cols[1]);
+	r.cols[2] = vaddq_f32(a.cols[2], b.cols[2]);
+	r.cols[3] = vaddq_f32(a.cols[3], b.cols[3]);
+
+	return r;
+}
+
+[[nodiscard]] TNVX_INLINE
+mf4 sub(mf4 a, mf4 b) noexcept
+{
+	mf4 r;
+	r.cols[0] = vsubq_f32(a.cols[0], b.cols[0]);
+	r.cols[1] = vsubq_f32(a.cols[1], b.cols[1]);
+	r.cols[2] = vsubq_f32(a.cols[2], b.cols[2]);
+	r.cols[3] = vsubq_f32(a.cols[3], b.cols[3]);
+
+	return r;
+}
+
+[[nodiscard]] TNVX_INLINE
+mf4 neg(mf4 m) noexcept
+{
+	mf4 r;
+	r.cols[0] = vnegq_f32(m.cols[0]);
+	r.cols[1] = vnegq_f32(m.cols[1]);
+	r.cols[2] = vnegq_f32(m.cols[2]);
+	r.cols[3] = vnegq_f32(m.cols[3]);
+
+	return r;
+}
+
+[[nodiscard]] TNVX_INLINE
+mf4 mul(mf4 m, vf4 s) noexcept
+{
+	mf4 r;
+	r.cols[0] = vmulq_f32(m.cols[0], s);
+	r.cols[1] = vmulq_f32(m.cols[1], s);
+	r.cols[2] = vmulq_f32(m.cols[2], s);
+	r.cols[3] = vmulq_f32(m.cols[3], s);
+
+	return r;
+}
+
+[[nodiscard]] TNVX_INLINE
+mf4 mul(vf4 s, mf4 m) noexcept
+{
+	return mul(m, s);
+}
+
+[[nodiscard]] TNVX_INLINE
+mf4 mat_transpose(mf4 m) noexcept
+{
+	const float32x4x2_t t01 = vtrnq_f32(m.cols[0], m.cols[1]);
+	const float32x4x2_t t23 = vtrnq_f32(m.cols[2], m.cols[3]);
+
+	mf4 r;
+	r.cols[0] = vcombine_f32(vget_low_f32(t01.val[0]), vget_low_f32(t23.val[0]));
+	r.cols[1] = vcombine_f32(vget_low_f32(t01.val[1]), vget_low_f32(t23.val[1]));
+	r.cols[2] = vcombine_f32(vget_high_f32(t01.val[0]), vget_high_f32(t23.val[0]));
+	r.cols[3] = vcombine_f32(vget_high_f32(t01.val[1]), vget_high_f32(t23.val[1]));
+
+	return r;
+}
+
+[[nodiscard]] TNVX_INLINE
+vf4 mat_transform(vf4 v, mf4 m) noexcept
+{
+	// linear combination of the columns - 4 broadcasts + 4 multiply-adds,
+	// no shuffle of the matrix and no horizontal reduction. This is the
+	// kernel the column-major layout is chosen for; here the broadcast
+	// folds into fmla by lane.
+	vf4 r = vmulq_laneq_f32(m.cols[0], v, 0);
+	r = vfmaq_laneq_f32(r, m.cols[1], v, 1);
+	r = vfmaq_laneq_f32(r, m.cols[2], v, 2);
+	r = vfmaq_laneq_f32(r, m.cols[3], v, 3);
+
+	return r;
+}
+
+[[nodiscard]] TNVX_INLINE
+mf4 mat_mul(mf4 a, mf4 b) noexcept
+{
+	mf4 r;
+	r.cols[0] = mat_transform(b.cols[0], a);
+	r.cols[1] = mat_transform(b.cols[1], a);
+	r.cols[2] = mat_transform(b.cols[2], a);
+	r.cols[3] = mat_transform(b.cols[3], a);
+
+	return r;
+}
+
+[[nodiscard]] TNVX_INLINE
+vf4 mat_determinant(mf4 m) noexcept
+{
+	// cofactor form over the xyz parts a,b,c,d of the four columns and the
+	// w lanes x,y,z,w that make up row 3:
+	//   det = (a x b) . (c*w - d*z) + (c x d) . (a*y - b*x)
+	const vf4 a = m.cols[0];
+	const vf4 b = m.cols[1];
+	const vf4 c = m.cols[2];
+	const vf4 d = m.cols[3];
+
+	const vf4 x = vdupq_laneq_f32(a, 3);
+	const vf4 y = vdupq_laneq_f32(b, 3);
+	const vf4 z = vdupq_laneq_f32(c, 3);
+	const vf4 w = vdupq_laneq_f32(d, 3);
+
+	const vf4 s = cross3(a, b);
+	const vf4 t = cross3(c, d);
+	const vf4 u = vsubq_f32(vmulq_f32(a, y), vmulq_f32(b, x));
+	const vf4 v = vsubq_f32(vmulq_f32(c, w), vmulq_f32(d, z));
+
+	return vaddq_f32(dot3(s, v), dot3(t, u));
+}
+
+[[nodiscard]] TNVX_INLINE
+mf4 mat_inverse(mf4 m) noexcept
+{
+	// the decomposition of mat_determinant carried on to the adjugate.
+	// rows.cols[i] is ROW i of the inverse, so the assembly is transposed
+	// back into columns at the end. A singular matrix divides by zero and
+	// yields inf / nan lanes, as normalize3 does for a zero vector - the
+	// precondition is not checked.
+	const vf4 a = m.cols[0];
+	const vf4 b = m.cols[1];
+	const vf4 c = m.cols[2];
+	const vf4 d = m.cols[3];
+
+	const vf4 x = vdupq_laneq_f32(a, 3);
+	const vf4 y = vdupq_laneq_f32(b, 3);
+	const vf4 z = vdupq_laneq_f32(c, 3);
+	const vf4 w = vdupq_laneq_f32(d, 3);
+
+	vf4 s = cross3(a, b);
+	vf4 t = cross3(c, d);
+	vf4 u = vsubq_f32(vmulq_f32(a, y), vmulq_f32(b, x));
+	vf4 v = vsubq_f32(vmulq_f32(c, w), vmulq_f32(d, z));
+
+	const vf4 inv_det = vdivq_f32(vdupq_n_f32(1.0f),
+								  vaddq_f32(dot3(s, v), dot3(t, u)));
+	s = vmulq_f32(s, inv_det);
+	t = vmulq_f32(t, inv_det);
+	u = vmulq_f32(u, inv_det);
+	v = vmulq_f32(v, inv_det);
+
+	mf4 rows;
+	rows.cols[0] = with_w(vaddq_f32(cross3(b, v), vmulq_f32(t, y)), neg(dot3(b, t)));
+	rows.cols[1] = with_w(vsubq_f32(cross3(v, a), vmulq_f32(t, x)),     dot3(a, t));
+	rows.cols[2] = with_w(vaddq_f32(cross3(d, u), vmulq_f32(s, w)), neg(dot3(d, s)));
+	rows.cols[3] = with_w(vsubq_f32(cross3(u, c), vmulq_f32(s, z)),     dot3(c, s));
+
+	return mat_transpose(rows);
 }
 
 }
