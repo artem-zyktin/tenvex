@@ -142,3 +142,194 @@ static void BM_Naive_MatAt_Throughput(benchmark::State& state)
 	}
 }
 BENCHMARK(BM_Naive_MatAt_Throughput);
+
+// =====================================================================
+// THROUGHPUT: independent iterations, same shapes as bench_mat4.cpp.
+// =====================================================================
+
+static void BM_Naive_MatTransform_Throughput(benchmark::State& state)
+{
+	const auto m = make_mats(256, 9);
+	const auto v = make_vecs(256, 10);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		const mat4& mm = m[i];
+		vec4 vv = v[i];
+		vec4 r = mm * vv;
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 255;
+	}
+}
+BENCHMARK(BM_Naive_MatTransform_Throughput);
+
+static void BM_Naive_MatMul_Throughput(benchmark::State& state)
+{
+	const auto a = make_mats(256, 9);
+	const auto b = make_mats(256, 11);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		const mat4& aa = a[i];
+		const mat4& bb = b[i];
+		mat4 r = aa * bb;
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 255;
+	}
+}
+BENCHMARK(BM_Naive_MatMul_Throughput);
+
+static void BM_Naive_MatTranspose_Throughput(benchmark::State& state)
+{
+	const auto m = make_mats(256, 9);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		const mat4& mm = m[i];
+		mat4 r = transpose(mm);
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 255;
+	}
+}
+BENCHMARK(BM_Naive_MatTranspose_Throughput);
+
+static void BM_Naive_MatDeterminant_Throughput(benchmark::State& state)
+{
+	const auto m = make_mats(256, 9);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		const mat4& mm = m[i];
+		float d = determinant(mm);
+		benchmark::DoNotOptimize(d);
+		i = (i + 1) & 255;
+	}
+}
+BENCHMARK(BM_Naive_MatDeterminant_Throughput);
+
+static void BM_Naive_MatInverse_Throughput(benchmark::State& state)
+{
+	const auto m = make_mats(256, 9);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		const mat4& mm = m[i];
+		mat4 r = inverse(mm);
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 255;
+	}
+}
+BENCHMARK(BM_Naive_MatInverse_Throughput);
+
+static void BM_Naive_MatAdd_Throughput(benchmark::State& state)
+{
+	const auto a = make_mats(256, 9);
+	const auto b = make_mats(256, 11);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		const mat4& aa = a[i];
+		const mat4& bb = b[i];
+		mat4 r = aa + bb;
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 255;
+	}
+}
+BENCHMARK(BM_Naive_MatAdd_Throughput);
+
+static void BM_Naive_MatScale_Throughput(benchmark::State& state)
+{
+	const auto m = make_mats(256, 9);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		const mat4& mm = m[i];
+		mat4 r = mm * 2.0f;
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 255;
+	}
+}
+BENCHMARK(BM_Naive_MatScale_Throughput);
+
+static void BM_Naive_MatCompose_Throughput(benchmark::State& state)
+{
+	const auto t = make_vecs(256, 10);
+	const auto q = make_quats(256, 1);
+	std::size_t i = 0;
+	for (auto _ : state)
+	{
+		vec4 tt = t[i];
+		quat qq = q[i];
+		mat4 model = mat4::translation(tt) * (mat4::from_quat(qq) * mat4::scaling(2.0f));
+		vec4 r = model * tt;
+		benchmark::DoNotOptimize(r);
+		i = (i + 1) & 255;
+	}
+}
+BENCHMARK(BM_Naive_MatCompose_Throughput);
+
+// =====================================================================
+// LATENCY: serial dependency chains, same shapes as bench_mat4.cpp.
+// =====================================================================
+
+static void BM_Naive_MatTransform_Latency(benchmark::State& state)
+{
+	const mat4 r = mat4::from_rotation(vec4 { 0.3f, 0.5f, -0.8f, 0.0f }, 0.01f);
+	vec4 v = { 1.0f, 2.0f, 3.0f, 1.0f };
+	for (auto _ : state)
+	{
+		v = r * v;
+		benchmark::DoNotOptimize(v);
+	}
+}
+BENCHMARK(BM_Naive_MatTransform_Latency);
+
+static void BM_Naive_MatMul_Latency(benchmark::State& state)
+{
+	const mat4 r = mat4::from_rotation(vec4 { 0.3f, 0.5f, -0.8f, 0.0f }, 0.01f);
+	mat4 acc = mat4::identity();
+	for (auto _ : state)
+	{
+		acc = acc * r;
+		benchmark::DoNotOptimize(acc);
+	}
+}
+BENCHMARK(BM_Naive_MatMul_Latency);
+
+static void BM_Naive_MatTranspose_Latency(benchmark::State& state)
+{
+	mat4 acc = mat4::from_rotation(vec4 { 0.3f, 0.5f, -0.8f, 0.0f }, 0.01f);
+	for (auto _ : state)
+	{
+		acc = transpose(acc);
+		benchmark::DoNotOptimize(acc);
+	}
+}
+BENCHMARK(BM_Naive_MatTranspose_Latency);
+
+static void BM_Naive_MatDeterminant_Latency(benchmark::State& state)
+{
+	const auto m = make_mats(1, 9);
+	const mat4 a = m[0];
+	float acc = 0.0f;
+	for (auto _ : state)
+	{
+		mat4 aa = a + mat4::scaling(acc);
+		float d = determinant(aa);
+		acc = d * 1e-7f;
+		benchmark::DoNotOptimize(acc);
+	}
+}
+BENCHMARK(BM_Naive_MatDeterminant_Latency);
+
+static void BM_Naive_MatInverse_Latency(benchmark::State& state)
+{
+	mat4 acc = mat4::translation(1.0f, 2.0f, 3.0f)
+			   * mat4::from_rotation(vec4 { 0.3f, 0.5f, -0.8f, 0.0f }, 0.01f);
+	for (auto _ : state)
+	{
+		acc = inverse(acc);
+		benchmark::DoNotOptimize(acc);
+	}
+}
+BENCHMARK(BM_Naive_MatInverse_Latency);
