@@ -66,4 +66,11 @@ Add<L, R> operator+(const L& l, const R& r) noexcept
 	return { l, r };
 }
 
+template<mat_expr L, mat_expr R>
+TNVX_INLINE
+Add<L, R> operator+(const L& l, const R& r) noexcept
+{
+	return { l, r };
+}
+
 }

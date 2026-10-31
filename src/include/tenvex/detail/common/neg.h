@@ -10,7 +10,7 @@ namespace tnvx
 template<expression E>
 struct Neg
 {
-	using result_t = vf4;
+	using result_t = typename E::result_t;
 
 	TNVX_INLINE
 	explicit Neg(const E& TNVX_RESTRICT e) noexcept;
@@ -28,6 +28,7 @@ private:
 template<vec_expr E> inline constexpr bool is_vec_expr<Neg<E>> = true;
 template<scalar_expr E> inline constexpr bool is_scalar_expr<Neg<E>> = true;
 template<quat_expr E> inline constexpr bool is_quat_expr<Neg<E>> = true;
+template<mat_expr E> inline constexpr bool is_mat_expr<Neg<E>> = true;
 
 template<expression E>
 [[nodiscard]] TNVX_INLINE

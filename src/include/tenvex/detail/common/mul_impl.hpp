@@ -99,4 +99,32 @@ Mul<L, R> operator*(const L& l, const R& r) noexcept
 	return { l, r };
 }
 
+template<mat_expr E>
+TNVX_INLINE
+Mul<E, Scalar> operator*(const E& l, float r) noexcept
+{
+	return { l, Scalar(r) };
+}
+
+template<mat_expr E>
+TNVX_INLINE
+Mul<Scalar, E> operator*(float l, const E& r) noexcept
+{
+	return { Scalar(l), r };
+}
+
+template<mat_expr L, scalar_expr R>
+TNVX_INLINE
+Mul<L, R> operator*(const L& l, const R& r) noexcept
+{
+	return { l, r };
+}
+
+template<scalar_expr L, mat_expr R>
+TNVX_INLINE
+Mul<L, R> operator*(const L& l, const R& r) noexcept
+{
+	return { l, r };
+}
+
 }
