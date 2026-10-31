@@ -310,6 +310,173 @@ mf4 mat_from_quat(vf4 q) noexcept
 	return r;
 }
 
+// Matrix kernels. The element-wise four are overloads rather than mat_-prefixed
+// names like mat_from_quat above: the shared Add / Sub / Neg / Mul nodes
+// dispatch on the operand type, so the matrix case has to answer to the same
+// name as the vf4 case.
+
+[[nodiscard]] TNVX_INLINE
+mf4 add(mf4 a, mf4 b) noexcept
+{
+	mf4 r;
+	r.cols[0] = _mm_add_ps(a.cols[0], b.cols[0]);
+	r.cols[1] = _mm_add_ps(a.cols[1], b.cols[1]);
+	r.cols[2] = _mm_add_ps(a.cols[2], b.cols[2]);
+	r.cols[3] = _mm_add_ps(a.cols[3], b.cols[3]);
+
+	return r;
+}
+
+[[nodiscard]] TNVX_INLINE
+mf4 sub(mf4 a, mf4 b) noexcept
+{
+	mf4 r;
+	r.cols[0] = _mm_sub_ps(a.cols[0], b.cols[0]);
+	r.cols[1] = _mm_sub_ps(a.cols[1], b.cols[1]);
+	r.cols[2] = _mm_sub_ps(a.cols[2], b.cols[2]);
+	r.cols[3] = _mm_sub_ps(a.cols[3], b.cols[3]);
+
+	return r;
+}
+
+[[nodiscard]] TNVX_INLINE
+mf4 neg(mf4 m) noexcept
+{
+	const vf4 sign = _mm_set1_ps(-0.0f);
+
+	mf4 r;
+	r.cols[0] = _mm_xor_ps(m.cols[0], sign);
+	r.cols[1] = _mm_xor_ps(m.cols[1], sign);
+	r.cols[2] = _mm_xor_ps(m.cols[2], sign);
+	r.cols[3] = _mm_xor_ps(m.cols[3], sign);
+
+	return r;
+}
+
+[[nodiscard]] TNVX_INLINE
+mf4 mul(mf4 m, vf4 s) noexcept
+{
+	mf4 r;
+	r.cols[0] = _mm_mul_ps(m.cols[0], s);
+	r.cols[1] = _mm_mul_ps(m.cols[1], s);
+	r.cols[2] = _mm_mul_ps(m.cols[2], s);
+	r.cols[3] = _mm_mul_ps(m.cols[3], s);
+
+	return r;
+}
+
+[[nodiscard]] TNVX_INLINE
+mf4 mul(vf4 s, mf4 m) noexcept
+{
+	return mul(m, s);
+}
+
+[[nodiscard]] TNVX_INLINE
+mf4 mat_transpose(mf4 m) noexcept
+{
+	const vf4 t0 = _mm_unpacklo_ps(m.cols[0], m.cols[1]);
+	const vf4 t1 = _mm_unpacklo_ps(m.cols[2], m.cols[3]);
+	const vf4 t2 = _mm_unpackhi_ps(m.cols[0], m.cols[1]);
+	const vf4 t3 = _mm_unpackhi_ps(m.cols[2], m.cols[3]);
+
+	mf4 r;
+	r.cols[0] = _mm_movelh_ps(t0, t1);
+	r.cols[1] = _mm_movehl_ps(t1, t0);
+	r.cols[2] = _mm_movelh_ps(t2, t3);
+	r.cols[3] = _mm_movehl_ps(t3, t2);
+
+	return r;
+}
+
+[[nodiscard]] TNVX_INLINE
+vf4 mat_transform(vf4 v, mf4 m) noexcept
+{
+	// linear combination of the columns - 4 broadcasts + 4 multiply-adds,
+	// no shuffle of the matrix and no horizontal reduction. This is the
+	// kernel the column-major layout is chosen for.
+	vf4 r =         _mm_mul_ps(_mm_shuffle_ps(v, v, _MM_SHUFFLE(0, 0, 0, 0)), m.cols[0]);
+	r = _mm_add_ps(r, _mm_mul_ps(_mm_shuffle_ps(v, v, _MM_SHUFFLE(1, 1, 1, 1)), m.cols[1]));
+	r = _mm_add_ps(r, _mm_mul_ps(_mm_shuffle_ps(v, v, _MM_SHUFFLE(2, 2, 2, 2)), m.cols[2]));
+	r = _mm_add_ps(r, _mm_mul_ps(_mm_shuffle_ps(v, v, _MM_SHUFFLE(3, 3, 3, 3)), m.cols[3]));
+
+	return r;
+}
+
+[[nodiscard]] TNVX_INLINE
+mf4 mat_mul(mf4 a, mf4 b) noexcept
+{
+	mf4 r;
+	r.cols[0] = mat_transform(b.cols[0], a);
+	r.cols[1] = mat_transform(b.cols[1], a);
+	r.cols[2] = mat_transform(b.cols[2], a);
+	r.cols[3] = mat_transform(b.cols[3], a);
+
+	return r;
+}
+
+[[nodiscard]] TNVX_INLINE
+vf4 mat_determinant(mf4 m) noexcept
+{
+	// cofactor form over the xyz parts a,b,c,d of the four columns and the
+	// w lanes x,y,z,w that make up row 3:
+	//   det = (a x b) . (c*w - d*z) + (c x d) . (a*y - b*x)
+	const vf4 a = m.cols[0];
+	const vf4 b = m.cols[1];
+	const vf4 c = m.cols[2];
+	const vf4 d = m.cols[3];
+
+	const vf4 x = _mm_shuffle_ps(a, a, _MM_SHUFFLE(3, 3, 3, 3));
+	const vf4 y = _mm_shuffle_ps(b, b, _MM_SHUFFLE(3, 3, 3, 3));
+	const vf4 z = _mm_shuffle_ps(c, c, _MM_SHUFFLE(3, 3, 3, 3));
+	const vf4 w = _mm_shuffle_ps(d, d, _MM_SHUFFLE(3, 3, 3, 3));
+
+	const vf4 s = cross3(a, b);
+	const vf4 t = cross3(c, d);
+	const vf4 u = _mm_sub_ps(_mm_mul_ps(a, y), _mm_mul_ps(b, x));
+	const vf4 v = _mm_sub_ps(_mm_mul_ps(c, w), _mm_mul_ps(d, z));
+
+	return _mm_add_ps(dot3(s, v), dot3(t, u));
+}
+
+[[nodiscard]] TNVX_INLINE
+mf4 mat_inverse(mf4 m) noexcept
+{
+	// the decomposition of mat_determinant carried on to the adjugate.
+	// rows.cols[i] is ROW i of the inverse, so the assembly is transposed
+	// back into columns at the end. A singular matrix divides by zero and
+	// yields inf / nan lanes, as normalize3 does for a zero vector - the
+	// precondition is not checked.
+	const vf4 a = m.cols[0];
+	const vf4 b = m.cols[1];
+	const vf4 c = m.cols[2];
+	const vf4 d = m.cols[3];
+
+	const vf4 x = _mm_shuffle_ps(a, a, _MM_SHUFFLE(3, 3, 3, 3));
+	const vf4 y = _mm_shuffle_ps(b, b, _MM_SHUFFLE(3, 3, 3, 3));
+	const vf4 z = _mm_shuffle_ps(c, c, _MM_SHUFFLE(3, 3, 3, 3));
+	const vf4 w = _mm_shuffle_ps(d, d, _MM_SHUFFLE(3, 3, 3, 3));
+
+	vf4 s = cross3(a, b);
+	vf4 t = cross3(c, d);
+	vf4 u = _mm_sub_ps(_mm_mul_ps(a, y), _mm_mul_ps(b, x));
+	vf4 v = _mm_sub_ps(_mm_mul_ps(c, w), _mm_mul_ps(d, z));
+
+	const vf4 inv_det = _mm_div_ps(_mm_set1_ps(1.0f),
+								   _mm_add_ps(dot3(s, v), dot3(t, u)));
+	s = _mm_mul_ps(s, inv_det);
+	t = _mm_mul_ps(t, inv_det);
+	u = _mm_mul_ps(u, inv_det);
+	v = _mm_mul_ps(v, inv_det);
+
+	mf4 rows;
+	rows.cols[0] = with_w(_mm_add_ps(cross3(b, v), _mm_mul_ps(t, y)), neg(dot3(b, t)));
+	rows.cols[1] = with_w(_mm_sub_ps(cross3(v, a), _mm_mul_ps(t, x)),     dot3(a, t));
+	rows.cols[2] = with_w(_mm_add_ps(cross3(d, u), _mm_mul_ps(s, w)), neg(dot3(d, s)));
+	rows.cols[3] = with_w(_mm_sub_ps(cross3(u, c), _mm_mul_ps(s, z)),     dot3(c, s));
+
+	return mat_transpose(rows);
+}
+
 } // namespace tnvx::detail
 
 #endif
