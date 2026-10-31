@@ -63,6 +63,16 @@ struct alignas(16) mat4
 	static mat4 from_rotation(vec4 axis, float angle) noexcept;
 
 	[[nodiscard]] TNVX_INLINE
+	static mat4 look_at(vec4 eye, vec4 target, vec4 up) noexcept;
+
+	[[nodiscard]] TNVX_INLINE
+	static mat4 perspective(float fov_y, float aspect, float near_z, float far_z) noexcept;
+
+	[[nodiscard]] TNVX_INLINE
+	static mat4 orthographic(float left, float right, float bottom, float top,
+							 float near_z, float far_z) noexcept;
+
+	[[nodiscard]] TNVX_INLINE
 	vec4 col(int j) const noexcept;
 
 	template<uint8_t i, uint8_t j>

@@ -5,6 +5,8 @@
 #include "tenvex/detail/vec/with_w.h"
 #include "tenvex/detail/vec/hadamard.h"
 
+#include <cmath>
+
 namespace tnvx
 {
 
@@ -109,6 +111,50 @@ TNVX_INLINE
 mat4 mat4::from_rotation(vec4 axis, float angle) noexcept
 {
 	return from_quat(quat::from_axis_angle(axis, angle));
+}
+
+TNVX_INLINE
+mat4 mat4::look_at(vec4 eye, vec4 target, vec4 up) noexcept
+{
+	// right-handed: the camera looks down its own -z, so row 2 is -forward
+	const vec4 f = normalize3(target - eye);
+	const vec4 s = normalize3(cross3(f, up));
+	const vec4 u = cross3(s, f);
+
+	return { s.x(), u.x(), -f.x(), 0.0f,
+			 s.y(), u.y(), -f.y(), 0.0f,
+			 s.z(), u.z(), -f.z(), 0.0f,
+			 -dot3(s, eye), -dot3(u, eye), dot3(f, eye), 1.0f };
+}
+
+TNVX_INLINE
+mat4 mat4::perspective(float fov_y, float aspect, float near_z, float far_z) noexcept
+{
+	// right-handed, clip depth in [0, 1]; fov_y is the full vertical field
+	// of view in radians and near_z / far_z are distances in front of the
+	// camera. See docs/decisions.md for the convention.
+	const float t = std::tan(fov_y * 0.5f);
+	const float d = near_z - far_z;
+
+	return { 1.0f / (aspect * t), 0.0f, 0.0f, 0.0f,
+			 0.0f, 1.0f / t, 0.0f, 0.0f,
+			 0.0f, 0.0f, far_z / d, -1.0f,
+			 0.0f, 0.0f, far_z * near_z / d, 0.0f };
+}
+
+TNVX_INLINE
+mat4 mat4::orthographic(float left, float right, float bottom, float top,
+						float near_z, float far_z) noexcept
+{
+	// right-handed, clip depth in [0, 1], same convention as perspective()
+	const float w = right - left;
+	const float h = top - bottom;
+	const float d = far_z - near_z;
+
+	return { 2.0f / w, 0.0f, 0.0f, 0.0f,
+			 0.0f, 2.0f / h, 0.0f, 0.0f,
+			 0.0f, 0.0f, -1.0f / d, 0.0f,
+			 -(right + left) / w, -(top + bottom) / h, -near_z / d, 1.0f };
 }
 
 TNVX_INLINE
